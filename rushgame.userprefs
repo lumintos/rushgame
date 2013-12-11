@@ -1,8 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\NetworkManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\NetworkManager.cs" Line="17" Column="32" />
+      <File FileName="Assets\Scripts\NetworkManager.cs" Line="83" Column="17" />
+      <File FileName="Assets\Scripts\User.cs" Line="30" Column="28" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

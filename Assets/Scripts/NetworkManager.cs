@@ -1,20 +1,36 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Network manager. Manage Creation & Joining a room of player
+/// </summary>
 public class NetworkManager : MonoBehaviour {
 
-	private const string gameName = "mobserv_RushGame";
-	private string roomName = "mobserv_RoomName - ";
-	private HostData[] hostList;
+	public User user;
+	private const string gameName = "mobserv_RushGame"; //Must be unique name for our game
+	public string roomName = "";
+	private HostData[] hostList; //List of available rooms
 	private bool refreshing;
 	public GameObject playerPrefab;
 	private int port = 25000;
 
+	void OnStart()
+	{
+		//Find Gameobject named User that was kept from previous scene
+		//then get the script component
+		user = GameObject.Find("User").GetComponent<User>();
+	}
+
 	private void StartServer()
 	{
+		if(roomName == "")
+		{
+			//Set default room name
+			//username is identical and so is room name
+			roomName = user.username + "'s Game";
+		}
 		int rand = Random.Range(1, 100);
 		port = port + rand; // For difference devices, no need to + rand. It's testing only on single device.
-		roomName +=  rand.ToString();
 		Network.InitializeServer(10, port, !Network.HavePublicAddress());
 		MasterServer.RegisterHost(gameName, roomName);
 	}
