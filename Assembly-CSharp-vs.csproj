@@ -47,7 +47,20 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\NetworkManager.cs" />
+     <Compile Include="Assets\Scripts\PlayerMovement.cs" />
+     <Compile Include="Assets\Scripts\PlayerScripts\PlayerHashIDs.cs" />
+     <Compile Include="Assets\Scripts\Tags.cs" />
      <Compile Include="Assets\Scripts\User.cs" />
+     <Compile Include="Assets\Toon Character Pack\Scripts\AnimTriggers.cs" />
+     <Compile Include="Assets\Toon Character Pack\Scripts\BotControlScript.cs" />
+     <None Include="Assets\Toon Character Pack\Shaders\Toony-Transparent.shader" />
+     <None Include="Assets\Toon Character Pack\Shaders\Toony-Basic.shader" />
+     <None Include="Assets\Toon Character Pack\Shaders\Projector Multiply.shader" />
+     <None Include="Assets\Toon Character Pack\Shaders\Toony-BasicOutline.shader" />
+     <None Include="Assets\Toon Character Pack\Shaders\Toony-LightedOutline.shader" />
+     <None Include="Assets\Toon Character Pack\Shaders\Toony-Lighted.shader" />
+     <None Include="Assets\Toon Character Pack\_Toon Character Pack.txt" />
+     <None Include="Assets\Toon Character Pack\Shaders\Unlit-Alpha.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
