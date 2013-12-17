@@ -7,3 +7,4 @@ Assembly-CSharp.csproj
 rushgame-csharp.sln
 rushgame.sln
 rushgame.userprefs
+obj/
