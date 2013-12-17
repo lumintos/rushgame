@@ -16,14 +16,15 @@ public class Login : MonoBehaviour {
 	private int screenHeightUnit = 27;
 	private int txtWidthUnit = 14;
 	private int txtHeightUnit = 2;
-	private int btnWidthUnit = 6;
-	private int btnHeightUnit = 2;
+	private int btnWidthUnit = 8;
+	private int btnHeightUnit = 4;
+	private int fontSizeUnit = 1;
 
-	public GUIStyle lbGUIStyle;
-	public GUIStyle txtGUIStyle;
-	public GUIStyle btnGUIStyle;
+//	public GUIStyle lbGUIStyle;
+//	public GUIStyle txtGUIStyle;
+//	public GUIStyle btnGUIStyle;
 	public GUITexture backgroundImage;
-	public GUISkin myskin;
+	//public GUISkin myskin;
 
 	public Color primaryColor, secondaryColor;
 
@@ -41,9 +42,9 @@ public class Login : MonoBehaviour {
 		btnScaledHeight = (float) btnHeightUnit * screenHeight / screenHeightUnit;
 		btnScaledWidth = (float) btnWidthUnit * screenWidth / screenWidthUnit;
 
-		Debug.Log(screenHeight + " - " + screenWidth);
-		Debug.Log(txtScaledHeight + " - " + txtScaledWidth);
-		Debug.Log(btnScaledHeight + " - " + btnScaledWidth);
+//		Debug.Log(screenHeight + " - " + screenWidth);
+//		Debug.Log(txtScaledHeight + " - " + txtScaledWidth);
+//		Debug.Log(btnScaledHeight + " - " + btnScaledWidth);
 
 		backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
 
@@ -51,35 +52,36 @@ public class Login : MonoBehaviour {
 
 	private void OnGUI()
 	{
-//		if(!guiUpdated)
-//		{
-//			GUISkinManager.Instance.UpdateGuiColors(primaryColor, secondaryColor);
-//			GUI.skin = GUISkinManager.Skin;
-//			guiUpdated = true;
-//		}
-
-		GUI.skin.label.fontSize = (int) screenHeight / screenHeightUnit;
-		GUI.skin.textField.fontSize = (int) screenHeight / screenHeightUnit;
-		GUI.skin.button.fontSize = (int) screenHeight / screenHeightUnit;
+		if(!guiUpdated)
+		{
+			ColoredGUISkin.Instance.UpdateGuiColors(primaryColor, secondaryColor);
+			guiUpdated = true;
+		}
+		
+		GUI.skin = ColoredGUISkin.Skin;
 
 		Rect btnLoginRect = GetScaledRect(btnScaledWidth, btnScaledHeight);
-		btnLoginRect.x = 17 * screenWidth / screenWidthUnit;
+		btnLoginRect.x = 15 * screenWidth / screenWidthUnit;
 		btnLoginRect.y = 19 * screenHeight / screenHeightUnit;
 		
 		Rect btnRegisterRect = GetScaledRect(btnScaledWidth, btnScaledHeight);
 		btnRegisterRect.x = 25 * screenWidth / screenWidthUnit;
-		btnRegisterRect.y = 19 * screenHeight / screenHeightUnit;
-
+		btnRegisterRect.y = 19 * screenHeight / screenHeightUnit;		
+		
+		GUI.skin.label.fontSize = (int) screenHeight * fontSizeUnit / screenHeightUnit;
+		GUI.skin.textField.fontSize = (int) txtScaledHeight * fontSizeUnit/ txtHeightUnit;
+		GUI.skin.button.fontSize = (int) btnScaledHeight * fontSizeUnit/ btnHeightUnit;
+	
 		if(message != "")//There is error message
 		{
 			Rect msgRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
 			msgRect.x = 17 * screenWidth / screenWidthUnit;
 			msgRect.y = 17 * screenHeight / screenHeightUnit;
-			GUI.skin.label.fontStyle = FontStyle.Italic;
-			GUI.skin.label.normal.textColor = Color.green;
-			GUI.Label(msgRect, message);
-			GUI.skin.label.fontStyle = FontStyle.Normal;
-			GUI.skin.label.normal.textColor = Color.white;
+			GUIStyle msgStyle = new GUIStyle(GUI.skin.label);
+			msgStyle.fontStyle = FontStyle.Italic;
+			msgStyle.normal.textColor = Color.white;
+			msgStyle.alignment = TextAnchor.UpperCenter;
+			GUI.Label(msgRect, message, msgStyle);
 		}
 
 
@@ -109,23 +111,20 @@ public class Login : MonoBehaviour {
 
 			GUILayout.BeginHorizontal();
 
-
-
 			if (GUI.Button(btnLoginRect, "Login"))
 			{
 				message = "";
 				
 				if (username == "" || password == "")
-					message += "Please enter all the fields \n";
+					message = "Please enter all the fields \n";
 				else
 				{
-					Application.LoadLevel("lobby");
-//
-//					WWWForm form = new WWWForm();
-//					form.AddField("username", username);
-//					form.AddField("password", password);
-//					WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
-//					StartCoroutine(loginRequest(w));
+					message = "Connecting ... ";
+					WWWForm form = new WWWForm();
+					form.AddField("username", username);
+					form.AddField("password", password);
+					WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
+					StartCoroutine(loginRequest(w));
 				}
 			}
 			
@@ -199,11 +198,12 @@ public class Login : MonoBehaviour {
 				message = "";
 				
 				if (username == "" || email == "" || password == "")
-					message += "Please enter all the fields \n";
+					message = "Please enter all the fields \n";
 				else
 				{
 					if (password == rePassword)
 					{
+						message = "Connecting ... ";
 						WWWForm form = new WWWForm();
 						form.AddField("username", username);
 						form.AddField("email", email);
@@ -212,13 +212,15 @@ public class Login : MonoBehaviour {
 						StartCoroutine(registerRequest(w));
 					}
 					else
-						message += "Your Password does not match \n";
+						message = "Your Password does not match \n";
 				}
 			}
 			
 			GUILayout.EndHorizontal();
 
 		}
+
+	
 	}
 
 	IEnumerator loginRequest(WWW w)
@@ -226,16 +228,18 @@ public class Login : MonoBehaviour {
 		yield return w;
 		if (w.error == null)
 		{
-			if (true)//(w.text == "Logged in") //"True" is for testing only
+			if (w.text == "Logged in")
 			{
 				Application.LoadLevel("lobby");
 			}
 			else
-				message += w.text;
+			{
+				message = w.text;
+			}
 		}
 		else
 		{
-			message += "ERROR: " + w.error + "\n";
+			message = "ERROR: " + w.error + "\n";
 		}
 	}
 	
@@ -244,11 +248,18 @@ public class Login : MonoBehaviour {
 		yield return w;
 		if (w.error == null)
 		{
-			message += w.text;
+			if(w.text == "Succesfully Created User!")
+			{
+				Application.LoadLevel("lobby");
+			}
+			else
+			{
+				message = w.text;
+			}
 		}
 		else
 		{
-			message += "ERROR: " + w.error + "\n";
+			message = "ERROR: " + w.error + "\n";
 		}
 	}	
 	

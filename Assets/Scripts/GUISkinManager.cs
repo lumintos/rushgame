@@ -23,23 +23,32 @@ public class GUISkinManager : MonoBehaviour {
 		GUI.skin = customSkin;
 		actualSkin = (GUISkin) ScriptableObject.CreateInstance(typeof(GUISkin));
 
+
 		// Button
+		actualSkin.button = new GUIStyle("button");
 		actualSkin.button.normal.background = UpdateGuiSkin(customSkin.button.normal.background, color);
+		actualSkin.button.hover.background = UpdateGuiSkin(customSkin.button.hover.background, color);
 		actualSkin.button.active.background = UpdateGuiSkin(customSkin.button.active.background, color);
 		actualSkin.button.normal.textColor = secondaryColor;
+		actualSkin.button.hover.textColor = secondaryColor;
 		actualSkin.button.active.textColor = secondaryColor;	
 		
 		// TexField
+		actualSkin.textField = new GUIStyle("textfield");
 		actualSkin.textField.normal.background = UpdateGuiSkin(customSkin.textField.normal.background, color);
+		actualSkin.textField.hover.background = UpdateGuiSkin(customSkin.textField.hover.background, color);
 		actualSkin.textField.focused.background = UpdateGuiSkin(customSkin.textField.focused.background, color);
 		actualSkin.textField.active.background = UpdateGuiSkin(customSkin.textField.active.background, color);
 		actualSkin.textField.onNormal.background = UpdateGuiSkin(customSkin.textField.onNormal.background, color);
 
 		// Label
+		actualSkin.label = new GUIStyle("label");
 		actualSkin.label.normal.textColor = color;	
 	}
 
 	private Texture2D UpdateGuiSkin(Texture2D texture, Color primaryColor) {
+		if(texture == null)
+			Debug.Log("NULLLLL");
 		Texture2D newTexture = new Texture2D((int)(texture.width / scalingFactor), (int) (texture.height / scalingFactor), texture.format, false);
 		for (int i = 0; i < newTexture.width; i++) {
 			for (int j = 0; j < newTexture.height; j++) {
@@ -47,7 +56,7 @@ public class GUISkinManager : MonoBehaviour {
 				newTexture.SetPixel(i, j, color);
 			}
 		}
-		//newTexture.Apply();
+		newTexture.Apply();
 		return newTexture;
 	}
 }
