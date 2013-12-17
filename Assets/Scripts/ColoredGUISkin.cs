@@ -1,4 +1,4 @@
-//Credit: (Unity asset store)
+//Credit: JNA Mobile (Unity asset store)
 //Edit: Giang
 
 using UnityEngine;
@@ -95,7 +95,7 @@ public class ColoredGUISkin : MonoBehaviour {
 		
 		// Label
 		actualSkin.label = new GUIStyle("label");
-		actualSkin.label.normal.textColor = secondaryColor;
+		actualSkin.label.normal.textColor = secondaryColor; //Edited, originally set to 'color' variable
 		
 		// Scroll bar
 		actualSkin.verticalScrollbar = new GUIStyle("verticalscrollbar");

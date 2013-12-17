@@ -27,22 +27,23 @@ public class DemoGuiSkin : MonoBehaviour {
 	/// </summary>
 	void OnGUI() {
 		if (!hasUpdatedGui) {
-			GUISkinManager.Instance.UpdateGuiColors(primaryColors[0], secondaryColors[0]);
+			ColoredGUISkin.Instance.UpdateGuiColors(primaryColors[0], secondaryColors[0]);
 			hasUpdatedGui = true;
 		}
-		GUI.skin = GUISkinManager.Skin;
+        GUI.skin = ColoredGUISkin.Skin;
 		
 		// Window 
 		//dragWindowRect = GUI.Window (0, dragWindowRect, DoDragWindow, "Drag Window");
 
-		if (GUI.Button(new Rect(20,40,200,100), "Button")) {
-			Debug.Log("Clicked the button with text");
-		}
+        if (GUI.Button(new Rect(20, 40, 200, 100), "Button"))
+        {
+            Debug.Log("Clicked the button with text");
+        }
 		
 		// Button
 		if (GUI.Button(new Rect(20,200,200,100), "Color")) {
 			currentColor++;
-			GUISkinManager.Instance.UpdateGuiColors(primaryColors[currentColor % primaryColors.Count],secondaryColors[currentColor % secondaryColors.Count]);
+            ColoredGUISkin.Instance.UpdateGuiColors(primaryColors[currentColor % primaryColors.Count], secondaryColors[currentColor % secondaryColors.Count]);
 		}
 		
 		// Text

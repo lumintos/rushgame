@@ -49,7 +49,6 @@
      <Compile Include="Assets\CustomGUISkin\SupportingArtefacts\Scripts\MoveOnPress.cs" />
      <Compile Include="Assets\Scripts\ColoredGUISkin.cs" />
      <Compile Include="Assets\Scripts\DemoGuiSkin.cs" />
-     <Compile Include="Assets\Scripts\GUISkinManager.cs" />
      <Compile Include="Assets\Scripts\Login.cs" />
      <Compile Include="Assets\Scripts\NetworkManager.cs" />
      <Compile Include="Assets\Scripts\PlayerMovement.cs" />
