@@ -109,7 +109,7 @@ public class Login : MonoBehaviour {
 			password = GUI.PasswordField(txtPasswordRect, password, "*"[0]);
 
 
-			GUILayout.BeginHorizontal();
+			//GUILayout.BeginHorizontal();
 
 			if (GUI.Button(btnLoginRect, "Login"))
 			{
@@ -136,7 +136,7 @@ public class Login : MonoBehaviour {
 				message = "";
 			}
 			
-			GUILayout.EndHorizontal();
+			//GUILayout.EndHorizontal();
 		}
 		else
 		{
@@ -229,7 +229,8 @@ public class Login : MonoBehaviour {
 		if (w.error == null)
 		{
 			if (w.text == "Logged in")
-			{
+            {
+                ((User)GameObject.Find("User").GetComponent("User")).username = username; //store username for later scenes
 				Application.LoadLevel("lobby");
 			}
 			else
@@ -250,6 +251,7 @@ public class Login : MonoBehaviour {
 		{
 			if(w.text == "Succesfully Created User!")
 			{
+                ((User)GameObject.Find("User").GetComponent("User")).username = username; //store username for later scenes
 				Application.LoadLevel("lobby");
 			}
 			else
