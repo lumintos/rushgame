@@ -54,6 +54,7 @@
      <None Include="Assets\Toon Character Pack\Shaders\Toony-Basic.shader" />
      <None Include="Assets\Toon Character Pack\Shaders\Projector Multiply.shader" />
      <None Include="Assets\Toon Character Pack\Shaders\Toony-BasicOutline.shader" />
+     <None Include="Assets\CustomGUISkin\ReadMe.txt" />
      <None Include="Assets\Toon Character Pack\Shaders\Toony-LightedOutline.shader" />
      <None Include="Assets\Toon Character Pack\Shaders\Toony-Lighted.shader" />
      <None Include="Assets\Toon Character Pack\_Toon Character Pack.txt" />

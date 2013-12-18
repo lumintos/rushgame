@@ -6,29 +6,28 @@ using System.Collections;
 /// </summary>
 public class NetworkManager : MonoBehaviour {
 
-	public User user;
+	public User myself;
 	private const string gameName = "mobserv_RushGame"; //Must be unique name for our game
 	public string roomName = "";
 	private HostData[] hostList; //List of available rooms
-	private bool refreshing;
+	private bool refreshing = false;
 	public GameObject playerPrefab;
 	private int port = 25000;
 
-	void OnStart()
+	void Start()
 	{
 		//Find Gameobject named User that was kept from previous scene
 		//then get the script component
-		user = GameObject.Find("User").GetComponent<User>();
+        myself = (User)GameObject.Find("User").GetComponent("User");
 	}
 
-	private void StartServer()
+    /// <summary>
+    /// Register for a game room
+    /// </summary>
+    /// <param name="_roomName">Name of the room, must be unique logically</param>
+	public void StartServer(string _roomName)
 	{
-		if(roomName == "")
-		{
-			//Set default room name
-			//username is identical and so is room name
-			roomName = user.username + "'s Game";
-		}
+        roomName = _roomName;
 		int rand = Random.Range(1, 100);
 		port = port + rand; // For difference devices, no need to + rand. It's testing only on single device.
 		Network.InitializeServer(10, port, !Network.HavePublicAddress());
@@ -37,54 +36,47 @@ public class NetworkManager : MonoBehaviour {
 
 	void OnServerInitialized()
 	{
-		SpawnPlayer();
+		SpawnPlayer(1);
 	}
 
-	void OnGUI()
-	{
-		if(!Network.isClient && !Network.isServer)
-		{
-			if(GUI.Button(new Rect(100, 100, 250, 100), "Start Server"))
-				StartServer();
+    public HostData[] GetRoomList()
+    {
+        RefreshHostList();
+       // while (refreshing)
+       //     continue;
 
-			if(GUI.Button(new Rect(100, 250, 250, 100), "Refresh Host List"))
-				RefreshHostList();
-
-			if(hostList != null)
-			{
-				for(int i = 0; i < hostList.Length; i++)
-				{
-					if(GUI.Button(new Rect(400, 100 + (100 * i), 300, 100), hostList[i].gameName))
-						JoinServer(hostList[i]);
-				}
-			}
-		}
-	}
+        return hostList;
+    }
 
 	private void RefreshHostList()
-	{
-		MasterServer.RequestHostList(gameName);
+    {
+        refreshing = true;
+        MasterServer.RequestHostList(gameName);
 	}
 
 
 	void OnMasterServerEvent(MasterServerEvent msEvent)
 	{
-		if(msEvent == MasterServerEvent.HostListReceived)
-			hostList = MasterServer.PollHostList();
+        if (msEvent == MasterServerEvent.HostListReceived)
+        {
+            hostList = MasterServer.PollHostList();
+            refreshing = false;
+        }
 	}
 
-	private void JoinServer(HostData hostData)
+	public void JoinServer(HostData hostData)
 	{
 		Network.Connect(hostData);
 	}
 
 	void OnConnectedToServer()
 	{
-		SpawnPlayer();
+		SpawnPlayer(2);
 	}
 
-	private void SpawnPlayer()
+	private void SpawnPlayer(int userIndex)
 	{
-		Network.Instantiate(playerPrefab, new Vector3(0f, 5f, 0f), Quaternion.identity, 0);
+		Network.Instantiate(playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity, 0);
+        
 	}
 }
