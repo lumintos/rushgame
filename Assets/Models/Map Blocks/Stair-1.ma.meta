@@ -1,0 +1,115 @@
+fileFormatVersion: 2
+guid: 7eef625822a548d4fabc132803fc66f1
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: stair_0
+    100004: stair_1
+    100006: stair_2
+    100008: stair_3
+    100010: stair_wall_connector_0
+    100012: stair_wall_connector_1
+    100014: stair_wall_connector_2
+    100016: stair_wall_connector_3
+    100018: wall_0
+    100020: wall_1
+    100022: wall_2
+    400000: //RootNode
+    400002: stair_0
+    400004: stair_1
+    400006: stair_2
+    400008: stair_3
+    400010: stair_wall_connector_0
+    400012: stair_wall_connector_1
+    400014: stair_wall_connector_2
+    400016: stair_wall_connector_3
+    400018: wall_0
+    400020: wall_1
+    400022: wall_2
+    2300000: stair_0
+    2300002: stair_1
+    2300004: stair_2
+    2300006: stair_3
+    2300008: stair_wall_connector_0
+    2300010: stair_wall_connector_1
+    2300012: stair_wall_connector_2
+    2300014: stair_wall_connector_3
+    2300016: wall_0
+    2300018: wall_1
+    2300020: wall_2
+    3300000: stair_0
+    3300002: stair_1
+    3300004: stair_2
+    3300006: stair_3
+    3300008: stair_wall_connector_0
+    3300010: stair_wall_connector_1
+    3300012: stair_wall_connector_2
+    3300014: stair_wall_connector_3
+    3300016: wall_0
+    3300018: wall_1
+    3300020: wall_2
+    4300000: wall_0
+    4300002: stair_0
+    4300004: stair_wall_connector_0
+    4300006: stair_1
+    4300008: stair_wall_connector_1
+    4300010: stair_2
+    4300012: stair_wall_connector_2
+    4300014: wall_2
+    4300016: stair_wall_connector_3
+    4300018: wall_1
+    4300020: stair_3
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  userData: 
