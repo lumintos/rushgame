@@ -259,7 +259,7 @@ public class Lobby : MonoBehaviour {
             {
                 if (GUI.Button(new Rect(400, 100 + (100 * i), 300, 100), roomList[i].gameName))
                 {
-                    roomName = roomList[i].gameName;
+                    roomName = roomList[i].ip + " - " + roomList[i].port;
                     //MultiplayerManager.Instance.MyPlayer.team = 2;
                     //networkManager.JoinServer(roomList[i]);
                     MultiplayerManager.Instance.JoinRoom(roomList[i]);

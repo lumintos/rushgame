@@ -31,6 +31,7 @@ public class MultiplayerManager : MonoBehaviour
         Instance = this;
         PlayerName = PlayerPrefs.GetString("PlayerName");
         DontDestroyOnLoad(gameObject);
+        MasterServer.ipAddress = "192.168.1.109";
     }
 
     void FixedUpdate()
@@ -42,7 +43,7 @@ public class MultiplayerManager : MonoBehaviour
     {
         RoomName = roomName;
         MaxPlayers = maxPlayers;
-        Network.InitializeServer(MaxPlayers, 25000, !Network.HavePublicAddress());
+        Network.InitializeServer(MaxPlayers, 25000, false);
         MasterServer.RegisterHost(GameName, RoomName);
     }
 
