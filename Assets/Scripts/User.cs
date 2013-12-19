@@ -41,8 +41,8 @@ public class User : MonoBehaviour {
 	{
 		//Keep this object while loading from Login scene to Lobby Scene
 		//but destroy it when we enter Map (playing) scene to prevent conflict info between players
-		if(!needToDestroy)
-			DontDestroyOnLoad(this);
+		//if(!needToDestroy)
+		//	DontDestroyOnLoad(this);
 	}
 
     private void UpdateInfo(User myinfo)

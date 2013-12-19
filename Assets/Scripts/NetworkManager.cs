@@ -42,8 +42,8 @@ public class NetworkManager : MonoBehaviour {
     public HostData[] GetRoomList()
     {
         RefreshHostList();
-       // while (refreshing)
-       //     continue;
+        while (refreshing)
+            continue;
 
         return hostList;
     }
