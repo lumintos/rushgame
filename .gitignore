@@ -4,8 +4,8 @@ Library/*
 Build/*
 Assembly-CSharp-vs.csproj
 Assembly-CSharp.csproj
-rushgame-csharp.sln
-rushgame.sln
-rushgame.userprefs
+*.sln
+*.suo
+*.userprefs
 obj/
 *.unityproj
