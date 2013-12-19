@@ -8,3 +8,4 @@ rushgame-csharp.sln
 rushgame.sln
 rushgame.userprefs
 obj/
+*.unityproj
