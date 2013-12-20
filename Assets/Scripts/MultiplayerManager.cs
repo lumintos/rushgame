@@ -75,7 +75,10 @@ public class MultiplayerManager : MonoBehaviour
     }
 
     //TODO: method to launch map for both client and server players
-
+    public void LaunchGame(string mapName)
+    {
+        Client_LaunchGame(mapName);
+    }
 
     
 
@@ -185,6 +188,39 @@ public class MultiplayerManager : MonoBehaviour
         {
             PlayersList.Remove(temppl);
         }
+    }
+
+    [RPC]
+    void Client_LaunchGame(string mapName)
+    {
+        Application.LoadLevel(mapName);
+       /* if (Application.loadedLevelName == mapName)
+        {
+            SpawnPlayer();
+        }*/
+        if (Network.isServer)
+            networkView.RPC("Client_LaunchGame", RPCMode.Others, mapName);
+    }
+
+    public void SpawnPlayer()
+    {
+        if (MyPlayer != null)
+            Network.Instantiate(playerPrefab, new Vector3(-MyPlayer.team * 2f, 0f, 0f), Quaternion.identity, 0);
+        else
+        {
+            int team = 1;
+            foreach (RUSHPlayer tempplayer in PlayersList)
+            {
+                if (PlayerName == tempplayer.username)
+                {
+                    team = tempplayer.team;
+                    break;
+                }
+            }
+            Network.Instantiate(playerPrefab, new Vector3(-team * 2f, 0f, 0f), Quaternion.identity, 0);
+
+        }
+
     }
 }
 
