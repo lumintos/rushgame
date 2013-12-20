@@ -1,6 +1,6 @@
 //Maya ASCII 2013 scene
 //Name: Land.ma
-//Last modified: Thu, Dec 19, 2013 02:24:43 PM
+//Last modified: Fri, Dec 20, 2013 01:32:12 AM
 //Codeset: UTF-8
 requires maya "2013";
 currentUnit -l centimeter -a degree -t ntsc;
@@ -21766,12 +21766,12 @@ createNode mesh -n "Tounge_MeshShapeOrig" -p "Tounge_Mesh";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -s -n "persp";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" -377.31998380399909 338.45020164682205 -120.73888975244739 ;
-	setAttr ".r" -type "double3" -32.738352729595832 -107.79999999998932 0 ;
+	setAttr ".t" -type "double3" -295.13962222214923 14.733141591331105 303.74696136085589 ;
+	setAttr ".r" -type "double3" 9.2616472704026922 -44.200000000000131 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999986;
-	setAttr ".coi" 470.98482650394118;
+	setAttr ".coi" 428.76505964689147;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
@@ -35435,7 +35435,7 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\t\t$configName;\n\n            setNamedPanelLayout (localizedPanelLabel(\"Current Layout\"));\n        }\n\n        panelHistory -e -clear mainPanelHistory;\n        setFocus `paneLayout -q -p1 $gMainPane`;\n        sceneUIReplacement -deleteRemaining;\n        sceneUIReplacement -clear;\n\t}\n\n\ngrid -spacing 5 -size 12 -divisions 5 -displayAxes yes -displayGridLines yes -displayDivisionLines yes -displayPerspectiveLabels no -displayOrthographicLabels no -displayAxesBold yes -perspectiveLabelPosition axis -orthographicLabelPosition edge;\nviewManip -drawCompass 0 -compassAngle 0 -frontParameters \"\" -homeParameters \"\" -selectionLockParameters \"\";\n}\n");
 	setAttr ".st" 3;
 createNode script -n "sceneConfigurationScriptNode";
-	setAttr ".b" -type "string" "playbackOptions -min 1 -max 30 -ast 1 -aet 60 ";
+	setAttr ".b" -type "string" "playbackOptions -min 1 -max 30 -ast 0 -aet 60 ";
 	setAttr ".st" 6;
 createNode animCurveTA -n "RightArm_rotateX";
 	setAttr ".tan" 18;
@@ -35444,7 +35444,8 @@ createNode animCurveTA -n "RightArm_rotateX";
 createNode animCurveTA -n "RightArm_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 53.019184002887819 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 23.701481452778616 15 71.418898602582829
+		 30 0;
 createNode animCurveTA -n "RightArm_rotateZ";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
@@ -35518,7 +35519,8 @@ createNode animCurveTA -n "LeftArm_rotateX";
 createNode animCurveTA -n "LeftArm_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 -57.166819447128205 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 -37.971259907521819 15 -70.579709203160263
+		 30 0;
 createNode animCurveTA -n "LeftArm_rotateZ";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
@@ -35566,7 +35568,7 @@ createNode animCurveTL -n "LeftUpLeg_translateZ";
 createNode animCurveTA -n "LeftUpLeg_rotateX";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 -60.498 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 -17.131 15 -60.498 30 0;
 createNode animCurveTA -n "LeftUpLeg_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
@@ -35638,7 +35640,8 @@ createNode animCurveTL -n "RightUpLeg_translateZ";
 createNode animCurveTA -n "RightUpLeg_rotateX";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 -60.497815685978459 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 -17.131180012055808 15 -60.497815685978459
+		 30 0;
 	setAttr -s 3 ".kit[0:2]"  1 18 18;
 	setAttr -s 3 ".kot[0:2]"  1 18 18;
 	setAttr -s 3 ".kix[0:2]"  1 1 1;
@@ -35735,7 +35738,8 @@ createNode animCurveTL -n "RightLeg_translateZ";
 createNode animCurveTA -n "RightLeg_rotateX";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 80.864958356018974 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 37.792451809085776 15 80.864958356018974
+		 30 0;
 createNode animCurveTA -n "RightLeg_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
@@ -35788,7 +35792,7 @@ createNode animCurveTL -n "LeftLeg_translateZ";
 createNode animCurveTA -n "LeftLeg_rotateX";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 80.865 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 37.792 15 80.865 30 0;
 createNode animCurveTA -n "LeftLeg_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
@@ -35939,7 +35943,8 @@ createNode animCurveTL -n "Spine_translateZ";
 createNode animCurveTA -n "Spine_rotateX";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 31.139917534179769 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 3.4060098667623029 15 31.139917534179769
+		 30 0;
 createNode animCurveTA -n "Spine_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
@@ -36188,7 +36193,8 @@ createNode animCurveTA -n "RightForeArm_rotateX";
 createNode animCurveTA -n "RightForeArm_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 27.70130188530781 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 43.307558037463068 15 34.072212358512182
+		 30 0;
 	setAttr -s 3 ".kit[2]"  1;
 	setAttr -s 3 ".kot[2]"  1;
 	setAttr -s 3 ".kix[2]"  1;
@@ -36303,7 +36309,8 @@ createNode animCurveTA -n "LeftForeArm_rotateX";
 createNode animCurveTA -n "LeftForeArm_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 -30.405830764302102 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 -27.095959627169815 15 -34.528051465139967
+		 30 0;
 	setAttr -s 3 ".kit[2]"  1;
 	setAttr -s 3 ".kot[2]"  1;
 	setAttr -s 3 ".kix[2]"  1;
@@ -36470,7 +36477,7 @@ createNode animCurveTU -n "LeftHand_LimbLengthFBXASC0321";
 createNode animCurveTA -n "Neck_rotateX";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  1 0 15 -38.391733786642106 30 0;
+	setAttr -s 3 ".ktv[0:2]"  1 0 15 -38.391733786642114 30 0;
 createNode animCurveTA -n "Neck_rotateY";
 	setAttr ".tan" 18;
 	setAttr ".wgt" no;

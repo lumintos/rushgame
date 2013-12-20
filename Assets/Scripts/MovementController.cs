@@ -12,6 +12,7 @@ public class MovementController : MonoBehaviour {
 	public float speedDampTime = 0.1f;
 	public float speedStopDampTime = 0.05f;
 	public float speedMove = 5.3f;
+	public float jumpHeight = 9.0f;
 
 	private float velocity = 0.0f;
 	private float velocityMaximum = 5.3f;
@@ -115,6 +116,7 @@ public class MovementController : MonoBehaviour {
 				//jumpForce = force for destroying gravity + force depend on vlocity and mass
 				//idle, jump at force 5.0f, walk/run jump at force up to 5 + 5.3/2
 				jumpForce = 9.8f + 50.0f + obj.rigidbody.mass * velocity / 2.0f;
+				obj.rigidbody.velocity = new Vector3(obj.rigidbody.velocity.x, jumpHeight, obj.rigidbody.velocity.z);
 			}
 		}
 		else if(currentBaseState.nameHash == PlayerHashIDs.jumpState)
@@ -140,11 +142,11 @@ public class MovementController : MonoBehaviour {
 //			}
 
 			//obj.rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Force);
-			obj.rigidbody.AddForce(Vector3.up * jumpForce / 50.0f, ForceMode.Impulse);
+			//obj.rigidbody.AddForce(Vector3.up * jumpForce / 50.0f, ForceMode.Impulse);
 
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
-			//obj.rigidbody.velocity = Vector3.zero;
+			obj.rigidbody.velocity = new Vector3(obj.rigidbody.velocity.x, -1.0f*jumpHeight, obj.rigidbody.velocity.z);
 			//check jump 2nd
 			if (IsJump && jumpCount < jumpCountMaximum) {
 				anim.SetBool(PlayerHashIDs.JumpBool, true);

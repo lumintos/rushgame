@@ -205,7 +205,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Land
       takeName: Land
-      firstFrame: 15
+      firstFrame: 9
       lastFrame: 31
       wrapMode: 0
       orientationOffsetY: 0
