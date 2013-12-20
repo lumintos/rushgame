@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class MovementController : MonoBehaviour {
@@ -21,6 +21,9 @@ public class MovementController : MonoBehaviour {
 	private int jumpCount = 0;
 	public int jumpCountMaximum = 2;
 
+	//pre-define only for this particular scene
+	public Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
+
 	public void initMovement(GameObject objInit, Animator animInit) {
 		obj = objInit;
 		anim = animInit;
@@ -30,13 +33,16 @@ public class MovementController : MonoBehaviour {
 	/// Fixeds the update.
 	/// </summary>
 	/// <param name="horizontal">have only 2 states, 1 for move right and -1 for move left</param>
-	public void updateMovement(float horizontal) {
+	public void updateMovement(float horizontal, bool IsJump) {
+		//reverse orientation because x-axis in this scene
+		horizontal = -horizontal;
+
 		//get all inputs
 		//get state
 		currentBaseState = anim.GetCurrentAnimatorStateInfo(0);	// set our currentState variable to the current state of the Base Layer (0) of animation
 		
 		MovementManagement(horizontal);
-		jumpManagement(horizontal);
+		jumpManagement(horizontal, IsJump);
 		//print("velocity final: " + obj.rigidbody.velocity);
 		//print ("jumpCount " + jumpCount);
 		//print ("jumpForce: " + jumpForce);
@@ -66,7 +72,7 @@ public class MovementController : MonoBehaviour {
 		anim.SetFloat(PlayerHashIDs.speedFloat, velocity);
 		//changing the whole rigidbody by chaging the velocity, depend on mass
 		//obj.rigidbody.AddForce(Vector3.forward * orientation * (velocity * obj.rigidbody.mass), ForceMode.Impulse);
-		obj.rigidbody.AddForce(Vector3.forward * orientation * (velocity * obj.rigidbody.mass) * 50.0f, ForceMode.Force);
+		obj.rigidbody.AddForce(this.Vector3Forward * orientation * (velocity * obj.rigidbody.mass) * 50.0f, ForceMode.Force);
 		//don't know why we need alot of force to move character
 
 		//with the velocity, its almost the same, I think
@@ -86,14 +92,14 @@ public class MovementController : MonoBehaviour {
 	}
 	
 	void Rotation(float orientation) {
-		Vector3 targetDirection = new Vector3(0.0f, 0.0f, orientation);
+		Vector3 targetDirection = new Vector3(orientation, 0.0f, 0.0f);
 		Quaternion targetRotation = Quaternion.LookRotation(targetDirection, Vector3.up);
 		
 		Quaternion newRotation = Quaternion.Lerp(obj.rigidbody.rotation, targetRotation, turnSmoothly * Time.deltaTime);
 		obj.rigidbody.MoveRotation(newRotation);
 	}
 
-	void jumpManagement(float orientation) {
+	void jumpManagement(float orientation, bool IsJump) {
 		//three basic steps for jumping process
 		//step 1: jump with a vector-up-force and vector-forward-force, controlled by orientation, in 1 second
 		//step 2: fall down with a raycast, change to landing state (FallToLand = true) when almost ground
@@ -102,7 +108,7 @@ public class MovementController : MonoBehaviour {
 		if (currentBaseState.nameHash == PlayerHashIDs.locomotionState
 		    || currentBaseState.nameHash == PlayerHashIDs.idleState) {
 
-			if (Input.GetButtonDown("Jump") && currentBaseState.nameHash != PlayerHashIDs.jumpState) {
+			if (IsJump && currentBaseState.nameHash != PlayerHashIDs.jumpState) {
 				anim.SetBool(PlayerHashIDs.JumpBool, true);
 				jumpCount++;
 
@@ -135,7 +141,7 @@ public class MovementController : MonoBehaviour {
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
 			//check jump 2nd
-			if (Input.GetButtonDown("Jump") && jumpCount < jumpCountMaximum) {
+			if (IsJump && jumpCount < jumpCountMaximum) {
 				anim.SetBool(PlayerHashIDs.JumpBool, true);
 				jumpCount++;
 				//reset current velocity, orwe need a really big force to destroy current go-down-velocity
