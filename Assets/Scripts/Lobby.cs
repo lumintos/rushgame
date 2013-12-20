@@ -335,7 +335,7 @@ public class Lobby : MonoBehaviour {
                 {
                     guiHelper.message = "Starting ... ";
                     elapsedTimeDisplayedMsg = 0;
-                    Application.LoadLevel("map");
+                    MultiplayerManager.Instance.LaunchGame("map");
                 }
             }
         }
