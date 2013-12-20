@@ -114,17 +114,21 @@ public class MovementController : MonoBehaviour {
 
 				//jumpForce = force for destroying gravity + force depend on vlocity and mass
 				//idle, jump at force 5.0f, walk/run jump at force up to 5 + 5.3/2
-				jumpForce = 9.8f + 7.0f + obj.rigidbody.mass * velocity / 2.0f;
+				jumpForce = 9.8f + 50.0f + obj.rigidbody.mass * velocity / 2.0f;
 			}
 		}
 		else if(currentBaseState.nameHash == PlayerHashIDs.jumpState)
 		{
 			anim.SetBool(PlayerHashIDs.JumpBool, false);
+			jumpForce -= 0.07f * 50.0f;//stronger force, but decreasing over time
 			//check jump 2nd
-//			if (Input.GetButtonDown("Jump") && jumpCount < jumpCountMaximum) {
-//				anim.SetBool(PlayerHashIDs.JumpBool, true);
-//				jumpCount++;
-//			}
+			if (Input.GetButtonDown("Jump") && jumpCount < jumpCountMaximum) {
+				anim.SetBool(PlayerHashIDs.JumpBool, true);
+				jumpCount++;
+				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
+				anim.SetTarget(AvatarTarget.Root, 0.0f);
+				jumpForce = 9.8f + 50.0f + obj.rigidbody.mass * velocity / 2.0f;
+			}
 
 
 			//doesn't work anymore
@@ -140,12 +144,13 @@ public class MovementController : MonoBehaviour {
 
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
+			//obj.rigidbody.velocity = Vector3.zero;
 			//check jump 2nd
 			if (IsJump && jumpCount < jumpCountMaximum) {
 				anim.SetBool(PlayerHashIDs.JumpBool, true);
 				jumpCount++;
 				//reset current velocity, orwe need a really big force to destroy current go-down-velocity
-				obj.rigidbody.velocity = Vector3.zero;
+
 				//TODO update jumpForce
 
 			}
@@ -175,6 +180,10 @@ public class MovementController : MonoBehaviour {
 			anim.SetBool(PlayerHashIDs.FallToLandBool, false);
 			jumpCount = 0;
 		}
+	}
+
+	public void EndJump() {
+		print("end jump");
 	}
 	
 	//dev options:

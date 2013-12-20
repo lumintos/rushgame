@@ -1,0 +1,6 @@
+Jump and Fall: JumpAndFallTransition.fbx
+	frame 1  -> 44 jump and transition.
+	frame 44 -> 45 fall.
+	
+Land: Land.fbx
+	frame 8,9 -> end.

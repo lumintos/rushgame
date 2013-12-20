@@ -479,7 +479,7 @@ ModelImporter:
     7400006: Avatar_TStance
     7400008: Run_Jumpvault_SideFlip_R_Run
     7400010: Run_Jumpvault_SideFlip_L_Run
-    7400012: Jump
+    7400012: JumpParkour
     7400014: __preview__Jump
     9500000: //RootNode
     11100000: //RootNode
@@ -499,7 +499,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     clipAnimations:
     - serializedVersion: 16
-      name: Jump
+      name: JumpParkour
       takeName: Jump
       firstFrame: 261
       lastFrame: 338
