@@ -19,8 +19,11 @@ public class PlayerMovement : MonoBehaviour {
 	public float speedDampTime = 0.1f;
 	public float speedStopDampTime = 0.05f;
 	public float speedMove = 5.3f;
+    GameObject camera;
 
 	void Awake() {
+        //TODO: make camera move along with player
+        //camera = GameObject.Find("Main Camera");
 		anim = GetComponent<Animator>();
 
 		guiManager = GameObject.FindGameObjectWithTag(Tags.gui).GetComponent<GUIManager>();

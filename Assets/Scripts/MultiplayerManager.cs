@@ -193,13 +193,13 @@ public class MultiplayerManager : MonoBehaviour
     [RPC]
     void Client_LaunchGame(string mapName)
     {
+        if (Network.isServer)
+            networkView.RPC("Client_LaunchGame", RPCMode.Others, mapName);
         Application.LoadLevel(mapName);
        /* if (Application.loadedLevelName == mapName)
         {
             SpawnPlayer();
         }*/
-        if (Network.isServer)
-            networkView.RPC("Client_LaunchGame", RPCMode.Others, mapName);
     }
 
     public void SpawnPlayer()
