@@ -14,15 +14,15 @@ public class DemoGuiSkin : MonoBehaviour {
 	private bool hasUpdatedGui = false;
 	private int currentColor;
 	
-//	private bool toggleValue;
-//	private float sliderValue;
+	private bool toggleValue;
+	private float sliderValue;
 	private string textValue ="Text field";
-//	private float scrollValue = 15.0f;
+	private float scrollValue = 15.0f;
 	
-//	private Rect dragWindowRect =  new Rect(10,10,600,600);
-//	private Rect portraitWindowRect =  new Rect(710,60,285,128);
-	
-	/// <summary>
+	private Rect dragWindowRect =  new Rect(10,10,600,600);
+	private Rect portraitWindowRect =  new Rect(710,60,285,128);
+
+    /// <summary>
 	/// Unity GUI hook.
 	/// </summary>
 	void OnGUI() {
@@ -33,27 +33,13 @@ public class DemoGuiSkin : MonoBehaviour {
         GUI.skin = ColoredGUISkin.Skin;
 		
 		// Window 
-		//dragWindowRect = GUI.Window (0, dragWindowRect, DoDragWindow, "Drag Window");
-
-        if (GUI.Button(new Rect(20, 40, 200, 100), "Button"))
-        {
-            Debug.Log("Clicked the button with text");
-        }
-		
-		// Button
-		if (GUI.Button(new Rect(20,200,200,100), "Color")) {
-			currentColor++;
-            ColoredGUISkin.Instance.UpdateGuiColors(primaryColors[currentColor % primaryColors.Count], secondaryColors[currentColor % secondaryColors.Count]);
-		}
-		
-		// Text
-		textValue = GUI.TextField(new Rect(20,350,200, 50), textValue, 50);
+		dragWindowRect = GUI.Window (0, dragWindowRect, DoWindow, "Drag Window");
 
 		// Alt Window 
-		//GUI.Window (1, new Rect(400,400,200,208), DoWindow, "Alternate Window", ColoredGUISkin.Skin.customStyles[4]);
+		GUI.Window (1, new Rect(400,400,200,208), DoWindow, "Alternate Window", ColoredGUISkin.Skin.customStyles[4]);
 		
 		// Portrait 
-		//portraitWindowRect = GUI.Window (2, portraitWindowRect, DoPortraitWindow, "", ColoredGUISkin.Skin.customStyles[2]);
+		portraitWindowRect = GUI.Window (2, portraitWindowRect, DoPortraitWindow, "", ColoredGUISkin.Skin.customStyles[2]);
 		
 		// Switch Scene Button
 		//if (GUI.Button (new Rect (900,10,120,48), "To NGUI")) {
@@ -61,18 +47,18 @@ public class DemoGuiSkin : MonoBehaviour {
 		//}
 		
 		// Scroll bar
-		//scrollValue = GUI.VerticalScrollbar(new Rect (900,300,24,240), scrollValue, 10, 40, 0);
+		scrollValue = GUI.VerticalScrollbar(new Rect (900,300,24,240), scrollValue, 10, 40, 0);
 		
 		// Skills Box
-		//GUI.Window (3, new Rect(300,680,424,86), DoSkillsWindow, "", ColoredGUISkin.Skin.box);
+		GUI.Window (3, new Rect(300,680,424,86), DoSkillsWindow, "", ColoredGUISkin.Skin.box);
 	}
-	/*
+	
 	void DoDragWindow (int windowID) {
 		
 		// Ornament
 		GUI.DrawTexture(new Rect(20,4,31,40), ColoredGUISkin.Skin.customStyles[0].normal.background);
 		
-		//GUILayout.Space(32);
+		GUILayout.Space(32);
 
 		// Button
 		if (GUI.Button(new Rect(20,40,200,100), "Button")) {
@@ -94,7 +80,7 @@ public class DemoGuiSkin : MonoBehaviour {
 	
 	void DoWindow (int windowID) {
 		
-		GUI.DrawTexture(new Rect(20,30,160,8), ColoredGUISkin.Skin.customStyles[1].normal.background);
+		//GUI.DrawTexture(new Rect(20,30,160,8), ColoredGUISkin.Skin.customStyles[1].normal.background);
 		
 		GUILayout.Space(32);
 		GUILayout.BeginHorizontal();
@@ -156,5 +142,5 @@ public class DemoGuiSkin : MonoBehaviour {
 		toggleRect.y += ColoredGUISkin.Skin.button.padding.top;
 		return GUI.Toggle(toggleRect, variable, "");
 	}
-	*/
+	
 }

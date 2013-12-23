@@ -10,15 +10,14 @@ public class RoomGUI : MonoBehaviour {
     private string username2 = "";
     private string waitingMsg = "Waiting for P2...";
 
-    private Texture2D texP1, texP2;
     public Texture2D waitTex, avatarP1, avatarP2;
 
     public void SetUserName()
     {
         if (MultiplayerManager.Instance.PlayersList.Count == 1)
         {
-            username1 = MultiplayerManager.Instance.PlayersList[0].username
-                + " - LvL: " + MultiplayerManager.Instance.PlayersList[0].level;
+            username1 = MultiplayerManager.Instance.PlayersList[0].username;
+                //+ " - LvL: " + MultiplayerManager.Instance.PlayersList[0].level;
             username2 = waitingMsg;
         }
         else
@@ -27,11 +26,11 @@ public class RoomGUI : MonoBehaviour {
             {
                 if (tempplayer.team == 1)
                 {
-                    username1 = tempplayer.username + " - LvL: " + tempplayer.level;
+                    username1 = tempplayer.username;// +" - LvL: " + tempplayer.level;
                 }
                 else
                 {
-                    username2 = tempplayer.username + " - LvL: " + tempplayer.level;
+                    username2 = tempplayer.username;// +" - LvL: " + tempplayer.level;
                 }
             }
         }
@@ -58,6 +57,7 @@ public class RoomGUI : MonoBehaviour {
         */
 
         SetUserName();
+        Texture2D texP1, texP2;
         if (MultiplayerManager.Instance.PlayersList.Count < 2)
         {
             texP2 = waitTex;
@@ -69,8 +69,23 @@ public class RoomGUI : MonoBehaviour {
 
         texP1 = avatarP1;
 
-        DrawPlayerLeft();
-        DrawPlayerRight();
+        //Player 1
+        Rect playerAvatarRect = guiHelper.GetScaledRectFromUnit(14, 11);
+        playerAvatarRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        playerAvatarRect.y = 7 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+        Rect usernameRect = guiHelper.GetScaledRectFromUnit(12, 2);
+        usernameRect.x = 4 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        usernameRect.y = 19 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        DrawPlayer(playerAvatarRect, usernameRect, username1, texP1);
+
+        //Player 2
+        playerAvatarRect.x = 19 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        playerAvatarRect.y = 7 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        usernameRect.x = 20 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        usernameRect.y = 19 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+        DrawPlayer(playerAvatarRect, usernameRect, username2, texP2);
 
         //VS text
         Rect labelRect = guiHelper.GetScaledRectFromUnit(4, 4);
@@ -82,16 +97,11 @@ public class RoomGUI : MonoBehaviour {
         labelStyle.alignment = TextAnchor.UpperCenter;
         labelStyle.wordWrap = true;
         labelStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit * 2 / guiHelper.screenHeightUnit;
-        GUI.Label(labelRect, "VS", labelStyle);
-        
+        GUI.Label(labelRect, "VS", labelStyle);        
     }
 
-    void DrawPlayerLeft()
+    void DrawPlayer(Rect playerAvatarRect, Rect usernameRect, string username, Texture2D avatar)
     {
-        //Player 1
-        Rect playerAvatarRect = guiHelper.GetScaledRectFromUnit(14, 11);
-        playerAvatarRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        playerAvatarRect.y = 7 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
 
         RectOffset padding = GUI.skin.box.padding;
         Rect texRect = new Rect(padding.top, padding.top,
@@ -100,51 +110,17 @@ public class RoomGUI : MonoBehaviour {
         GUI.Box(playerAvatarRect, "");
 
         GUI.BeginGroup(playerAvatarRect);
-        GUI.DrawTexture(texRect, texP1, ScaleMode.ScaleAndCrop);
+        GUI.DrawTexture(texRect, avatar, ScaleMode.ScaleAndCrop);
         GUI.EndGroup();
 
-        Rect usernameRect = guiHelper.GetScaledRectFromUnit(12, 2);
-        usernameRect.x = 4 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        usernameRect.y = 19 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
         GUIStyle usernameStyle = new GUIStyle(GUI.skin.label);
         usernameStyle.fontStyle = FontStyle.Bold;
         usernameStyle.normal.textColor = Color.white;
         usernameStyle.alignment = TextAnchor.UpperCenter;
         usernameStyle.wordWrap = true;
         usernameStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit / guiHelper.screenHeightUnit;
-        GUI.Label(usernameRect, username1, usernameStyle);
+        GUI.Label(usernameRect, username, usernameStyle);
     }
 
-    void DrawPlayerRight()
-    {
-        //Player 2
-        Rect playerAvatarRect = guiHelper.GetScaledRectFromUnit(14, 11);
-        playerAvatarRect.x = 19 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        playerAvatarRect.y = 7 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        
-        RectOffset padding = GUI.skin.box.padding; 
-        Rect texRect = new Rect(padding.top, padding.top,
-            playerAvatarRect.width - padding.left,
-            playerAvatarRect.height - padding.top - padding.bottom);
-
-        GUI.Box(playerAvatarRect, "");
-
-        GUI.BeginGroup(playerAvatarRect);
-        GUI.DrawTexture(texRect, texP2, ScaleMode.ScaleAndCrop);
-        GUI.EndGroup();
-        
-        Rect usernameRect = guiHelper.GetScaledRectFromUnit(12, 2);
-        usernameRect.x = 20 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        usernameRect.y = 19 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        GUIStyle usernameStyle = new GUIStyle(GUI.skin.label);
-        usernameStyle.fontStyle = FontStyle.Bold;
-        usernameStyle.normal.textColor = Color.white;
-        usernameStyle.alignment = TextAnchor.UpperCenter;
-        usernameStyle.wordWrap = true;
-        usernameStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit / guiHelper.screenHeightUnit;
-
-        GUI.Label(usernameRect, username2, usernameStyle);
-        
-    }
 
 }

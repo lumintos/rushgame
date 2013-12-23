@@ -31,7 +31,7 @@ public class MultiplayerManager : MonoBehaviour
         Instance = this;
         PlayerName = PlayerPrefs.GetString("PlayerName");
         DontDestroyOnLoad(gameObject);
-        MasterServer.ipAddress = "192.168.1.109";
+        MasterServer.ipAddress = "192.168.1.85";
     }
 
     void FixedUpdate()
@@ -43,7 +43,8 @@ public class MultiplayerManager : MonoBehaviour
     {
         RoomName = roomName;
         MaxPlayers = maxPlayers;
-        Network.InitializeServer(MaxPlayers, 25000, false);
+        int port = 25000 + Random.Range(0, 100);
+        Network.InitializeServer(MaxPlayers, port, false);
         MasterServer.RegisterHost(GameName, RoomName);
     }
 
@@ -74,7 +75,6 @@ public class MultiplayerManager : MonoBehaviour
         needToLeave = false;
     }
 
-    //TODO: method to launch map for both client and server players
     public void LaunchGame(string mapName)
     {
         Client_LaunchGame(mapName);
@@ -140,6 +140,9 @@ public class MultiplayerManager : MonoBehaviour
         networkView.RPC("Client_AddPlayerToList", RPCMode.All, playerName, view, playerIndex);
     }
 
+    /// <summary>
+    /// When host leaves room, other player must leave, too.
+    /// </summary>
     [RPC]
     void Server_AskPlayerToLeave()
     {
@@ -157,6 +160,12 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Add player to list at each client, including host
+    /// </summary>
+    /// <param name="playerName">Username of player</param>
+    /// <param name="view">Network view ID of player</param>
+    /// <param name="playerIndex">Team of player</param>
     [RPC]
     void Client_AddPlayerToList(string playerName, NetworkPlayer view, int playerIndex)
     {
@@ -169,10 +178,13 @@ public class MultiplayerManager : MonoBehaviour
         {
             MyPlayer = tempplayer;
             PlayerIndex = MyPlayer.team;
-           // GameObject play = (GameObject)Network.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity, 5);            
         }
     }
 
+    /// <summary>
+    /// A player has left room, must be removed from list at other client
+    /// </summary>
+    /// <param name="view"></param>
     [RPC]
     void Client_RemovePlayer(NetworkPlayer view)
     {
@@ -190,18 +202,21 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Both host and client will launch a given map
+    /// </summary>
+    /// <param name="mapName">Name of Unity scene</param>
     [RPC]
     void Client_LaunchGame(string mapName)
     {
         if (Network.isServer)
             networkView.RPC("Client_LaunchGame", RPCMode.Others, mapName);
         Application.LoadLevel(mapName);
-       /* if (Application.loadedLevelName == mapName)
-        {
-            SpawnPlayer();
-        }*/
     }
 
+    /// <summary>
+    /// Spawn players at different position based on team index
+    /// </summary>
     public void SpawnPlayer()
     {
         if (MyPlayer != null)

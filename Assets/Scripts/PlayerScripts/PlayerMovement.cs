@@ -14,16 +14,17 @@ public class PlayerMovement : MonoBehaviour {
     private Vector3 syncStartPosition = Vector3.zero;
     private Vector3 syncEndPosition = Vector3.zero;
     private Vector3 _destination;
+    private string syncAnimation = "";
+    private bool IsJump;
 
 	public float turnSmoothly = 150.0f;
 	public float speedDampTime = 0.1f;
 	public float speedStopDampTime = 0.05f;
 	public float speedMove = 5.3f;
-    GameObject camera;
 
 	void Awake() {
         //TODO: make camera move along with player
-        //camera = GameObject.Find("Main Camera");
+
 		anim = GetComponent<Animator>();
 
 		guiManager = GameObject.FindGameObjectWithTag(Tags.gui).GetComponent<GUIManager>();
@@ -50,18 +51,18 @@ public class PlayerMovement : MonoBehaviour {
                 }*/
 
             //jump
-            bool IsJump = false;
+            IsJump = false;
             if (Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
             {
                 IsJump = true;
             }
-
+            
             movement.updateMovement(hInt, IsJump);
         }
         else
         {
             SyncedMovement();
-        }
+        } 
 	}
 
 	void OnGUI()
@@ -74,6 +75,8 @@ public class PlayerMovement : MonoBehaviour {
     {
         Vector3 syncPosition = Vector3.zero;
         Vector3 syncVelocity = Vector3.zero;
+        //char animation = 'x'; // idle
+        bool isJump = false;
         if (stream.isWriting)
         {
             syncPosition = rigidbody.position;
@@ -81,11 +84,19 @@ public class PlayerMovement : MonoBehaviour {
 
             syncVelocity = rigidbody.velocity;
             stream.Serialize(ref syncVelocity);
+
+
+            //stream.Serialize(ref animation);
+
+            isJump = IsJump;
+            stream.Serialize(ref isJump);
         }
         else
         {
             stream.Serialize(ref syncPosition);
             stream.Serialize(ref syncVelocity);
+            //stream.Serialize(ref animation);
+            stream.Serialize(ref isJump);
 
             syncTime = 0f;
             syncDelay = Time.time - lastSynchronizationTime;
@@ -93,13 +104,22 @@ public class PlayerMovement : MonoBehaviour {
 
             syncEndPosition = syncPosition + syncVelocity * syncDelay;
             syncStartPosition = rigidbody.position;
+
+            IsJump = isJump;
+            
+            //if (animation == 'a')
+            //    syncAnimation = "run";
         }
     }
 
     private void SyncedMovement()
     {
         syncTime += Time.deltaTime;
-        rigidbody.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
+        //rigidbody.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
+        //Assume no lag, no delay in network
+        float h = (syncStartPosition - syncEndPosition).x;
+        h = Mathf.Clamp(h, -1.0f, 1.0f);
+        movement.updateMovement(h, IsJump);
     }
 
 

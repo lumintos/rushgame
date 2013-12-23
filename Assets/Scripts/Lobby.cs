@@ -6,7 +6,6 @@ public class Lobby : MonoBehaviour {
     //private User user, user2;
     private GUIHelper guiHelper;
     private HostData[] roomList;
-    private NetworkManager networkManager;
     private RoomGUI roomGUI;
 
     private bool createRoom = false, joinRoom = false;
@@ -14,13 +13,17 @@ public class Lobby : MonoBehaviour {
     private string roomName = "Rooms"; //Display for both room list view or user's room view
     public float elapsedTimeDisplayedMsg = 0; //Amount of time that unchanged message remains displayed
 
+    private Vector2 scrollVector;
+    private int maxRoomsDisplayed = 4; //not all rooms will be displayed in the list
+    private int[] displayedRoomIndex;
+
+
 	// Use this for initialization
 	void Start () {
+        displayedRoomIndex = new int[maxRoomsDisplayed];
+
         guiHelper = GetComponent<GUIHelper>();
         guiHelper.UpdateGUIElementsSize();
-       // user = GameObject.Find("User").GetComponent<User>(); 
-       // user2 = null; //for testing only
-        //networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManager>();
         roomGUI = GetComponent<RoomGUI>();
 	}
 	
@@ -29,19 +32,7 @@ public class Lobby : MonoBehaviour {
         //Update size of all elements in case game screen size changing
         //This is not the case on mobile devices, so comment it
         guiHelper.UpdateGUIElementsSize();
-        //if (user2 == null || user2.username == user.username)
-        //{
-        //    foreach (GameObject tempGO in GameObject.FindGameObjectsWithTag("Player"))
-        //    {
-        //        if (tempGO != null && user.username != tempGO.GetComponent<User>().username)
-        //        {
-        //            user2 = tempGO.GetComponent<User>();
-        //            break;
-        //        }
-        //    }
-        //}
-
-        //joinedPlayer = GameObject.FindGameObjectsWithTag("Player").GetLength(0);
+        
 	}
 
     void OnGUI()
@@ -63,12 +54,6 @@ public class Lobby : MonoBehaviour {
         
         DrawFriendsList();
         DrawUserInfo();
-        
-
-        Rect roomGroupRect = guiHelper.GetScaledRectFromUnit(34, 17);
-        roomGroupRect.x = 1 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        roomGroupRect.y = 5 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        GUI.Box(roomGroupRect, roomName);
 
         //Room functions buttons
 
@@ -80,7 +65,6 @@ public class Lobby : MonoBehaviour {
                 elapsedTimeDisplayedMsg = 0;
             }
 
-            //TODO: Room list is displayed here
             DrawRoomList();
         }        
         else if (joinRoom && MultiplayerManager.Instance.JoinedRoomFlag == -1) //Failed to join
@@ -92,16 +76,12 @@ public class Lobby : MonoBehaviour {
             joinRoom = false;
             MultiplayerManager.Instance.JoinedRoomFlag = 2;
             DrawRoomList();
-
         }
         else if( createRoom || (joinRoom && MultiplayerManager.Instance.JoinedRoomFlag > 0)) //Creator or Joined successfully
         {
             //TODO: Display 2 players here
             DrawSingleRoom();
         }
-
-
-
     }
 
 
@@ -175,7 +155,6 @@ public class Lobby : MonoBehaviour {
             WWW w = new WWW("http://84.101.189.177:25500/getfriends.php", form);
             StartCoroutine(getFriendsRequest(w));
         }
-
     }
 
     /// <summary>
@@ -230,6 +209,7 @@ public class Lobby : MonoBehaviour {
             {
                 joinRoom = false;
                 createRoom = false;
+                PlayerPrefs.DeleteKey("PlayerName");
                 MultiplayerManager.Instance.LeaveRoom();
             }
 
@@ -241,37 +221,74 @@ public class Lobby : MonoBehaviour {
 
     }
 
-    void DrawRoomList()
+    void DoWindowRoomList(int windowsID)
     {
-        Rect btnTemptRect = guiHelper.GetScaledRectFromUnit(8, 3);
-        btnTemptRect.y = 23 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        btnTemptRect.x = 9 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        if (MultiplayerManager.Instance.RoomList != null
+            && MultiplayerManager.Instance.RoomList.Length > 0) // There is a list
+        {
+            if (roomList == null) // Our list is refreshing
+            {
+                roomList = MultiplayerManager.Instance.RoomList;
 
-        if (MultiplayerManager.Instance.RoomList != null 
-            && MultiplayerManager.Instance.RoomList.Length > 0)
-            roomList = MultiplayerManager.Instance.RoomList;
-        else 
+                //Then we must choose new rooms to display
+                int startRoomIndex = Random.Range(0, roomList.Length - 1); //choose 1 random room from list to start
+                Debug.Log("Chose: " + startRoomIndex.ToString());
+                for (int i = 0; i < roomList.Length && i < maxRoomsDisplayed; i++)
+                {
+                    displayedRoomIndex[i] = startRoomIndex % roomList.Length;
+                    startRoomIndex++;
+                }
+            }       
+        }
+        else
             roomList = null;
 
         if (roomList != null)
         {
-            for (int i = 0; i < roomList.Length; i++)
+            Rect roomListRect = guiHelper.GetScaledRectFromUnit(28, 14);
+            roomListRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit; //in relation to the parent window
+            roomListRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+            GUILayout.BeginVertical();
+            scrollVector = GUILayout.BeginScrollView(scrollVector);
+
+            for (int i = 0; i < roomList.Length && i < maxRoomsDisplayed; i++)
             {
-                if (GUI.Button(new Rect(400, 100 + (100 * i), 300, 100), roomList[i].gameName))
+                Rect buttonRect = guiHelper.GetScaledRectFromUnit(12, 5);
+                buttonRect.x = (3 + (i%2) * (12 + 4))  * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+                buttonRect.y = (2 + (i / 2) * (5 + 2)) * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+                if (GUI.Button(buttonRect, roomList[displayedRoomIndex[i]].gameName))
                 {
-                    roomName = roomList[i].ip + " - " + roomList[i].port;
-                    //MultiplayerManager.Instance.MyPlayer.team = 2;
-                    //networkManager.JoinServer(roomList[i]);
+                    roomName = roomList[displayedRoomIndex[i]].gameName;
                     MultiplayerManager.Instance.JoinRoom(roomList[i]);
                     joinRoom = true;
-
                 }
             }
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
         }
+    }
+
+    void DrawRoomList() 
+    {
+        Rect roomGroupRect = guiHelper.GetScaledRectFromUnit(34, 17);
+        roomGroupRect.x = 1 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        roomGroupRect.y = 5 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+        GUI.Window(0, roomGroupRect, DoWindowRoomList, "Rooms List");
+        
+        Rect btnTemptRect = guiHelper.GetScaledRectFromUnit(8, 3);
+        btnTemptRect.y = 23 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        btnTemptRect.x = 9 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+
+        
 
         if (GUI.Button(btnTemptRect, "Refresh Room List"))
         {
-            MultiplayerManager.Instance.RefreshRoomList();// networkManager.GetRoomList();
+            MultiplayerManager.Instance.RefreshRoomList();
+            roomList = null;
+            //displayedRoomIndex[0] = -1;
             guiHelper.message = "New room list";
             elapsedTimeDisplayedMsg = 0;
         }

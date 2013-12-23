@@ -7,8 +7,8 @@ public class GameController : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		
-		guiManager.UpdateGUIElementsSize(new Size(Screen.width,Screen.height));
+        guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
+        MultiplayerManager.Instance.SpawnPlayer();
 	}
 	
 	void Awake(){
