@@ -6,19 +6,17 @@ public class MovementController : MonoBehaviour {
 	private GameObject obj;
 	private Animator anim;
 	private AnimatorStateInfo currentBaseState;
-	//	private PlayerHashIDs hash;
-	
-	public float turnSmoothly = 150.0f;
-	public float speedDampTime = 0.1f;
-	public float speedStopDampTime = 0.05f;
-	public float speedMove = 5.3f;
-	public float jumpHeight = 9.0f;
 
+	//rotate
+	public float turnSmoothly = 1500.0f;
+
+	//move
+	public float velocityFactor = 3.0f; // this factor let's velocity * orientation (in range [-1; 1]) increase faster to maximum speed
 	private float velocity = 0.0f;
 	private float velocityMaximum = 5.3f;
-	private float acceleration = 0.05f; // this acceleration affect onto velocity when input = 1 or -1
 
-	float jumpForce = 0.0f;
+	//jump
+	public float jumpHeight = 9.0f;
 	private int jumpCount = 0;
 	public int jumpCountMaximum = 2;
 
@@ -30,10 +28,6 @@ public class MovementController : MonoBehaviour {
 		anim = animInit;
 	}
 
-	/// <summary>
-	/// Fixeds the update.
-	/// </summary>
-	/// <param name="horizontal">have only 2 states, 1 for move right and -1 for move left</param>
 	public void updateMovement(float horizontal, bool IsJump) {
 		//reverse orientation because x-axis in this scene
 		horizontal = -horizontal;
@@ -41,55 +35,47 @@ public class MovementController : MonoBehaviour {
 		//get all inputs
 		//get state
 		currentBaseState = anim.GetCurrentAnimatorStateInfo(0);	// set our currentState variable to the current state of the Base Layer (0) of animation
-		
+
 		MovementManagement(horizontal);
 		jumpManagement(horizontal, IsJump);
-		//print("velocity final: " + obj.rigidbody.velocity);
-		//print ("jumpCount " + jumpCount);
-		//print ("jumpForce: " + jumpForce);
-		if (obj.rigidbody.velocity.y > 0.1f || obj.rigidbody.velocity.z > 0.1f) {
-			print ("velocity: " + obj.rigidbody.velocity);
-		}
-
+//		if (obj.rigidbody.velocity.y > 0.1f || obj.rigidbody.velocity.z > 0.1f) {
+//			print ("velocity: " + obj.rigidbody.velocity + ", hInt " + horizontal);
+//		}
+		print ("velocity: " + obj.rigidbody.velocity + ", hInt " + horizontal);
 	}
-	
-	void MovementManagement(float orientation) {
-		if (orientation != 0.0f) {
-			//update velocity
-			if (velocity < velocityMaximum) {
-				velocity += acceleration;
-			}
 
-			Rotation (orientation);
+	void MovementManagement(float orientation) {
+		Rotation (orientation);
+		if (orientation != 0.0f) {
+			this.velocity = Mathf.Clamp(velocityFactor * velocityMaximum * orientation, -velocityMaximum, velocityMaximum);
 			//anim.SetFloat(PlayerHashIDs.speedFloat, velocity);//, speedDampTime, Time.deltaTime);
 		}
 		else {
-			if (velocity > 0.0f) {//velocity reduce faster than increase
-				velocity -= 10.0f * acceleration;
-			}
 			//anim.SetFloat(PlayerHashIDs.speedFloat, velocity);//0.0f, speedStopDampTime, Time.deltaTime);
+			//not set velocity to zero immediately, but slow it down a bit
+			//It's solve the problem: when we change the orientation, 
+			//	there is 1 frame that the orientation becomes 0, 
+			//	character's state change to idle before back to locomotion
+			if (Mathf.Abs(velocity) < 0.05) {
+				velocity = 0.0f;
+			}
+			else {
+				velocity /= 2.0f; // around 5 physic frames
+			}
 		}
 
-		anim.SetFloat(PlayerHashIDs.speedFloat, velocity);
+		//if set value into velocity, the value will reset each frame
+		obj.rigidbody.velocity +=  this.Vector3Forward * this.velocity;
+		anim.SetFloat(PlayerHashIDs.speedFloat, Mathf.Abs(velocity));
 		//changing the whole rigidbody by chaging the velocity, depend on mass
 		//obj.rigidbody.AddForce(Vector3.forward * orientation * (velocity * obj.rigidbody.mass), ForceMode.Impulse);
-		obj.rigidbody.AddForce(this.Vector3Forward * orientation * (velocity * obj.rigidbody.mass) * 50.0f, ForceMode.Force);
+		//obj.rigidbody.AddForce(this.Vector3Forward * orientation * (velocity * obj.rigidbody.mass) * 50.0f, ForceMode.Force);
 		//don't know why we need alot of force to move character
 
 		//with the velocity, its almost the same, I think
 		//obj.rigidbody.velocity = Vector3.forward * velocity * horizontal;
 		//addForce applies into the value of rigid.velocity. Checked
 		//print ("velocity: " + obj.rigidbody.velocity);
-
-		//check vars
-		if (gtext1 != null) {
-			string str = "";
-			str += "Time.deltaTime: \t" + Time.deltaTime;
-			str += "\norientation: \t\t" + orientation;
-			str += "\nspeed: \t\t" + anim.GetFloat(PlayerHashIDs.speedFloat);
-			str += "\nvelocity: \t\t" + velocity;
-			gtext1.text = str;
-		}
 	}
 	
 	void Rotation(float orientation) {
@@ -100,6 +86,25 @@ public class MovementController : MonoBehaviour {
 		obj.rigidbody.MoveRotation(newRotation);
 	}
 
+	//---------------------------------------------
+	//manage jumpState
+	void jumpStateEnter() {
+		anim.SetBool(PlayerHashIDs.JumpBool, true);
+		jumpCount++;
+
+		//jumpForce = force for destroying gravity + force depend on vlocity and mass
+		//idle, jump at force 5.0f, walk/run jump at force up to 5 + 5.3/2
+		//jumpForce = 9.8f + 50.0f + obj.rigidbody.mass * velocity / 2.0f;
+		obj.rigidbody.velocity = new Vector3(obj.rigidbody.velocity.x, jumpHeight, obj.rigidbody.velocity.z);
+	}
+	
+	void jumpStateReset() {
+		anim.SetBool(PlayerHashIDs.JumpBool, false);
+		anim.SetBool(PlayerHashIDs.FallToLandBool, false);
+		jumpCount = 0;
+	}
+	//---------------------------------------------
+
 	void jumpManagement(float orientation, bool IsJump) {
 		//three basic steps for jumping process
 		//step 1: jump with a vector-up-force and vector-forward-force, controlled by orientation, in 1 second
@@ -108,54 +113,29 @@ public class MovementController : MonoBehaviour {
 
 		if (currentBaseState.nameHash == PlayerHashIDs.locomotionState
 		    || currentBaseState.nameHash == PlayerHashIDs.idleState) {
-
-			if (IsJump && currentBaseState.nameHash != PlayerHashIDs.jumpState) {
-				anim.SetBool(PlayerHashIDs.JumpBool, true);
-				jumpCount++;
-
-				//jumpForce = force for destroying gravity + force depend on vlocity and mass
-				//idle, jump at force 5.0f, walk/run jump at force up to 5 + 5.3/2
-				jumpForce = 9.8f + 50.0f + obj.rigidbody.mass * velocity / 2.0f;
-				obj.rigidbody.velocity = new Vector3(obj.rigidbody.velocity.x, jumpHeight, obj.rigidbody.velocity.z);
+			if (IsJump) {
+				this.jumpStateEnter();
 			}
 		}
 		else if(currentBaseState.nameHash == PlayerHashIDs.jumpState)
 		{
 			anim.SetBool(PlayerHashIDs.JumpBool, false);
-			jumpForce -= 0.07f * 50.0f;//stronger force, but decreasing over time
-			//check jump 2nd
-			if (Input.GetButtonDown("Jump") && jumpCount < jumpCountMaximum) {
-				anim.SetBool(PlayerHashIDs.JumpBool, true);
-				jumpCount++;
-				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
-				anim.SetTarget(AvatarTarget.Root, 0.0f);
-				jumpForce = 9.8f + 50.0f + obj.rigidbody.mass * velocity / 2.0f;
+			//jumpForce -= 0.07f * 50.0f;//stronger force, but decreasing over time
+			//check double jump
+			if (IsJump && jumpCount < jumpCountMaximum) {
+				this.jumpStateEnter();
 			}
-
-
-			//doesn't work anymore
-//			// just pass transition between idle/locomotion to jump
-//			if(!anim.IsInTransition(0))
-//			{
-//				// reset the Jump bool so we can jump again, and so that the state does not loop 
-//				anim.SetBool(PlayerHashIDs.JumpBool, false);
-//			}
 
 			//obj.rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Force);
 			//obj.rigidbody.AddForce(Vector3.up * jumpForce / 50.0f, ForceMode.Impulse);
-
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
 			obj.rigidbody.velocity = new Vector3(obj.rigidbody.velocity.x, -1.0f*jumpHeight, obj.rigidbody.velocity.z);
-			//check jump 2nd
+			//check double jump
 			if (IsJump && jumpCount < jumpCountMaximum) {
-				anim.SetBool(PlayerHashIDs.JumpBool, true);
-				jumpCount++;
-				//reset current velocity, orwe need a really big force to destroy current go-down-velocity
-
-				//TODO update jumpForce
-
+				this.jumpStateEnter();
 			}
+
 			// Raycast down from the center of the character.. 
 			Ray ray = new Ray(obj.transform.position + Vector3.up, -Vector3.up);
 			RaycastHit hitInfo = new RaycastHit();
@@ -178,16 +158,7 @@ public class MovementController : MonoBehaviour {
 			//obj.rigidbody.AddForce(Vector3.up * 0.0f, ForceMode.Impulse);
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.landState) {
-			anim.SetBool(PlayerHashIDs.JumpBool, false);
-			anim.SetBool(PlayerHashIDs.FallToLandBool, false);
-			jumpCount = 0;
+			this.jumpStateReset();
 		}
 	}
-
-	public void EndJump() {
-		print("end jump");
-	}
-	
-	//dev options:
-	public GUIText gtext1 = null;
 }
