@@ -30,7 +30,7 @@ public class PlayerMovement : MonoBehaviour {
 		guiManager = GameObject.FindGameObjectWithTag(Tags.gui).GetComponent<GUIManager>();
 		//guiManager.SetMaxHP(MaxHP);
 		movement.initMovement(this.gameObject, anim);
-		movement.gtext1 = gtext1;
+		//movement.gtext1 = gtext1;
 	}
 
 	void FixedUpdate() {

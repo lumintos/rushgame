@@ -9,7 +9,7 @@ public class CameraController : MonoBehaviour {
 	/// <summary>
 	/// call this function when we add new character by code	
 	/// </summary>
-	void addMainPlayer(GameObject player) {
+	public void addMainPlayer(GameObject player) {
 		mainPlayer = player;
 		offset = this.transform.position - mainPlayer.rigidbody.position;
 	}

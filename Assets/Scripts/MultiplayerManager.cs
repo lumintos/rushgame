@@ -217,10 +217,14 @@ public class MultiplayerManager : MonoBehaviour
     /// <summary>
     /// Spawn players at different position based on team index
     /// </summary>
-    public void SpawnPlayer()
+    public Object SpawnPlayer()
     {
+        Object player = null;
         if (MyPlayer != null)
-            Network.Instantiate(playerPrefab, new Vector3(-MyPlayer.team * 2f, 0f, 0f), Quaternion.identity, 0);
+        {
+            player = Network.Instantiate(playerPrefab, new Vector3(-MyPlayer.team * 2f, 0f, 0f), Quaternion.identity, 0);
+            player.name = MyPlayer.team.ToString();
+        }
         else
         {
             int team = 1;
@@ -232,9 +236,12 @@ public class MultiplayerManager : MonoBehaviour
                     break;
                 }
             }
-            Network.Instantiate(playerPrefab, new Vector3(-team * 2f, 0f, 0f), Quaternion.identity, 0);
+            player = Network.Instantiate(playerPrefab, new Vector3(-team * 2f, 0f, 0f), Quaternion.identity, 0);
+            player.name = team.ToString();
 
         }
+
+        return player;
 
     }
 }
