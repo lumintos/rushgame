@@ -31,7 +31,8 @@ public class MultiplayerManager : MonoBehaviour
         Instance = this;
         PlayerName = PlayerPrefs.GetString("PlayerName");
         DontDestroyOnLoad(gameObject);
-        MasterServer.ipAddress = "192.168.1.85";
+        //MasterServer.ipAddress = "hieurl.zapto.org";
+        //MasterServer.port = 50005;
     }
 
     void FixedUpdate()

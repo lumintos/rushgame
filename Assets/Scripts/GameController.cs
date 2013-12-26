@@ -13,8 +13,7 @@ public class GameController : MonoBehaviour {
         camController.addMainPlayer(player);
 	}
 	
-	void Awake(){
-		
+	void Awake(){		
 		guiManager = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIManager>();
         camController = GameObject.Find("Main Camera").GetComponent<CameraController>();
 	}

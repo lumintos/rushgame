@@ -14,8 +14,8 @@ public class PlayerMovement : MonoBehaviour {
     private Vector3 syncStartPosition = Vector3.zero;
     private Vector3 syncEndPosition = Vector3.zero;
     private Vector3 _destination;
-    private string syncAnimation = "";
     private bool IsJump;
+    private float moveDirection = 0;
 
 	public float turnSmoothly = 150.0f;
 	public float speedDampTime = 0.1f;
@@ -34,13 +34,19 @@ public class PlayerMovement : MonoBehaviour {
 	}
 
 	void FixedUpdate() {
+
+        //States in server is the correct one for all network player (regardless networkView), all clients must follow
+        if (Network.isServer)
+            networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
+
+        //Input only for network player of owner
         if (networkView.isMine)
         {
             //get all inputs
             //orientation
             float h = Input.GetAxis("Horizontal");
             float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
-
+            moveDirection = hInt;
             //hInt only have 3 values: 0, -1 and 1
             /*	float hInt = 0.0f;
                 if (h > 0.0f) {
@@ -58,11 +64,17 @@ public class PlayerMovement : MonoBehaviour {
             }
             
             movement.updateMovement(hInt, IsJump);
+            //Call object instance in other game instances to perform exact movement
+            networkView.RPC("MoveCommands", RPCMode.Others, hInt, IsJump);            
+
         }
-        else
+        /* else
         {
-            SyncedMovement();
-        } 
+            //if (Network.isClient)
+            //    SyncedMovement();
+            if(Network.isServer)
+                networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
+        } */
 	}
 
 	void OnGUI()
@@ -70,13 +82,14 @@ public class PlayerMovement : MonoBehaviour {
 		//guiManager.UpdateHP(HP,-1);// negative is left HP, positive is right HP, depend on which side player is.
 		guiManager.UpdateTouchInput();
 	}
-
+    /*
     void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
     {
         Vector3 syncPosition = Vector3.zero;
         Vector3 syncVelocity = Vector3.zero;
         //char animation = 'x'; // idle
-        bool isJump = false;
+        //bool isJump = false;
+        //float direction = 0;
         if (stream.isWriting)
         {
             syncPosition = rigidbody.position;
@@ -88,15 +101,19 @@ public class PlayerMovement : MonoBehaviour {
 
             //stream.Serialize(ref animation);
 
-            isJump = IsJump;
-            stream.Serialize(ref isJump);
+            //isJump = IsJump;
+            //stream.Serialize(ref isJump);
+
+            //direction = moveDirection;
+            //stream.Serialize(ref direction);
         }
         else
         {
             stream.Serialize(ref syncPosition);
             stream.Serialize(ref syncVelocity);
             //stream.Serialize(ref animation);
-            stream.Serialize(ref isJump);
+            //stream.Serialize(ref isJump);
+            //stream.Serialize(ref direction);
 
             syncTime = 0f;
             syncDelay = Time.time - lastSynchronizationTime;
@@ -105,13 +122,15 @@ public class PlayerMovement : MonoBehaviour {
             syncEndPosition = syncPosition + syncVelocity * syncDelay;
             syncStartPosition = rigidbody.position;
 
-            IsJump = isJump;
+            //IsJump = isJump;
+            //moveDirection = direction;
             
             //if (animation == 'a')
             //    syncAnimation = "run";
         }
     }
 
+    
     private void SyncedMovement()
     {
         syncTime += Time.deltaTime;
@@ -120,6 +139,23 @@ public class PlayerMovement : MonoBehaviour {
         float h = (syncStartPosition - syncEndPosition).x;
         h = Mathf.Clamp(h, -1.0f, 1.0f);
         movement.updateMovement(h, IsJump);
+        //if(rigidbody.position != syncEndPosition)
+        //    rigidbody.position = Vector3.Lerp(rigidbody.position, syncEndPosition, syncTime / syncDelay);
+    }
+    */
+    [RPC]
+    private void MoveCommands(float horizontal, bool isJump)
+    {
+        movement.updateMovement(horizontal, isJump);
+    }
+
+    [RPC]
+    private void CorrectSyncedMovement(Vector3 position)
+    {
+        if (rigidbody.position != position)
+        {
+            rigidbody.position = Vector3.Lerp(rigidbody.position, position, Time.deltaTime);
+        }
     }
 
 
