@@ -11,10 +11,10 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
      
         if (login($username, $password, $mysqli) == true) {
             // Login success 
-            echo "Success";
+            echo "Success\n";
         } else {
             // Login failed 
-            echo "Fail";
+            echo "Fail\n";
         }
     } else {
         // The correct POST variables were not sent to this page. 
