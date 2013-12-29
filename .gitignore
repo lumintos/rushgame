@@ -4,6 +4,8 @@ Library/*
 Build/*
 Assembly-CSharp-vs.csproj
 Assembly-CSharp.csproj
+Assembly-CSharp-Editor.csproj
+Assembly-CSharp-Editor-vs.csproj
 *.sln
 *.suo
 *.userprefs

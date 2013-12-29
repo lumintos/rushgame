@@ -1,0 +1,5 @@
+Implement a animation events system for all clips
+http://forum.unity3d.com/threads/162196-How-do-you-use-animation-events-in-Mecanim
+
+https://github.com/joshuajebadurai/UnityAnimatorEvents
+the link above is the original version, I modified for the compatibility of Unity 4.3
