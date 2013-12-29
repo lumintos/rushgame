@@ -123,7 +123,7 @@ public class Login : MonoBehaviour {
 					WWWForm form = new WWWForm();
 					form.AddField("username", username);
 					form.AddField("password", password);
-					WWW w = new WWW("http://192.168.1.85:80/login.php", form);
+                    WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
 					StartCoroutine(loginRequest(w));
 				}
 			}
@@ -208,8 +208,8 @@ public class Login : MonoBehaviour {
 						form.AddField("username", username);
 						form.AddField("email", email);
 						form.AddField("password", password);
-                        //WWW w = new WWW("http://84.101.189.177:25500/register.php", form);
-                        WWW w = new WWW("http://192.168.1.86:80/register.php", form);
+                        WWW w = new WWW("http://84.101.189.177:25500/register.php", form);
+                        //WWW w = new WWW("http://192.168.1.86:80/register.php", form);
 						StartCoroutine(registerRequest(w));
 					}
 					else

@@ -13,7 +13,7 @@ public class MultiplayerManager : MonoBehaviour
     private int MaxPlayers = 2;
 
     public int PlayerIndex = 2;
-    public GameObject playerPrefab;
+    public GameObject playerOnePrefab, playerTwoPrefab;
     public List<RUSHPlayer> PlayersList = new List<RUSHPlayer>();
     public HostData[] RoomList;
     public bool isGameStarted = false;
@@ -220,30 +220,28 @@ public class MultiplayerManager : MonoBehaviour
     /// </summary>
     public Object SpawnPlayer()
     {
+        GameObject playerPrefab = null;
         Object player = null;
-        if (MyPlayer != null)
-        {
-            player = Network.Instantiate(playerPrefab, new Vector3(-MyPlayer.team * 2f, 0f, 0f), Quaternion.identity, 0);
-            player.name = MyPlayer.team.ToString();
-        }
-        else
-        {
-            int team = 1;
-            foreach (RUSHPlayer tempplayer in PlayersList)
-            {
-                if (PlayerName == tempplayer.username)
-                {
-                    team = tempplayer.team;
-                    break;
-                }
-            }
-            player = Network.Instantiate(playerPrefab, new Vector3(-team * 2f, 0f, 0f), Quaternion.identity, 0);
-            player.name = team.ToString();
+        int team = 1;
 
+        foreach (RUSHPlayer tempplayer in PlayersList)
+        {
+            if (PlayerName == tempplayer.username)
+            {
+                team = tempplayer.team;
+                break;
+            }
         }
+
+        if (team == 1)
+            playerPrefab = playerOnePrefab;
+        else
+            playerPrefab = playerTwoPrefab;
+                   
+        player = Network.Instantiate(playerPrefab, new Vector3(-team * 2f, 0f, 0f), Quaternion.identity, 0);
+        player.name = team.ToString();
 
         return player;
-
     }
 }
 
