@@ -178,9 +178,22 @@ public class PlayerMovement : MonoBehaviour {
     [RPC]
     private void CorrectSyncedMovement(Vector3 position)
     {
+        //Each 3 seconds, the client must correst it's world state regarding to host's world state (only if the client's state is wrong)
         if (rigidbody.position != position)
         {
-            rigidbody.position = Vector3.Lerp(rigidbody.position, position, Time.deltaTime);
+            syncTime += Time.deltaTime;
+        }
+        else
+            syncTime = 0;
+
+        if (syncTime >= 3) //3 seconds
+        {
+            if (rigidbody.position != position)
+            {
+                //rigidbody.position = Vector3.Lerp(rigidbody.position, position, Time.deltaTime);
+                rigidbody.position = position;
+            }
+            syncTime = 0;
         }
     }
 
