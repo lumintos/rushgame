@@ -124,6 +124,7 @@ public class Login : MonoBehaviour {
 					form.AddField("username", username);
 					form.AddField("password", password);
                     WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
+                    //WWW w = new WWW("http://hieurl.zapto.org/user.php", form);
 					StartCoroutine(loginRequest(w));
 				}
 			}
@@ -229,7 +230,7 @@ public class Login : MonoBehaviour {
 		yield return w;
 		if (w.error == null)
 		{
-			if (w.text == "Logged in")
+			if (w.text == "Success")
             {
                 //((User)GameObject.Find("User").GetComponent("User")).username = username; //store username for later scenes
                 MultiplayerManager.Instance.PlayerName = username;
