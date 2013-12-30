@@ -7,9 +7,4 @@ public class PreLoad : MonoBehaviour {
 	void Start () {
         Application.LoadLevel("login");
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 }

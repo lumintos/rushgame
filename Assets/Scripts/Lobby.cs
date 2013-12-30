@@ -249,8 +249,8 @@ public class Lobby : MonoBehaviour {
             roomListRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit; //in relation to the parent window
             roomListRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
 
-            GUILayout.BeginVertical();
-            scrollVector = GUILayout.BeginScrollView(scrollVector);
+            //GUILayout.BeginVertical();
+            //scrollVector = GUILayout.BeginScrollView(scrollVector);
 
             for (int i = 0; i < roomList.Length && i < maxRoomsDisplayed; i++)
             {
@@ -265,8 +265,8 @@ public class Lobby : MonoBehaviour {
                     joinRoom = true;
                 }
             }
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
+            //GUILayout.EndScrollView();
+            //GUILayout.EndVertical();
         }
     }
 
@@ -310,6 +310,11 @@ public class Lobby : MonoBehaviour {
         }
     }
 
+    void DoWindowSingleRoom(int windowsID)
+    {
+        roomGUI.DisplayPlayers();
+    }
+
     void DrawSingleRoom()
     {
         if (MultiplayerManager.Instance.JoinedRoomFlag == 1) // If first frame after joining room
@@ -319,11 +324,16 @@ public class Lobby : MonoBehaviour {
             MultiplayerManager.Instance.JoinedRoomFlag = 2; // then reset to Idle, this help message to disappear
         }
 
+        Rect roomGroupRect = guiHelper.GetScaledRectFromUnit(34, 17);
+        roomGroupRect.x = 1 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        roomGroupRect.y = 5 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+        GUI.Window(0, roomGroupRect, DoWindowSingleRoom, roomName);
+
         Rect btnTemptRect = guiHelper.GetScaledRectFromUnit(8, 3);
         btnTemptRect.y = 23 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
         btnTemptRect.x = 9 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-
-        roomGUI.DisplayPlayers();
+        
 
         if (GUI.Button(btnTemptRect, "Back"))
         {

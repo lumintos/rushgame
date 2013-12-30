@@ -261,7 +261,7 @@ public class PlayerMovement : MonoBehaviour {
 
 	public void updateMovement(float horizontal, bool IsJump) {
 		//reverse orientation because x-axis in this scene
-		horizontal = -horizontal;
+		//horizontal = -horizontal;
 		
 		//get all inputs
 		//get state
