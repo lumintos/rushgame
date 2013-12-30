@@ -71,26 +71,26 @@ public class RoomGUI : MonoBehaviour {
 
         //Player 1
         Rect playerAvatarRect = guiHelper.GetScaledRectFromUnit(14, 11);
-        playerAvatarRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        playerAvatarRect.y = 7 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        playerAvatarRect.x = 2 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        playerAvatarRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
 
         Rect usernameRect = guiHelper.GetScaledRectFromUnit(12, 2);
-        usernameRect.x = 4 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        usernameRect.y = 19 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        usernameRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        usernameRect.y = 14 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
         DrawPlayer(playerAvatarRect, usernameRect, username1, texP1);
 
         //Player 2
-        playerAvatarRect.x = 19 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        playerAvatarRect.y = 7 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        usernameRect.x = 20 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        usernameRect.y = 19 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        playerAvatarRect.x = 18 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        playerAvatarRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        usernameRect.x = 19 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        usernameRect.y = 14 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
 
         DrawPlayer(playerAvatarRect, usernameRect, username2, texP2);
 
         //VS text
         Rect labelRect = guiHelper.GetScaledRectFromUnit(4, 4);
-        labelRect.x = 16 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        labelRect.y = 18 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        labelRect.x = 15 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        labelRect.y = 13 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
         GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
         labelStyle.fontStyle = FontStyle.Bold;
         labelStyle.normal.textColor = new Color(248f / 255, 160f / 255, 61f / 255, 1);
