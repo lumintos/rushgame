@@ -17,10 +17,11 @@ public class PlayerMovement : MonoBehaviour {
 	//move
 	public float velocityFactor = 3.0f; // this factor let's velocity * orientation (in range [-1; 1]) increase faster to maximum speed
 	private float velocity = 0.0f;
-	private float velocityMaximum = 5.3f;
+	public float velocityMaximum = 8.0f;//5.3f;
 	
 	//jump
-	public float jumpHeight = 9.0f;
+	public float jumpForce = 17.0f;
+	public float jumpForceReduce = 0.7f;// reduce force for every physic frame
 	private int jumpCount = 0;
 	public int jumpCountMaximum = 2;
 	private float jumpMove = 0.0f;
@@ -235,12 +236,14 @@ public class PlayerMovement : MonoBehaviour {
 		}
 		else if (current.nameHash == PlayerHashIDs.fallState) {
 			//JumpState/DoubleJumpState > FallState: update down-force
-			this.rigidbody.velocity = Vector3.zero;
+			//this.rigidbody.velocity = this.rigidbody.velocity + Vector3.down * this.rigidbody.velocity.y;
+			this.rigidbody.AddForce(Vector3.down * this.rigidbody.velocity.y, ForceMode.VelocityChange);
 
 			Vector3 force = Vector3.zero;
-			force += Vector3.up * -1.0f * jumpHeight;
+			force += Vector3.down * jumpForce;
 			force += Vector3Forward * jumpMove;
-			print("jumpMove " + jumpMove);
+			print("jumpForce" + jumpForce + "jumpMove " + jumpMove);
+			print("force "+ force);
 
 			this.rigidbody.AddForce(force, ForceMode.VelocityChange);
 			//this.rigidbody.velocity = new Vector3(jumpMove, -1.0f * jumpHeight, this.rigidbody.velocity.z);
@@ -249,6 +252,9 @@ public class PlayerMovement : MonoBehaviour {
 		         && (current.nameHash == PlayerHashIDs.locomotionState
 					|| current.nameHash == PlayerHashIDs.idleState)) {
 			//after FallState: reset JumpingProcess
+			this.jumpStateReset();
+		}
+		else if (previous.nameHash == PlayerHashIDs.fallState && current.nameHash == PlayerHashIDs.locomotionState) {
 			this.jumpStateReset();
 		}
 	}
@@ -288,7 +294,8 @@ public class PlayerMovement : MonoBehaviour {
 		}
 		
 		//if set value into velocity, the value will reset each frame
-		this.rigidbody.velocity +=  this.Vector3Forward * this.velocity;
+		//this.rigidbody.velocity +=  this.Vector3Forward * this.velocity;
+		this.rigidbody.AddForce(this.Vector3Forward * this.velocity, ForceMode.VelocityChange);
 		anim.SetFloat(PlayerHashIDs.speedFloat, Mathf.Abs(velocity));
 		//changing the whole rigidbody by chaging the velocity, depend on mass
 		//this.rigidbody.AddForce(Vector3.forward * orientation * (velocity * this.rigidbody.mass), ForceMode.Impulse);
@@ -329,7 +336,7 @@ public class PlayerMovement : MonoBehaviour {
 		jumpMove = velocity;
 
 		Vector3 force = Vector3.zero;
-		force += Vector3.up * jumpHeight;
+		force += Vector3.up * jumpForce;
 		force += Vector3Forward * jumpMove;
 		
 		//jumpForce = force for destroying gravity + force depend on vlocity and mass
@@ -366,14 +373,14 @@ public class PlayerMovement : MonoBehaviour {
 				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
 				anim.SetTarget(AvatarTarget.Root, 0.0f);
 			}
-			//this.rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Force);
-			//this.rigidbody.AddForce(Vector3.up * jumpForce / 50.0f, ForceMode.Impulse);
+			this.rigidbody.AddForce(Vector3.down * jumpForceReduce, ForceMode.VelocityChange);
+			print("velocity " + this.rigidbody.velocity);
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
 			//check double jump
 			if (IsJump && jumpCount < jumpCountMaximum) {
 				//reset falling force
-				this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
+				//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
 				this.jumpStateEnter();
 				print ("press jump in falling state");
 			}
@@ -398,6 +405,7 @@ public class PlayerMovement : MonoBehaviour {
 			}
 			
 			//this.rigidbody.AddForce(Vector3.up * 0.0f, ForceMode.Impulse);
+			print("velocity " + this.rigidbody.velocity);
 		}
 	}
 
