@@ -24,6 +24,8 @@ public class PlayerMovement : MonoBehaviour {
 	private int jumpCount = 0;
 	public int jumpCountMaximum = 2;
 	private float jumpMove = 0.0f;
+	private bool jumpButtonLock = false;//only unlock when release then re-press/touch jump button
+	private bool IsKeyboardInput = true;//there are 2 types of input: by keys or by touch-button
 	
 	//pre-define only for this particular scene
 	public Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
@@ -78,11 +80,20 @@ public class PlayerMovement : MonoBehaviour {
                     hInt = -1.0f;
                 }*/
 
+			//only set IsJump = true when that button is release and re-press again
+			if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
+			    || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
+			{
+				jumpButtonLock = false;
+			}
             //jump
             IsJump = false;
-            if (Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
+            if ((Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
+			&& !jumpButtonLock)
             {
-                IsJump = true;
+				IsJump = true;
+				jumpButtonLock = true;
+				IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
             }
             
             //movement.updateMovement(hInt, IsJump);
