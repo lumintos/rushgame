@@ -25,6 +25,8 @@ public class Lobby : MonoBehaviour {
         guiHelper = GetComponent<GUIHelper>();
         guiHelper.UpdateGUIElementsSize();
         roomGUI = GetComponent<RoomGUI>();
+
+        GetUserInfo();
 	}
 	
 	// Update is called once per frame
@@ -79,11 +81,17 @@ public class Lobby : MonoBehaviour {
         }
         else if( createRoom || (joinRoom && MultiplayerManager.Instance.JoinedRoomFlag > 0)) //Creator or Joined successfully
         {
-            //TODO: Display 2 players here
             DrawSingleRoom();
         }
     }
 
+    void GetUserInfo()
+    {
+        //TODO: Query from Database, parse returned result into user info and pass to MultiplayerManager
+        int dummyLevel = 10;
+        int dummySpirit = 1000;
+        MultiplayerManager.Instance.SetUserInfo(MultiplayerManager.Instance.PlayerName, Network.player, dummyLevel, dummySpirit);
+    }
 
     /// <summary>
     /// Update to database that this user logged out
@@ -181,6 +189,15 @@ public class Lobby : MonoBehaviour {
 
     void DrawUserInfo()
     {
+
+        //Bounding box
+        Rect userinfoGroupRect = guiHelper.GetScaledRectFromUnit(11, 3);
+        userinfoGroupRect.x = 36 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        userinfoGroupRect.y = 0.75f * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        
+        GUI.Box(userinfoGroupRect, "");//, GUI.skin.box);
+
+        //Username
         Rect userinfoRect = guiHelper.GetScaledRectFromUnit(6, 2);
         userinfoRect.x = 37 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
         userinfoRect.y = 1 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
@@ -190,13 +207,14 @@ public class Lobby : MonoBehaviour {
         tempLabelStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit / guiHelper.screenHeightUnit;
         GUI.Label(userinfoRect, MultiplayerManager.Instance.PlayerName, tempLabelStyle);
 
+        //Spirit and other info
         userinfoRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
         tempLabelStyle.fontStyle = FontStyle.Italic;
         tempLabelStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit / guiHelper.screenHeightUnit;
-        GUI.Label(userinfoRect, "Level: " + MultiplayerManager.Instance.MyPlayer.level, tempLabelStyle); // TODO: Must query info from Database; at this moment, MyPlayer is null
+        GUI.Label(userinfoRect, "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit, tempLabelStyle);
 
         //Logout button
-        Rect btnLogoutRect = guiHelper.GetScaledRectFromUnit(3, 3);
+        Rect btnLogoutRect = guiHelper.GetScaledRectFromUnit(2.5f, 2.5f);
         btnLogoutRect.x = 44 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
         btnLogoutRect.y = 1 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
 
@@ -218,6 +236,7 @@ public class Lobby : MonoBehaviour {
             WWW w = new WWW("http://84.101.189.177:25500/logout.php", form);
             StartCoroutine(logoutRequest(w));
         }
+
 
     }
 
@@ -249,8 +268,8 @@ public class Lobby : MonoBehaviour {
             roomListRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit; //in relation to the parent window
             roomListRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
 
-            GUILayout.BeginVertical();
-            scrollVector = GUILayout.BeginScrollView(scrollVector);
+            //GUILayout.BeginVertical();
+            //scrollVector = GUILayout.BeginScrollView(scrollVector);
 
             for (int i = 0; i < roomList.Length && i < maxRoomsDisplayed; i++)
             {
@@ -265,8 +284,8 @@ public class Lobby : MonoBehaviour {
                     joinRoom = true;
                 }
             }
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
+            //GUILayout.EndScrollView();
+            //GUILayout.EndVertical();
         }
     }
 
@@ -310,6 +329,11 @@ public class Lobby : MonoBehaviour {
         }
     }
 
+    void DoWindowSingleRoom(int windowsID)
+    {
+        roomGUI.DisplayPlayers();
+    }
+
     void DrawSingleRoom()
     {
         if (MultiplayerManager.Instance.JoinedRoomFlag == 1) // If first frame after joining room
@@ -319,11 +343,16 @@ public class Lobby : MonoBehaviour {
             MultiplayerManager.Instance.JoinedRoomFlag = 2; // then reset to Idle, this help message to disappear
         }
 
+        Rect roomGroupRect = guiHelper.GetScaledRectFromUnit(34, 17);
+        roomGroupRect.x = 1 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+        roomGroupRect.y = 5 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+        GUI.Window(0, roomGroupRect, DoWindowSingleRoom, roomName);
+
         Rect btnTemptRect = guiHelper.GetScaledRectFromUnit(8, 3);
         btnTemptRect.y = 23 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
         btnTemptRect.x = 9 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-
-        roomGUI.DisplayPlayers();
+        
 
         if (GUI.Button(btnTemptRect, "Back"))
         {

@@ -54,7 +54,7 @@ public class GUIHelper : MonoBehaviour {
         backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
     }
 
-    public Rect GetScaledRectFromUnit(int widthUnit, int heightUnit)
+    public Rect GetScaledRectFromUnit(float widthUnit, float heightUnit)
     {
         float scaledW = widthUnit * screenWidth / screenWidthUnit;
         float scaledH = heightUnit * screenHeight / screenHeightUnit;

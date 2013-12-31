@@ -1,5 +1,7 @@
 <?php
-function login($username, $password, $mysqli) {
+//include "database.php";
+
+function user_login($username, $password, $mysqli) {
     // Using prepared statements means that SQL injection is not possible. 
     if ($stmt = $mysqli->prepare("SELECT id, username, password FROM RushUser WHERE username = ? LIMIT 1")) {
         $stmt->bind_param('s', $username);  // Bind "$username" to parameter.
@@ -23,6 +25,10 @@ function login($username, $password, $mysqli) {
             return false;
         }
     }
+}
+
+function user_register($username, $password, $email) {
+    return 1;
 }
 
  ?>

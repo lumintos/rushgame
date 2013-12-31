@@ -44,9 +44,9 @@ public class PlayerMovement : MonoBehaviour {
     private bool IsJump;
     private float moveDirection = 0;
 
-	void Awake() {
-        //TODO: make camera move along with player
 
+
+	void Awake() {
 		anim = GetComponent<Animator>();
 
 		guiManager = GameObject.FindGameObjectWithTag(Tags.gui).GetComponent<GUIManager>();
@@ -206,9 +206,8 @@ public class PlayerMovement : MonoBehaviour {
         }
     }
 
-	/// <summary>
-	/// //adding/removing control events of current animator
-	/// </summary>
+	//------------------------------------------------------------------------------
+	//control events of current animator
 	void OnEnable(){
 		//EventtriggersfromAnimatorEvents
 		animatorEvents.OnStateChanged += OnStateChanged;
@@ -219,14 +218,8 @@ public class PlayerMovement : MonoBehaviour {
 		animatorEvents.OnStateChanged -= OnStateChanged;
 		animatorEvents.OnTransition -= OnTransition;
 	}
-
-	/// <summary>
-	/// Implemented by an animation event plugin. 
-	/// If there is any change in state, this function will be called
-	/// </summary>
-	/// <param name="layer">Layer.</param>
-	/// <param name="previous">Previous state machine</param>
-	/// <param name="current">Current state machine</param>
+	//------------------------------------------------------------------------------
+	
 	void OnStateChanged(int layer, AnimatorStateInfo previous,AnimatorStateInfo current){
 		//This displays the State Info of previous and currentstates.
 		//Debug.Log("State changed from" + previous + "to" + current);
@@ -235,31 +228,24 @@ public class PlayerMovement : MonoBehaviour {
 		//Debug.Log("State changed to" + animatorEvents.layers[layer].GetStateName(current.nameHash));
 		 
 		if(current.nameHash == PlayerHashIDs.jumpState) {
-			//reset JumpBool in animator, in order to re-jump in jump or fall state
+			lockJump = false;
 			anim.SetBool(PlayerHashIDs.JumpBool, false);
 		}
-		else if (current.nameHash == PlayerHashIDs.doubleJumpState) {
-			//reset DoubleJump, so DoubleJump > FallState, FallState doesn't go back to DoubleState
-			anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
-		}
 		else if (current.nameHash == PlayerHashIDs.fallState) {
-			//print ("jumpMove " + jumpMove);
-			//JumpState/DoubleJumpState > FallState: update down-force
+			print ("jumpMove " + jumpMove);
 			this.rigidbody.velocity = Vector3.zero;
 
 			Vector3 force = Vector3.zero;
 			force += Vector3.up * -1.0f * jumpHeight;
 			force += Vector3Forward * jumpMove;
-			print("force fallState " + force);
+			print("jumpMove " + jumpMove);
 
-			//this.rigidbody.AddForce(force, ForceMode.VelocityChange);
-			this.rigidbody.velocity = force;
+			this.rigidbody.AddForce(force, ForceMode.VelocityChange);
 			//this.rigidbody.velocity = new Vector3(jumpMove, -1.0f * jumpHeight, this.rigidbody.velocity.z);
 		}
 		else if (previous.nameHash == PlayerHashIDs.landState
 		         && (current.nameHash == PlayerHashIDs.locomotionState
 					|| current.nameHash == PlayerHashIDs.idleState)) {
-			//after FallState: reset JumpingProcess
 			this.jumpStateReset();
 		}
 	}
@@ -268,7 +254,24 @@ public class PlayerMovement : MonoBehaviour {
 //		Debug.Log("Transition from"+ animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
 	}
 
+	//--------------------------------------------------------
+	//test event, attached in animation clip
+	private void test2(float asd) {
+		print("test2 animation event!" + asd);
+	}
+	private void test3() {
+		print("test3, added in code");
+	}
+
+	private void NewEvent() {
+		print("JumpEnd animation event!");
+	}
+	//--------------------------------------------------------
+
 	public void updateMovement(float horizontal, bool IsJump) {
+		//reverse orientation because x-axis in this scene
+		//horizontal = -horizontal;
+		
 		//get all inputs
 		//get state
 		currentBaseState = anim.GetCurrentAnimatorStateInfo(0);	// set our currentState variable to the current state of the Base Layer (0) of animation
@@ -278,14 +281,17 @@ public class PlayerMovement : MonoBehaviour {
 		//		if (this.rigidbody.velocity.y > 0.1f || this.rigidbody.velocity.z > 0.1f) {
 		//			print ("velocity: " + this.rigidbody.velocity + ", hInt " + horizontal);
 		//		}
+		//print ("velocity: " + this.rigidbody.velocity + ", hInt " + horizontal);
 	}
 	
 	void MovementManagement(float orientation) {
 		Rotation (orientation);
 		if (orientation != 0.0f) {
 			this.velocity = Mathf.Clamp(velocityFactor * velocityMaximum * orientation, -velocityMaximum, velocityMaximum);
+			//anim.SetFloat(PlayerHashIDs.speedFloat, velocity);//, speedDampTime, Time.deltaTime);
 		}
 		else {
+			//anim.SetFloat(PlayerHashIDs.speedFloat, velocity);//0.0f, speedStopDampTime, Time.deltaTime);
 			//not set velocity to zero immediately, but slow it down a bit
 			//It's solve the problem: when we change the orientation, 
 			//	there is 1 frame that the orientation becomes 0, 
@@ -298,15 +304,20 @@ public class PlayerMovement : MonoBehaviour {
 			}
 		}
 		
-		//if set value into velocity, the value will reset each frame --> update every frame
+		//if set value into velocity, the value will reset each frame
 		this.rigidbody.velocity +=  this.Vector3Forward * this.velocity;
 		anim.SetFloat(PlayerHashIDs.speedFloat, Mathf.Abs(velocity));
+		//changing the whole rigidbody by chaging the velocity, depend on mass
+		//this.rigidbody.AddForce(Vector3.forward * orientation * (velocity * this.rigidbody.mass), ForceMode.Impulse);
+		//this.rigidbody.AddForce(this.Vector3Forward * orientation * (velocity * this.rigidbody.mass) * 50.0f, ForceMode.Force);
+		//don't know why we need alot of force to move character
+		
+		//with the velocity, its almost the same, I think
+		//this.rigidbody.velocity = Vector3.forward * velocity * horizontal;
+		//addForce applies into the value of rigid.velocity. Checked
+		//print ("velocity: " + this.rigidbody.velocity);
 	}
-
-	/// <summary>
-	/// Rotate character when orientation from negative to positive and vice versa
-	/// </summary>
-	/// <param name="orientation">Orientation.</param>
+	
 	void Rotation(float orientation) {
 		if (orientation == 0.0f) return;
 		Vector3 targetDirection = new Vector3(orientation, 0.0f, 0.0f);
@@ -320,13 +331,6 @@ public class PlayerMovement : MonoBehaviour {
 	//manage jumpState
 	void jumpStateEnter() {
 		anim.SetBool(PlayerHashIDs.JumpBool, true);
-
-		//enable double jump animation
-		if (jumpCount == 1) {
-			print("double jump!");
-			anim.SetBool(PlayerHashIDs.IsDoubleJump, true);
-		}
-
 		jumpCount++;
 		jumpMove = velocity;
 
@@ -344,10 +348,10 @@ public class PlayerMovement : MonoBehaviour {
 	void jumpStateReset() {
 		anim.SetBool(PlayerHashIDs.JumpBool, false);
 		anim.SetBool(PlayerHashIDs.FallToLandBool, false);
-		anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
 		jumpCount = 0;
 	}
 	//---------------------------------------------
+	private bool lockJump = false;
 	void jumpManagement(float orientation, bool IsJump) {
 		//three basic steps for jumping process
 		//step 1: jump with a vector-up-force and vector-forward-force, controlled by orientation, in 1 second
@@ -356,22 +360,29 @@ public class PlayerMovement : MonoBehaviour {
 		
 		if (currentBaseState.nameHash == PlayerHashIDs.locomotionState
 		    || currentBaseState.nameHash == PlayerHashIDs.idleState) {
-			if (IsJump) {
+			if (IsJump && !lockJump) {
 				this.jumpStateEnter();
+				lockJump = true;
 				print ("press jump in locomotion state!");
 			}
 		}
 		else if(currentBaseState.nameHash == PlayerHashIDs.jumpState)
 		{
+//			lockJump = false;
+//			anim.SetBool(PlayerHashIDs.JumpBool, false);
+			//jumpForce -= 0.07f * 50.0f;//stronger force, but decreasing over time
 			//check double jump
 			if (IsJump && jumpCount < jumpCountMaximum) {
 				this.jumpStateEnter();
 				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
 				anim.SetTarget(AvatarTarget.Root, 0.0f);
 			}
-			print("velocity jumpState " + rigidbody.velocity);
+			
+			//this.rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Force);
+			//this.rigidbody.AddForce(Vector3.up * jumpForce / 50.0f, ForceMode.Impulse);
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
+//			this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, -1.0f*jumpHeight, this.rigidbody.velocity.z);
 			//check double jump
 			if (IsJump && jumpCount < jumpCountMaximum) {
 				//reset falling force
@@ -398,9 +409,12 @@ public class PlayerMovement : MonoBehaviour {
 				//					anim.MatchTarget(hitInfo.point, Quaternion.identity, AvatarTarget.Root, new MatchTargetWeightMask(new Vector3(0, 1, 0), 0), 0.35f, 0.5f);
 				//				}
 			}
-			print("velocity fallState " + rigidbody.velocity);
+			
 			//this.rigidbody.AddForce(Vector3.up * 0.0f, ForceMode.Impulse);
 		}
+//		else if (currentBaseState.nameHash == PlayerHashIDs.landState) {
+//			this.jumpStateReset();
+//		}
 	}
 
 }

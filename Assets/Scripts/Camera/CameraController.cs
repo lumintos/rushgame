@@ -12,6 +12,7 @@ public class CameraController : MonoBehaviour {
 	public void addMainPlayer(GameObject player) {
 		mainPlayer = player;
 		offset = this.transform.position - mainPlayer.rigidbody.position;
+        offset.x = 0; // character is at horizontal center of screen
 	}
 
 	void Start() {
