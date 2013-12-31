@@ -45,8 +45,6 @@ public class PlayerMovement : MonoBehaviour {
 
 
 	void Awake() {
-        //TODO: make camera move along with player
-
 		anim = GetComponent<Animator>();
 
 		guiManager = GameObject.FindGameObjectWithTag(Tags.gui).GetComponent<GUIManager>();

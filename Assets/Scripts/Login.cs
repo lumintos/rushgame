@@ -234,6 +234,9 @@ public class Login : MonoBehaviour {
                 //((User)GameObject.Find("User").GetComponent("User")).username = username; //store username for later scenes
                 MultiplayerManager.Instance.PlayerName = username;
                 PlayerPrefs.SetString("PlayerName", MultiplayerManager.Instance.PlayerName);
+                
+
+
 				Application.LoadLevel("lobby");
 			}
 			else

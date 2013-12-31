@@ -12,7 +12,7 @@ public class MultiplayerManager : MonoBehaviour
     private string RoomName = "";
     private int MaxPlayers = 2;
 
-    public int PlayerIndex = 2;
+    public int PlayerIndex = 1;
     public GameObject playerOnePrefab, playerTwoPrefab;
     public List<RUSHPlayer> PlayersList = new List<RUSHPlayer>();
     public HostData[] RoomList;
@@ -29,7 +29,7 @@ public class MultiplayerManager : MonoBehaviour
     void Start()
     {
         Instance = this;
-        PlayerName = PlayerPrefs.GetString("PlayerName");
+        //PlayerName = PlayerPrefs.GetString("PlayerName");
         DontDestroyOnLoad(gameObject);
         //MasterServer.ipAddress = "hieurl.zapto.org";
         //MasterServer.port = 50005;
@@ -103,6 +103,7 @@ public class MultiplayerManager : MonoBehaviour
     void OnPlayerDisconnected(NetworkPlayer id)
     {
         networkView.RPC("Client_RemovePlayer", RPCMode.All, id);
+        //TODO: stop game with win result to the player left in room
     }
 
     void OnPlayerConnected(NetworkPlayer id)
@@ -111,7 +112,6 @@ public class MultiplayerManager : MonoBehaviour
         {
             networkView.RPC("Client_AddPlayerToList", id, tempplayer.username, tempplayer.networkPlayer, tempplayer.team);
         }
-
     }
 
     //Events at Client
@@ -132,6 +132,7 @@ public class MultiplayerManager : MonoBehaviour
     void OnDisconnectedFromServer(NetworkDisconnection info)
     {
         PlayersList.Clear();
+        //TODO: in case of network connection, stop game with win result to the player left in room
     }
 
 
@@ -147,17 +148,17 @@ public class MultiplayerManager : MonoBehaviour
     [RPC]
     void Server_AskPlayerToLeave()
     {
-        Debug.Log("Asking...");
+        //Debug.Log("Asking...");
         if (Network.isServer)
         {
             needToLeave = false;
-            Debug.Log("SV askes");
+            //Debug.Log("SV askes");
             networkView.RPC("Server_AskPlayerToLeave", RPCMode.OthersBuffered);
         }
         else
         {
             needToLeave = true;
-            Debug.Log("Client answers");
+            //Debug.Log("Client answers");
         }
     }
 
@@ -177,10 +178,12 @@ public class MultiplayerManager : MonoBehaviour
         PlayersList.Add(tempplayer);
         if (Network.player == view) //Same as networkView.isMine == true
         {
-            MyPlayer = tempplayer;
-            PlayerIndex = MyPlayer.team;
+            //MyPlayer = tempplayer;
+            MyPlayer.team = playerIndex;
+            PlayerIndex = playerIndex;
         }
     }
+
 
     /// <summary>
     /// A player has left room, must be removed from list at other client
@@ -243,6 +246,22 @@ public class MultiplayerManager : MonoBehaviour
 
         return player;
     }
+
+
+    /// <summary>
+    /// Set user info queried from Database
+    /// </summary>
+    /// <param name="playerName"></param>
+    /// <param name="view"></param>
+    /// <param name="level"></param>
+    public void SetUserInfo(string playerName, NetworkPlayer view, int level, int spirit)
+    {
+        MyPlayer = new RUSHPlayer();
+        MyPlayer.username = playerName;
+        MyPlayer.networkPlayer = view;
+        MyPlayer.level = level;
+        MyPlayer.spirit = spirit;
+    }
 }
 
 [System.Serializable]
@@ -252,4 +271,5 @@ public class RUSHPlayer
     public NetworkPlayer networkPlayer;
     public int level = 1;
     public int team = 1; // There are 2 teams
+    public int spirit;
 }

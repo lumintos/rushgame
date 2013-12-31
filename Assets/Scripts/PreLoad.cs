@@ -5,6 +5,10 @@ public class PreLoad : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        Application.LoadLevel("login");
+            Application.LoadLevel("login");
 	}
+
+    void Update()
+    {
+    }
 }
