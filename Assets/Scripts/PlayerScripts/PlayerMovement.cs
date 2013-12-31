@@ -59,7 +59,7 @@ public class PlayerMovement : MonoBehaviour {
 
         //States in server is the correct one for all network player (regardless networkView), all clients must follow
         if (Network.isServer)
-            networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
+            networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
 
         //Input only for network player of owner
         if (networkView.isMine)
@@ -88,7 +88,7 @@ public class PlayerMovement : MonoBehaviour {
             //movement.updateMovement(hInt, IsJump);
 			this.updateMovement(hInt, IsJump);
             //Call object instance in other game instances to perform exact movement
-            networkView.RPC("MoveCommands", RPCMode.Others, hInt, IsJump);            
+            networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);            
 
         }
         /* else
