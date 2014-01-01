@@ -4,7 +4,6 @@ define("STATUS_OK", 1);
 define("DATABASE_ERROR", "DB_ERROR");
 
 function db_query_user($username, $mysqli) {
-
     //if ($stmt = $mysqli->prepare("SELECT id, username, password FROM RushUser WHERE username = ? LIMIT 1")) {
     if($stmt = $mysqli->prepare("SELECT id, username, password, email, score_table_id, is_online, status FROM RushUser WHERE username =? AND status =1 LIMIT 1")) {
         $stmt->bind_param("s", $username);
@@ -20,6 +19,10 @@ function db_query_user($username, $mysqli) {
     //$skills = db_query_user_skill($user_id, $mysqli);
     //$items = db_query_user_item($user_id, $mysqli);
 
+    if ($stmt->num_rows == 0) {
+        return null;
+    }
+
     $user_stat = array("id" => $user_id,
                        "username" => $username,
                        "password" => $password,
@@ -29,6 +32,28 @@ function db_query_user($username, $mysqli) {
                        "is_online" => $is_online);
 
     return $user_stat;
+}
+
+function db_insert_user($user, $mysqli) {
+    //if user exists
+    if (db_query_user($user['username'], $mysqli) != null) {
+        return "User_Exists";
+    }
+
+    $query = "INSERT INTO RushUser(username,password,email) VALUES (?,?,?)";
+
+    if($stmt = $mysqli->prepare($query)) {
+        //die("before");
+        $stmt->bind_param("sss", $user['username'], hash('sha512', $user['password']), $user['email']);
+        //die("OK");
+        if($stmt->execute()) {
+            return "OK";
+        } else {
+            return "Database_Error";
+        }
+    } else {
+        return "Database_Query_Error";
+    }
 }
 
 function db_query_user_skill($user_id, $mysqli) {

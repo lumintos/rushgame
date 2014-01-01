@@ -2,7 +2,7 @@
 $cur_dir = getcwd();
 include $cur_dir."/include/db/db_connect.php";
 include $cur_dir."/include/db/database.php";
-include $cur_dir."/include/api/functions.php";
+include $cur_dir."/include/api/user_api.php";
 
 header("Content-type: text/xml"); 
 $xml_output = "<?xml version=\"1.0\"?>\n";
@@ -36,25 +36,34 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
         $xml_output .= "<code>Invalid request</code>";
     }
 } else if (isset($_GET['action']) && $_GET['action'] == 'register') {
+    //$username = "hieu".date('Y-m-d H:i:s');
+    //$user = array("username"=>$username, "password" => "test", "hieu@hieu.com");
+    //$res = db_insert_user($user, $mysqli);
+
+    //die($res);
+
     if (!isset($_POST["username"]) || !isset($_POST["password"])) {
-        echo "<code>Missing info</code>";
+        $xml_output .= "<code>Missing info</code>";
     } else {
         $username = $_POST["username"];
         $password = $_POST["password"];
+        //die($username.$password);
         if (!isset($_POST["email"])) {
             $email = "";
         } else {
             $email = $_POST["email"];
         }
+        //die($email);
 
-        $result = user_register($username, $password, $email);
-        echo "<code>".$result."</code>";
+        $result = user_register($username, $password, $email, $mysqli);
+        //$result = user_register($username, $password, $email, $mysqli);
+        $xml_output .= "<code>".$result."</code>";
     }
 } else if (isset($_GET['action']) && $_GET['action'] == 'query') {
     if (isset($_GET['username'])) {
         $username = $_GET['username'];
-        $user = db_query_user($username, $mysqli);
-        if ($user['id'] != null) {
+        $user = user_query($username, $mysqli);
+        if ($user != null) {
             $xml_output .= "<code>OK</code>";
             $xml_output .= "<user_info>";
             $xml_output .= "<id>".$user['id']."</id>";
