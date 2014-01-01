@@ -4,7 +4,6 @@ define("STATUS_OK", 1);
 define("DATABASE_ERROR", "DB_ERROR");
 
 function db_query_user($username, $mysqli) {
-    //if ($stmt = $mysqli->prepare("SELECT id, username, password FROM RushUser WHERE username = ? LIMIT 1")) {
     if($stmt = $mysqli->prepare("SELECT id, username, password, email, score_table_id, is_online, status FROM RushUser WHERE username =? AND status =1 LIMIT 1")) {
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -15,9 +14,6 @@ function db_query_user($username, $mysqli) {
     } else {
         die(DATABASE_ERROR);
     }
-    //TODO: query skills and items
-    //$skills = db_query_user_skill($user_id, $mysqli);
-    //$items = db_query_user_item($user_id, $mysqli);
 
     if ($stmt->num_rows == 0) {
         return null;
@@ -27,8 +23,7 @@ function db_query_user($username, $mysqli) {
                        "username" => $username,
                        "password" => $password,
                        "email" => $email,
-                       "score" => $score_table_id,
-                       //"items" => $items,
+                       "score_id" => $score_table_id,
                        "is_online" => $is_online);
 
     return $user_stat;
