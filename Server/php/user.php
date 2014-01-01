@@ -9,7 +9,7 @@ $xml_output = "<?xml version=\"1.0\"?>\n";
 
 $xml_output .= "<response>"; 
 
-
+/* SERVICE: Login */
 if (isset($_GET['action']) && $_GET['action'] == 'login') {
     if (isset($_POST['username'], $_POST['password'])) {
         $username = $_POST['username'];
@@ -35,6 +35,19 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
     } else {
         $xml_output .= "<code>Invalid request</code>";
     }
+
+/* SERVICE: Logout */
+} else if (isset($_GET['action']) && $_GET['action'] == 'logout') {
+    if (isset($_POST['username'])) {
+        $username = $_POST['username'];
+        $res = user_logout($username, $mysqli);
+    } else {
+        $res = "Invalid_Request";
+    }
+    //$res = isset($_POST['username']) ? user_logout($_POST['username'], $mysqli) : "Invalid request";
+    $xml_output .= "<code>".$res."</code>";
+
+/* SERVICE: Register */
 } else if (isset($_GET['action']) && $_GET['action'] == 'register') {
     //$username = "hieu".date('Y-m-d H:i:s');
     //$user = array("username"=>$username, "password" => "test", "hieu@hieu.com");
@@ -59,6 +72,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
         //$result = user_register($username, $password, $email, $mysqli);
         $xml_output .= "<code>".$result."</code>";
     }
+
+/* SERVICE: Query user information */
 } else if (isset($_GET['action']) && $_GET['action'] == 'query') {
     if (isset($_GET['username'])) {
         $username = $_GET['username'];
@@ -76,6 +91,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
             $xml_output .= "<code>User non exist</code>";
         }
     }
+
+/* SERVICE: Set user online status */
 } else if (isset($_GET['action']) && $_GET['action'] == 'set_online') {
     if (isset($_POST['username'])) {
         $username = $_POST['username'];
