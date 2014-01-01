@@ -1,30 +1,31 @@
 <?php 
 
-define("STATUS_OK", "1");
+define("STATUS_OK", 1);
 define("DATABASE_ERROR", "DB_ERROR");
 
 function db_query_user($username, $mysqli) {
-    if($stmt = $mysqli->prepare("SELECT id, username, password, email, score_table_id, is_online FROM RushUser WHERE username = ? AND status = ? LIMIT 1")) {
-        $stmt->bind_param('si', $username, STATUS_OK);
+
+    //if ($stmt = $mysqli->prepare("SELECT id, username, password FROM RushUser WHERE username = ? LIMIT 1")) {
+    if($stmt = $mysqli->prepare("SELECT id, username, password, email, score_table_id, is_online, status FROM RushUser WHERE username =? AND status =1 LIMIT 1")) {
+        $stmt->bind_param("s", $username);
         $stmt->execute();
         $stmt->store_result();
 
-        $stmt->bind_result($user_id, $username, $password, $email, $is_online);
-
-        //$user_info
+        $stmt->bind_result($user_id, $username, $password, $email, $score_table_id, $is_online, $status);
+        $stmt->fetch();
     } else {
         die(DATABASE_ERROR);
     }
     //TODO: query skills and items
-    $skills = db_query_user_skill($user_id, $mysqli);
-    $items = db_query_user_item($user_id, $mysqli);
+    //$skills = db_query_user_skill($user_id, $mysqli);
+    //$items = db_query_user_item($user_id, $mysqli);
 
     $user_stat = array("id" => $user_id,
                        "username" => $username,
                        "password" => $password,
                        "email" => $email,
-                       "skills" => $skills,
-                       "items" => $items,
+                       "score" => $score_table_id,
+                       //"items" => $items,
                        "is_online" => $is_online);
 
     return $user_stat;
@@ -65,5 +66,3 @@ function db_query_user_skill($user_id, $mysqli) {
 function db_query_user_item($user_id, $mysqli) {
     return null;
 }
-
-?>

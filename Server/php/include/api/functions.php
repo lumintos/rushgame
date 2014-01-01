@@ -30,6 +30,3 @@ function user_login($username, $password, $mysqli) {
 function user_register($username, $password, $email) {
     return 1;
 }
-
- ?>
-
