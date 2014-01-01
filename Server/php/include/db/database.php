@@ -91,3 +91,18 @@ function db_query_user_skill($user_id, $mysqli) {
 function db_query_user_item($user_id, $mysqli) {
     return null;
 }
+
+function db_mark_user_online_status($username, $is_online, $mysqli) {
+    $query = "UPDATE RushUser SET is_online=? WHERE username=?";
+    if ($stmt = $mysqli->prepare($query)) {
+        if(!$stmt->bind_param('is', $is_online, $username)) {
+            die("Bind_Param_Error");
+        }
+        if($stmt->execute()) {
+            return "OK";
+        }
+        return "Database_Error";
+    }
+
+    return "Database_Error";
+}

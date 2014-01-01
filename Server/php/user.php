@@ -76,6 +76,22 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
             $xml_output .= "<code>User non exist</code>";
         }
     }
+} else if (isset($_GET['action']) && $_GET['action'] == 'set_online') {
+    if (isset($_POST['username'])) {
+        $username = $_POST['username'];
+        if (isset($_POST['is_online']) && $_POST['is_online'] == "true") {
+            $res = user_mark_user_online_status($username, true, $mysqli);
+            $xml_output .= "<code>". $res . "</code>";
+        } else if (isset($_POST['is_online']) && $_POST['is_online'] == "false") {
+            $res = user_mark_user_online_status($username, false, $mysqli);
+            $xml_output .= "<code>". $res . "</code>";
+        } else {
+            $xml_output .= "<code>Invalid request</code>";
+        }
+    } else {
+        $xml_output .= "<code>Invalid request</code>";
+    }
 }
+
 $xml_output .= "</response>";
 echo $xml_output;

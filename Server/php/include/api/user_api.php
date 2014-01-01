@@ -34,3 +34,8 @@ function user_register($username, $password, $email, $mysqli) {
 function user_query($username, $mysqli) {
     return db_query_user($username, $mysqli);
 }
+
+function user_mark_user_online_status($username, $is_online, $mysqli) {
+    $is_online = ($is_online == true ? 1 : 0);
+    return db_mark_user_online_status($username, $is_online, $mysqli);
+}
