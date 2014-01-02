@@ -107,6 +107,32 @@ function db_query_all_skill($mysqli) {
 
 }
 
+function db_query_user_skill($user_id, $mysqli) {
+    $query = "SELECT `id`, `user_id`, `skill_id`,`status` FROM `RushUserSkill` WHERE `user_id` =? AND `status`=1";
+    if($stmt = $mysqli->prepare($query)) {
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $stmt->store_result();
+
+        $stmt->bind_result($si, $user_id, $skill_id , $status);
+        //die("o");
+        if ($stmt->num_rows == 0) {
+            return null;
+        }
+
+        $result = null;
+        while($stmt->fetch()) {
+           $skill =  array("id" => $si,
+                            "user_id" => $user_id,
+                            "skill_id" => $skill_id); 
+           $result[] = $skill;
+        }
+        return $result;
+    }
+
+    return null;
+}
+
 function db_query_user_item($user_id, $mysqli) {
     return null;
 }

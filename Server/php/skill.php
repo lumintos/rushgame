@@ -32,6 +32,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'query') {
                 $xml_output .= "</skill>";
             }
         }
+    } else if (isset($_GET['user_id'])) {
+        $user_id = $_GET['user_id'];
+        $skills = skill_query_by_user_id($user_id, $mysqli);
+        //print_r($res);
+    
+        if (!count($skills)) {
+            $xml_output .= "<code>No_Skill_Found</code>";
+        } else {
+            $xml_output .= "<code>OK</code>";
+            foreach ($skills as $skill) {
+                $xml_output .= "<skill>";
+                $xml_output .= "<id>".$skill['id']."</id>";
+                $xml_output .= "<name>".$skill['name']."</name>";
+                $xml_output .= "<desc>".$skill['desc']."</desc>";
+                $xml_output .= "<damage>".$skill['damage']."</damage>";
+                $xml_output .= "<unconscious>".$skill['unconscious']."</unconscious>";
+                $xml_output .= "</skill>";
+            }
+        }
     } else {
         $xml_output .= "<code>Invalid_request</code>";
     }
