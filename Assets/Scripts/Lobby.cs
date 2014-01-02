@@ -8,9 +8,9 @@ public class Lobby : MonoBehaviour {
     private HostData[] roomList;
     private RoomGUI roomGUI;
 
-    private bool createRoom = false, joinRoom = false;
-    public int joinedPlayer = 0;
-    private string roomName = "Rooms"; //Display for both room list view or user's room view
+    private bool createRoom , joinRoom;
+    public int joinedPlayer;
+    private string roomName; //Display for both room list view or user's room view
     public float elapsedTimeDisplayedMsg = 0; //Amount of time that unchanged message remains displayed
 
     private Vector2 scrollVector;
@@ -25,8 +25,13 @@ public class Lobby : MonoBehaviour {
         guiHelper = GetComponent<GUIHelper>();
         guiHelper.UpdateGUIElementsSize();
         roomGUI = GetComponent<RoomGUI>();
-
+        createRoom = false;
+        joinRoom = false;
+        joinedPlayer = 0;
+        roomName = "Rooms";
+        elapsedTimeDisplayedMsg = 0;
         GetUserInfo();
+        MultiplayerManager.Instance.RefreshRoomList();
 	}
 	
 	// Update is called once per frame
@@ -228,7 +233,7 @@ public class Lobby : MonoBehaviour {
                 joinRoom = false;
                 createRoom = false;
                 PlayerPrefs.DeleteKey("PlayerName");
-                MultiplayerManager.Instance.LeaveRoom();
+                MultiplayerManager.Instance.LeaveRoom(0);
             }
 
             WWWForm form = new WWWForm();
@@ -251,7 +256,6 @@ public class Lobby : MonoBehaviour {
 
                 //Then we must choose new rooms to display
                 int startRoomIndex = Random.Range(0, roomList.Length - 1); //choose 1 random room from list to start
-                Debug.Log("Chose: " + startRoomIndex.ToString());
                 for (int i = 0; i < roomList.Length && i < maxRoomsDisplayed; i++)
                 {
                     displayedRoomIndex[i] = startRoomIndex % roomList.Length;
@@ -362,7 +366,7 @@ public class Lobby : MonoBehaviour {
             joinRoom = false;
             guiHelper.message = "Backed to room list";
             elapsedTimeDisplayedMsg = 0;
-            MultiplayerManager.Instance.LeaveRoom();
+            MultiplayerManager.Instance.LeaveRoom(0);
             MultiplayerManager.Instance.RefreshRoomList();
         }
 
@@ -395,7 +399,7 @@ public class Lobby : MonoBehaviour {
         // If room creator has left, leave room, too.
         if (joinRoom && MultiplayerManager.Instance.needToLeave)
         {
-            guiHelper.message = "Disconnected from server";
+            guiHelper.message = "Disconnected from room's host";
             elapsedTimeDisplayedMsg = 0;
             joinRoom = false; // reset to join other rooms
             MultiplayerManager.Instance.needToLeave = false;

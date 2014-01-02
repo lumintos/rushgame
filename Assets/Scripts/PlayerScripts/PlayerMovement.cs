@@ -59,6 +59,9 @@ public class PlayerMovement : MonoBehaviour {
 	}
 
 	void FixedUpdate() {
+        GameController gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
+        if (gameController.gameEnd)
+            return;
 
         //States in server is the correct one for all network player (regardless networkView), all clients must follow
         if (Network.isServer)
@@ -92,7 +95,7 @@ public class PlayerMovement : MonoBehaviour {
             //movement.updateMovement(hInt, IsJump);
 			this.updateMovement(hInt, IsJump);
             //Call object instance in other game instances to perform exact movement
-            networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);            
+            networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);        
 
         }
         /* else

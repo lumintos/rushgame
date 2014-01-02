@@ -11,6 +11,7 @@ public class MultiplayerManager : MonoBehaviour
     private string GameName = "mobserv-RUSH Game";
     private string RoomName = "";
     private int MaxPlayers = 2;
+    private int lastLevelPrefix = 0;
 
     public int PlayerIndex = 1;
     public GameObject playerOnePrefab, playerTwoPrefab;
@@ -22,7 +23,8 @@ public class MultiplayerManager : MonoBehaviour
     public RUSHPlayer MyPlayer;
     public GameObject[] Spawnpoints;
     public int JoinedRoomFlag = 2; // 1 - Joined, 0 - Joining, -1 - Failed, other values - Idle
-
+    public HostData roomToJoin;
+    public string roomToJoinIP;
     public bool needToLeave = false; //Used by client when room creator left room
 
 
@@ -51,8 +53,18 @@ public class MultiplayerManager : MonoBehaviour
 
     public void JoinRoom(HostData hostData)
     {
+        roomToJoin = hostData;
+        roomToJoinIP = "";
+        int i = 0;
+        while (i < roomToJoin.ip.Length)
+        {
+            roomToJoinIP += roomToJoin.ip[i] + ".";
+            i++;
+        }
+        Debug.Log("Room IP: " + roomToJoinIP);
         JoinedRoomFlag = 0; // Set joining status
-        Network.Connect(hostData);
+        MasterServer.RequestHostList(GameName);
+        //Network.Connect(hostData);
     }
 
     public void RefreshRoomList()
@@ -60,17 +72,27 @@ public class MultiplayerManager : MonoBehaviour
         MasterServer.RequestHostList(GameName);
     }
 
-    public void LeaveRoom()
+    /// <summary>
+    /// Use when user leaves lobby room or current game. 
+    /// </summary>
+    /// <param name="flag">
+    /// Flag determines user leaves lobby room (0) or a running game (1) or an ended game (2)</param>
+    public void LeaveRoom(int flag)
     {
+        int timeout = 200;
+        if (flag == 2) //End game
+            timeout = 3000; //3 seconds
+
         if (Network.isServer)
         {
-            Server_AskPlayerToLeave();
-            Network.Disconnect();
+            if (flag == 0 || flag == 1) //Host leaves room or running game, everyone must leave
+                Server_AskPlayerToLeave();
+            Network.Disconnect(timeout);
             MasterServer.UnregisterHost();
         }
         else
         {
-            Network.Disconnect();
+            Network.Disconnect(timeout);
         }
 
         needToLeave = false;
@@ -78,7 +100,7 @@ public class MultiplayerManager : MonoBehaviour
 
     public void LaunchGame(string mapName)
     {
-        Client_LaunchGame(mapName);
+        Client_LaunchGame(mapName, lastLevelPrefix + 1);
     }
 
     
@@ -89,8 +111,41 @@ public class MultiplayerManager : MonoBehaviour
     {
         if (msEvent == MasterServerEvent.HostListReceived)
         {
-            RoomList = MasterServer.PollHostList();
-            refreshing = false;
+            int i = 0;
+            RoomList = null;
+            foreach (HostData room in MasterServer.PollHostList())
+            {
+                Debug.Log("Room has: " + room.connectedPlayers.ToString());
+                if (room.connectedPlayers == 1) //Only display waiting room
+                {
+                    RoomList = new HostData[i + 1];
+                    RoomList[i] = room;
+                }
+            }
+            if (JoinedRoomFlag == 0)
+            {
+                //is checking existence of a room to join room
+                Debug.Log("Checking room");
+                foreach (HostData room in MasterServer.PollHostList())
+                {
+                    string checkIP = "";
+                    i = 0;
+                    while (i < room.ip.Length)
+                    {
+                        checkIP += room.ip[i] + ".";
+                        i++;
+                    }
+
+                    Debug.Log("Check IP: " + checkIP);
+
+                    if (checkIP == roomToJoinIP && room.port == roomToJoin.port && room.connectedPlayers == 1)
+                    {
+                        Network.Connect(roomToJoin);
+                        return;
+                    }
+                } 
+                JoinedRoomFlag = -1;
+            }
         }
     }
 
@@ -108,9 +163,17 @@ public class MultiplayerManager : MonoBehaviour
 
     void OnPlayerConnected(NetworkPlayer id)
     {
-        foreach (RUSHPlayer tempplayer in PlayersList)
+        Debug.Log(Network.connections.Length.ToString());
+        if (Network.connections.Length < 2)
         {
-            networkView.RPC("Client_AddPlayerToList", id, tempplayer.username, tempplayer.networkPlayer, tempplayer.team);
+            foreach (RUSHPlayer tempplayer in PlayersList)
+            {
+                networkView.RPC("Client_AddPlayerToList", id, tempplayer.username, tempplayer.networkPlayer, tempplayer.team);
+            }
+        }
+        else //Ask recently join player to leave
+        {
+            networkView.RPC("Server_AskPlayerToLeave", id);
         }
     }
 
@@ -148,17 +211,15 @@ public class MultiplayerManager : MonoBehaviour
     [RPC]
     void Server_AskPlayerToLeave()
     {
-        //Debug.Log("Asking...");
         if (Network.isServer)
         {
             needToLeave = false;
-            //Debug.Log("SV askes");
             networkView.RPC("Server_AskPlayerToLeave", RPCMode.OthersBuffered);
         }
         else
         {
             needToLeave = true;
-            //Debug.Log("Client answers");
+            Network.Disconnect();
         }
     }
 
@@ -211,10 +272,11 @@ public class MultiplayerManager : MonoBehaviour
     /// </summary>
     /// <param name="mapName">Name of Unity scene</param>
     [RPC]
-    void Client_LaunchGame(string mapName)
+    void Client_LaunchGame(string mapName, int levelPrefix)
     {
         if (Network.isServer)
-            networkView.RPC("Client_LaunchGame", RPCMode.Others, mapName);
+            networkView.RPC("Client_LaunchGame", RPCMode.OthersBuffered, mapName, levelPrefix);
+
         Application.LoadLevel(mapName);
     }
 

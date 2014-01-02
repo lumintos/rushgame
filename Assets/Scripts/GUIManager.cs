@@ -16,6 +16,7 @@ public class GUIManager : MonoBehaviour {
 	public GUITexture Tex_PlayerIconL;
 	public GUITexture Tex_PlayerIconR;
 	public GUIText Text_Timer;
+    public GUIText GameResult;
 	
 	private float inputGUI_h = 0.0f;
 	private float inputGUI_v = 0.0f;
@@ -78,6 +79,7 @@ public class GUIManager : MonoBehaviour {
 		Tex_HPRight.transform.position = new Vector3(Tex_PlayerIconR.transform.position.x-widthRatio-0.01f,1-heightRatio-0.01f,0.0f);
 		
 		Text_Timer.transform.position = new Vector3(0.5f-0.01f,1.0f-0.03f,0.0f);
+        GameResult.fontSize = (int) (80 * scaleHeight);
 	}
 	
 	public float GetInputGUI_h()
