@@ -51,7 +51,8 @@ public class GUIHelper : MonoBehaviour {
         btnScaledHeight = (float)btnHeightUnit * screenHeight / screenHeightUnit;
         btnScaledWidth = (float)btnWidthUnit * screenWidth / screenWidthUnit;
 
-        backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
+        if(backgroundImage)
+            backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
     }
 
     public Rect GetScaledRectFromUnit(float widthUnit, float heightUnit)

@@ -95,7 +95,7 @@ public class PlayerMovement : MonoBehaviour {
             //movement.updateMovement(hInt, IsJump);
 			this.updateMovement(hInt, IsJump);
             //Call object instance in other game instances to perform exact movement
-            networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);            
+            networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);        
 
         }
         /* else

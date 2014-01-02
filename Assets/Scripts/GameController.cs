@@ -4,6 +4,7 @@ using System.Collections;
 public class GameController : MonoBehaviour {
 
 	private GUIManager guiManager;
+    public GUIHelper guiHelper;
     private CameraController camController;
     public MagicalStone magicalStone;
     public NetworkPlayer stoneKeeper;
@@ -14,12 +15,14 @@ public class GameController : MonoBehaviour {
 	void Start () {
         gameEnd = false;
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
+        guiHelper.UpdateGUIElementsSize();
         GameObject player = (GameObject) MultiplayerManager.Instance.SpawnPlayer();
         camController.addMainPlayer(player);
 	}
 	
 	void Awake(){		
 		guiManager = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIManager>();
+        guiHelper = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIHelper>();
         camController = GameObject.Find("Main Camera").GetComponent<CameraController>();
         if (!goal)
             goal = GameObject.FindGameObjectWithTag("Goal");
@@ -32,6 +35,8 @@ public class GameController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
     {
+        guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
+        guiHelper.UpdateGUIElementsSize();
         //WINNING CONDITION CHECKING
         //Only server can check
         if (Network.isServer)
@@ -46,11 +51,38 @@ public class GameController : MonoBehaviour {
                         gameEnd = true;
                         //TODO: call RPC Display result only once
                         networkView.RPC("DisplayResult", RPCMode.AllBuffered);
+                        MultiplayerManager.Instance.LeaveRoom(2); //Disconnect and unregister host for both server and client 
                     }
                 }
             }
         }
 	}
+
+    //TODO: Move this part to GUIManager for consistence of code
+    void OnGUI()
+    {
+        if (!guiHelper.guiUpdated)
+        {
+            ColoredGUISkin.Instance.UpdateGuiColors(guiHelper.primaryColor, guiHelper.secondaryColor);
+            guiHelper.guiUpdated = true;
+        }
+
+        GUI.skin = ColoredGUISkin.Skin;
+
+        GUI.skin.button.fontSize = (int)(guiHelper.btnScaledHeight * guiHelper.fontSizeUnit / guiHelper.btnHeightUnit);
+
+        if (gameEnd)
+        {
+            Rect btnTemptRect = guiHelper.GetScaledRectFromUnit(8, 4);
+            btnTemptRect.x = 20 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+            btnTemptRect.y = 16 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+            if (GUI.Button(btnTemptRect, "Continue"))
+            {   
+                Application.LoadLevel("lobby");
+            }
+        }
+    }
 
     [RPC]
     void DisplayResult()
@@ -61,6 +93,7 @@ public class GameController : MonoBehaviour {
         {
             gameEnd = true;
         }
+
 
         if (Network.player == stoneKeeper)
         {
@@ -73,6 +106,7 @@ public class GameController : MonoBehaviour {
             guiManager.GameResult.text = "DEFEAT";
             //Debug.Log("DEFEAT");
         }
+ 
     }
 
     
