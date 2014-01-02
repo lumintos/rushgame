@@ -232,12 +232,16 @@ public class PlayerMovement : MonoBehaviour {
 		if(current.nameHash == PlayerHashIDs.jumpState) {
 			//reset JumpBool in animator, in order to re-jump in jump or fall state
 			anim.SetBool(PlayerHashIDs.JumpBool, false);
+			//print ("jump velocity: " + this.rigidbody.velocity + ", frame count: " + counter);
 		}
 		else if (current.nameHash == PlayerHashIDs.doubleJumpState) {
 			//reset DoubleJump, so DoubleJump > FallState, FallState doesn't go back to DoubleState
 			anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
 		}
 		else if (current.nameHash == PlayerHashIDs.fallState) {
+			//print ("fall state frame count: " + counter);
+			//IsStartCounting = false;
+			//counter = 0;
 			//JumpState/DoubleJumpState > FallState: update down-force
 			//this.rigidbody.velocity = this.rigidbody.velocity + Vector3.down * this.rigidbody.velocity.y;
 			this.rigidbody.AddForce(Vector3.down * this.rigidbody.velocity.y, ForceMode.VelocityChange);
@@ -245,15 +249,16 @@ public class PlayerMovement : MonoBehaviour {
 			Vector3 force = Vector3.zero;
 			force += Vector3.down * jumpForce;
 			force += Vector3Forward * jumpMove;
-			print("jumpForce" + jumpForce + "jumpMove " + jumpMove);
-			print("force "+ force);
+			//print("jumpForce" + jumpForce + "jumpMove " + jumpMove);
+			//print("force "+ force);
 
 			this.rigidbody.AddForce(force, ForceMode.VelocityChange);
 			//this.rigidbody.velocity = new Vector3(jumpMove, -1.0f * jumpHeight, this.rigidbody.velocity.z);
 		}
 		else if (previous.nameHash == PlayerHashIDs.landState
 		         && (current.nameHash == PlayerHashIDs.locomotionState
-					|| current.nameHash == PlayerHashIDs.idleState)) {
+//					|| current.nameHash == PlayerHashIDs.idleState
+		    )) {
 			//after FallState: reset JumpingProcess
 			this.jumpStateReset();
 		}
@@ -264,6 +269,12 @@ public class PlayerMovement : MonoBehaviour {
 	
 	void OnTransition(int layer, AnimatorTransitionInfo transitionInfo){
 //		Debug.Log("Transition from"+ animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
+		//print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash) + "at framecount: " + counter);
+
+		//problem: different frame number of [the time of pressed button jump] >> [the end of jump state] leads to difference jump height.
+		//solve: combine idle state into locomotion state.
+		//because in the transition [locomotion] >> [idle], if we jump, jumpForce will be applied at that time 
+		//but it takes extra frames to make change [in-middle-of-transition locomotion >> idle] >> [jump state]
 	}
 
 	public void updateMovement(float horizontal, bool IsJump) {
@@ -356,16 +367,26 @@ public class PlayerMovement : MonoBehaviour {
 		jumpCount = 0;
 	}
 	//---------------------------------------------
+	bool IsStartCounting = false;
+	int counter = 0;
 	void jumpManagement(float orientation, bool IsJump) {
 		//three basic steps for jumping process
 		//step 1: jump with a vector-up-force and vector-forward-force, controlled by orientation, in 1 second
 		//step 2: fall down with a raycast, change to landing state (FallToLand = true) when almost ground
 		//step 3: do the animation, reset variables (jumpCount = 0, FallToLand = false)
-		
+		if (IsStartCounting) {
+			counter++;
+		}
+		else {
+			//reset counting
+			counter = 0;
+		}
 		if (currentBaseState.nameHash == PlayerHashIDs.locomotionState
-		    || currentBaseState.nameHash == PlayerHashIDs.idleState) {
+//		    || currentBaseState.nameHash == PlayerHashIDs.idleState
+		    ) {
 			if (IsJump) {
 				this.jumpStateEnter();
+				IsStartCounting = true;
 			}
 		}
 		else if(currentBaseState.nameHash == PlayerHashIDs.jumpState)
@@ -377,7 +398,7 @@ public class PlayerMovement : MonoBehaviour {
 				anim.SetTarget(AvatarTarget.Root, 0.0f);
 			}
 			this.rigidbody.AddForce(Vector3.down * jumpForceReduce, ForceMode.VelocityChange);
-			print("velocity " + this.rigidbody.velocity);
+			//print("velocity " + this.rigidbody.velocity);
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
 			//check double jump
@@ -408,7 +429,7 @@ public class PlayerMovement : MonoBehaviour {
 			}
 			
 			//this.rigidbody.AddForce(Vector3.up * 0.0f, ForceMode.Impulse);
-			print("velocity " + this.rigidbody.velocity);
+			//print("velocity " + this.rigidbody.velocity);
 		}
 	}
 
