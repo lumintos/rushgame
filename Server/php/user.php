@@ -1,5 +1,6 @@
 <?php
 $cur_dir = getcwd();
+
 include $cur_dir."/include/db/db_connect.php";
 include $cur_dir."/include/db/database.php";
 include $cur_dir."/include/api/user_api.php";
