@@ -16,6 +16,7 @@ public class GUIManager : MonoBehaviour {
 	public GUITexture Tex_PlayerIconL;
 	public GUITexture Tex_PlayerIconR;
 	public GUIText Text_Timer;
+    public GUIText GameResult;
 	
 	private float inputGUI_h = 0.0f;
 	private float inputGUI_v = 0.0f;

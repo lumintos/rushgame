@@ -59,6 +59,9 @@ public class PlayerMovement : MonoBehaviour {
 	}
 
 	void FixedUpdate() {
+        GameController gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
+        if (gameController.gameEnd)
+            return;
 
         //States in server is the correct one for all network player (regardless networkView), all clients must follow
         if (Network.isServer)
