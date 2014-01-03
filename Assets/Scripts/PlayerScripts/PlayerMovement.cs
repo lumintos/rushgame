@@ -22,6 +22,9 @@ public class PlayerMovement : MonoBehaviour {
 	//jump
 	public float jumpForce = 17.0f;
 	public float jumpForceReduce = 0.7f;// reduce force for every physic frame
+	public float doubleJumpForce = 10.0f;
+	public float doubleJumpForceReduce = 0.7f;// reduce force for every physic frame
+
 	private int jumpCount = 0;
 	public int jumpCountMaximum = 2;
 	private float jumpMove = 0.0f;
@@ -30,6 +33,15 @@ public class PlayerMovement : MonoBehaviour {
 	
 	//pre-define only for this particular scene
 	public Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
+
+	//fake gravity
+	//current gravity is not strong enough for this game (when compare with the speed of jumping)
+	//I am not sure what is the effect of changing the global gravity.
+	//so, I use this addition force in order to make character fall faster, only in locomotion state
+	public float FakeGravity = 30.0f;
+
+	//mid-air ray-cast check
+	public float midAirCheck = 1.2f;
 
 	//control events for current animator
 	AnimatorEvents animatorEvents;
@@ -235,8 +247,9 @@ public class PlayerMovement : MonoBehaviour {
 			//print ("jump velocity: " + this.rigidbody.velocity + ", frame count: " + counter);
 		}
 		else if (current.nameHash == PlayerHashIDs.doubleJumpState) {
-			//reset DoubleJump, so DoubleJump > FallState, FallState doesn't go back to DoubleState
+			//reset DoubleJump, so when DoubleJump > FallState, FallState doesn't go back to DoubleJumpState
 			anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
+			print ("velocity when double jump: " + this.rigidbody.velocity);
 		}
 		else if (current.nameHash == PlayerHashIDs.fallState) {
 			//print ("fall state frame count: " + counter);
@@ -244,16 +257,24 @@ public class PlayerMovement : MonoBehaviour {
 			//counter = 0;
 			//JumpState/DoubleJumpState > FallState: update down-force
 			//this.rigidbody.velocity = this.rigidbody.velocity + Vector3.down * this.rigidbody.velocity.y;
-			this.rigidbody.AddForce(Vector3.down * this.rigidbody.velocity.y, ForceMode.VelocityChange);
 
-			Vector3 force = Vector3.zero;
-			force += Vector3.down * jumpForce;
-			force += Vector3Forward * jumpMove;
-			//print("jumpForce" + jumpForce + "jumpMove " + jumpMove);
-			//print("force "+ force);
+			//problem: in Jump state, in transition [jump] >> [fall], double jump event is triggered. jump state go to fall state and then double state
+			//solution: can't interrupt transition!
+			//this is a temporary solution, don't set down-force when ISJump or IsDoubleJump is true
+			//if (!IsJump && !anim.GetBool(PlayerHashIDs.IsDoubleJump)) 
+			{
+				this.rigidbody.AddForce(Vector3.down * Mathf.Abs(this.rigidbody.velocity.y), ForceMode.VelocityChange);
 
-			this.rigidbody.AddForce(force, ForceMode.VelocityChange);
-			//this.rigidbody.velocity = new Vector3(jumpMove, -1.0f * jumpHeight, this.rigidbody.velocity.z);
+				Vector3 force = Vector3.zero;
+				force += Vector3.down * jumpForce;
+				force += Vector3Forward * jumpMove;
+				//print("jumpForce" + jumpForce + "jumpMove " + jumpMove);
+				//print("force "+ force);
+
+				this.rigidbody.AddForce(force, ForceMode.VelocityChange);
+				print ("add force at fall state!");
+				//this.rigidbody.velocity = new Vector3(jumpMove, -1.0f * jumpHeight, this.rigidbody.velocity.z);
+			}
 		}
 		else if (previous.nameHash == PlayerHashIDs.landState
 		         && (current.nameHash == PlayerHashIDs.locomotionState
@@ -270,7 +291,9 @@ public class PlayerMovement : MonoBehaviour {
 	void OnTransition(int layer, AnimatorTransitionInfo transitionInfo){
 //		Debug.Log("Transition from"+ animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
 		//print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash) + "at framecount: " + counter);
-
+		if (currentBaseState.nameHash == PlayerHashIDs.jumpState) {
+			print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
+		}
 		//problem: different frame number of [the time of pressed button jump] >> [the end of jump state] leads to difference jump height.
 		//solve: combine idle state into locomotion state.
 		//because in the transition [locomotion] >> [idle], if we jump, jumpForce will be applied at that time 
@@ -344,6 +367,11 @@ public class PlayerMovement : MonoBehaviour {
 		if (jumpCount == 1) {
 			print("double jump!");
 			anim.SetBool(PlayerHashIDs.IsDoubleJump, true);
+
+			//reset old down-force
+			Vector3 forceRemover = Vector3.up * Mathf.Abs(this.rigidbody.velocity.y);// this force is used for remove current vector3.down force
+			this.rigidbody.AddForce(forceRemover, ForceMode.VelocityChange);
+			print("velocity at double jump time: " + this.rigidbody.velocity);
 		}
 
 		jumpCount++;
@@ -358,6 +386,9 @@ public class PlayerMovement : MonoBehaviour {
 		//jumpForce = 9.8f + 50.0f + this.rigidbody.mass * velocity / 2.0f;
 		//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, jumpHeight, this.rigidbody.velocity.z);
 		this.rigidbody.AddForce(force, ForceMode.VelocityChange);
+		if (jumpCount == 2) {//double jump
+			print("velocity at double jump after add jumpforce: " + this.rigidbody.velocity);
+		}
 	}
 	
 	void jumpStateReset() {
@@ -367,55 +398,76 @@ public class PlayerMovement : MonoBehaviour {
 		jumpCount = 0;
 	}
 	//---------------------------------------------
-	bool IsStartCounting = false;
-	int counter = 0;
+//	bool IsStartCounting = false;
+//	int counter = 0;
 	void jumpManagement(float orientation, bool IsJump) {
 		//three basic steps for jumping process
 		//step 1: jump with a vector-up-force and vector-forward-force, controlled by orientation, in 1 second
 		//step 2: fall down with a raycast, change to landing state (FallToLand = true) when almost ground
 		//step 3: do the animation, reset variables (jumpCount = 0, FallToLand = false)
-		if (IsStartCounting) {
-			counter++;
-		}
-		else {
-			//reset counting
-			counter = 0;
-		}
+//		if (IsStartCounting) {
+//			counter++;
+//		}
+//		else {
+//			//reset counting
+//			counter = 0;
+//		}
 		if (currentBaseState.nameHash == PlayerHashIDs.locomotionState
 //		    || currentBaseState.nameHash == PlayerHashIDs.idleState
 		    ) {
 			if (IsJump) {
 				this.jumpStateEnter();
-				IsStartCounting = true;
+//				IsStartCounting = true;
+			}
+			if (!anim.IsInTransition(0)) { //not apply in transition, for example: [locomotion] >> [jump]
+				// Raycast down from the center of the character.. FOR FAKE GRAVITY ONLY IN LOCOMOTION STATE
+				Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
+				RaycastHit hitInfo = new RaycastHit();
+				
+				if (Physics.Raycast(ray, out hitInfo))
+				{
+					if (hitInfo.distance > midAirCheck) {//this value may change depend on character's center
+						this.rigidbody.AddForce(Vector3.down * FakeGravity, ForceMode.Force);
+					}
+				}
 			}
 		}
 		else if(currentBaseState.nameHash == PlayerHashIDs.jumpState)
 		{
 			//check double jump
-			if (IsJump && jumpCount < jumpCountMaximum) {
+			if (IsJump && jumpCount < jumpCountMaximum && !this.anim.IsInTransition(0)) {
+				print ("press jump in jump state");
 				this.jumpStateEnter();
+
+				//these function only for restart animation, but now we already has double jump state
 				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
-				anim.SetTarget(AvatarTarget.Root, 0.0f);
+				//anim.SetTarget(AvatarTarget.Root, 0.0f);
+
 			}
 			this.rigidbody.AddForce(Vector3.down * jumpForceReduce, ForceMode.VelocityChange);
-			//print("velocity " + this.rigidbody.velocity);
+		}
+		else if(currentBaseState.nameHash == PlayerHashIDs.doubleJumpState)
+		{
+			//redure doubleJumpForce per frame, in order to make character's trajectory look like parabol.
+			this.rigidbody.AddForce(Vector3.down * doubleJumpForceReduce, ForceMode.VelocityChange);
 		}
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
 			//check double jump
 			if (IsJump && jumpCount < jumpCountMaximum) {
+				print ("press jump in falling state");
 				//reset falling force
 				//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
 				this.jumpStateEnter();
-				print ("press jump in falling state");
+
 			}
-			
+
 			// Raycast down from the center of the character.. 
 			Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
 			RaycastHit hitInfo = new RaycastHit();
 			
 			if (Physics.Raycast(ray, out hitInfo))
 			{
-				if (hitInfo.distance < 1.2f) {//this value may change depend on character's center
+				if (hitInfo.distance < midAirCheck) {//this value may change depend on character's center
 					anim.SetBool(PlayerHashIDs.FallToLandBool, true);
 				}
 				// ..if distance to the ground is more than 1.75, use Match Target
