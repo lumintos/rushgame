@@ -31,7 +31,6 @@ public class MultiplayerManager : MonoBehaviour
     void Start()
     {
         Instance = this;
-        //PlayerName = PlayerPrefs.GetString("PlayerName");
         DontDestroyOnLoad(gameObject);
         //MasterServer.ipAddress = "hieurl.zapto.org";
         //MasterServer.port = 50005;
@@ -277,6 +276,7 @@ public class MultiplayerManager : MonoBehaviour
         if (Network.isServer)
             networkView.RPC("Client_LaunchGame", RPCMode.OthersBuffered, mapName, levelPrefix);
 
+        lastLevelPrefix = levelPrefix;
         Application.LoadLevel(mapName);
     }
 

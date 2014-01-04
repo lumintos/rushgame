@@ -11,13 +11,27 @@ public class GameController : MonoBehaviour {
     public GameObject goal;
     public bool gameEnd;
 
+    GameObject testMultiplayer = null;
+
 	// Use this for initialization
 	void Start () {
         gameEnd = false;
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
         guiHelper.UpdateGUIElementsSize();
-        GameObject player = (GameObject) MultiplayerManager.Instance.SpawnPlayer();
-        camController.addMainPlayer(player);
+
+        testMultiplayer = GameObject.Find("Multiplayer Manager");
+        GameObject player = null;
+        if (testMultiplayer != null)
+        {
+            player = (GameObject)MultiplayerManager.Instance.SpawnPlayer();
+        }
+        else
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+
+        if(player != null)
+            camController.addMainPlayer(player);
 	}
 	
 	void Awake(){		

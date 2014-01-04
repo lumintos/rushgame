@@ -57,7 +57,7 @@ public class PlayerMovement : MonoBehaviour {
     private bool IsJump;
     private float moveDirection = 0;
 
-
+    GameObject testMultiplayer = null;
 
 	void Awake() {
 		anim = GetComponent<Animator>();
@@ -68,55 +68,87 @@ public class PlayerMovement : MonoBehaviour {
 
 		//control events for current animator
 		animatorEvents = GetComponent<AnimatorEvents>();
+
+        testMultiplayer = GameObject.Find("Multiplayer Manager");
 	}
 
 	void FixedUpdate() {
-        GameController gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
-        if (gameController.gameEnd)
-            return;
-
-        //States in server is the correct one for all network player (regardless networkView), all clients must follow
-        if (Network.isServer)
-            networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
-
-        //Input only for network player of owner
-        if (networkView.isMine)
+        if (testMultiplayer == null) //Test movement only, single player
         {
             //get all inputs
-			//orientation, works with float range [-1.0f, 1.0f]
+            //orientation, works with float range [-1.0f, 1.0f]
             float h = Input.GetAxis("Horizontal");
             float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
             moveDirection = hInt;
 
-			//only set IsJump = true when that button is release and re-press again
-			if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
-			    || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
-			{
-				jumpButtonLock = false;
-			}
+            //only set IsJump = true when that button is release and re-press again
+            if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
+                || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
+            {
+                jumpButtonLock = false;
+            }
             //jump
             IsJump = false;
             if ((Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
-			&& !jumpButtonLock)
+            && !jumpButtonLock)
             {
-				IsJump = true;
-				jumpButtonLock = true;
-				IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
+                IsJump = true;
+                jumpButtonLock = true;
+                IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
             }
-            
-            //movement.updateMovement(hInt, IsJump);
-			this.updateMovement(hInt, IsJump);
-            //Call object instance in other game instances to perform exact movement
-            networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);        
 
+            //movement.updateMovement(hInt, IsJump);
+            this.updateMovement(hInt, IsJump);
         }
-        /* else
+        else
         {
-            //if (Network.isClient)
-            //    SyncedMovement();
-            if(Network.isServer)
-                networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
-        } */
+            GameController gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
+            if (gameController.gameEnd)
+                return;
+
+            //States in server is the correct one for all network player (regardless networkView), all clients must follow
+            if (Network.isServer)
+                networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
+
+            //Input only for network player of owner
+            if (networkView.isMine)
+            {
+                //get all inputs
+                //orientation, works with float range [-1.0f, 1.0f]
+                float h = Input.GetAxis("Horizontal");
+                float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
+                moveDirection = hInt;
+
+                //only set IsJump = true when that button is release and re-press again
+                if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
+                    || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
+                {
+                    jumpButtonLock = false;
+                }
+                //jump
+                IsJump = false;
+                if ((Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
+                && !jumpButtonLock)
+                {
+                    IsJump = true;
+                    jumpButtonLock = true;
+                    IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
+                }
+
+                //movement.updateMovement(hInt, IsJump);
+                this.updateMovement(hInt, IsJump);
+                //Call object instance in other game instances to perform exact movement
+                networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);
+
+            }
+            /* else
+            {
+                //if (Network.isClient)
+                //    SyncedMovement();
+                if(Network.isServer)
+                    networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
+            } */
+        }
 	}
 
 	void OnGUI()

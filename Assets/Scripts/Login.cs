@@ -122,8 +122,8 @@ public class Login : MonoBehaviour {
 					WWWForm form = new WWWForm();
 					form.AddField("username", username);
 					form.AddField("password", password);
-                    //WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
-                    WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
+                    WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
+                    //WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
 					StartCoroutine(loginRequest(w));
 				}
 			}
