@@ -25,6 +25,7 @@ public class GUIHelper : MonoBehaviour {
 
     public GUITexture backgroundImage;
     public Color primaryColor, secondaryColor;
+    public Color[] textColor, outlineColor;
 
 	// Use this for initialization
 	void Start () {

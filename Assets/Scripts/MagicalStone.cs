@@ -8,13 +8,13 @@ public class MagicalStone : PickupItem {
     [RPC]
     override public void PickItem(NetworkPlayer collectNetworkPlayer)
     {
-        Debug.Log("Set owner: ");
         GameController gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
         gameController.stoneKeeper = collectNetworkPlayer;
+        gameController.isStoneTaken = true;
 
         keeper = collectNetworkPlayer;
-        Destroy(gameObject);
 
         networkView.RPC("PickItem", RPCMode.Others, collectNetworkPlayer);
+        Destroy(gameObject);
     }
 }

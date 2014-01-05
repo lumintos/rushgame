@@ -47,6 +47,7 @@ public class PlayerMovement : MonoBehaviour {
 	AnimatorEvents animatorEvents;
 
 	private GUIManager guiManager;
+    private GameController gameController;
 
     private float lastSynchronizationTime = 0f;
     private float syncDelay = 0f;
@@ -68,11 +69,17 @@ public class PlayerMovement : MonoBehaviour {
 
 		//control events for current animator
 		animatorEvents = GetComponent<AnimatorEvents>();
-
+        gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
         testMultiplayer = GameObject.Find("Multiplayer Manager");
 	}
-
+    
 	void FixedUpdate() {
+        if (gameController.gameEnd != 0)
+        {
+            this.updateMovement(0, false); //character is idle
+            return;
+        }
+
         if (testMultiplayer == null) //Test movement only, single player
         {
             //get all inputs
@@ -102,10 +109,6 @@ public class PlayerMovement : MonoBehaviour {
         }
         else
         {
-            GameController gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
-            if (gameController.gameEnd)
-                return;
-
             //States in server is the correct one for all network player (regardless networkView), all clients must follow
             if (Network.isServer)
                 networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
