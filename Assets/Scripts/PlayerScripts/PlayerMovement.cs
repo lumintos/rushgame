@@ -2,10 +2,12 @@
 using System.Collections;
 
 public class PlayerMovement : MonoBehaviour {
-	//MovementController movement = new MovementController();
-
+	#region properties
 	private Animator anim;
+	//these function is updated by function OnStateChange
 	private AnimatorStateInfo currentBaseState;
+	private AnimatorStateInfo previousBaseState;
+	private bool IsOnChangeState = false;
 
 //	private GameObject obj;
 //	private Animator anim;
@@ -30,6 +32,12 @@ public class PlayerMovement : MonoBehaviour {
 	private float jumpMove = 0.0f;
 	private bool jumpButtonLock = false;//only unlock when release then re-press/touch jump button
 	private bool IsKeyboardInput = true;//there are 2 types of input: by keys or by touch-button
+	//when jump button is pressed, this var is active, 
+	//but it waits until the right time to active the REAL JUMP FUNCTION
+	//For example: in transition [jump] > [fall]; press jump; if active immediately, 
+	//it will set some up-force, then goes to [fall state], then reset to down-force
+	//The good solution in this case is let the system wait until fall state is reached, and then active the REAL JUMP FUNCTION
+	private bool IsReceivedJumpCommand = false;
 	
 	//pre-define only for this particular scene
 	public Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
@@ -60,6 +68,9 @@ public class PlayerMovement : MonoBehaviour {
 
     GameObject testMultiplayer = null;
 
+	#endregion
+
+	#region gui and network
 	void Awake() {
 		anim = GetComponent<Animator>();
 
@@ -248,7 +259,9 @@ public class PlayerMovement : MonoBehaviour {
             syncTime = 0;
         }
     }
+	#endregion
 
+	#region animator events
 	//------------------------------------------------------------------------------
 	//control events of current animator
 	void OnEnable(){
@@ -270,70 +283,29 @@ public class PlayerMovement : MonoBehaviour {
 	/// <param name="previous">Previous state machine</param>
 	/// <param name="current">Current state machine</param>
 	void OnStateChanged(int layer, AnimatorStateInfo previous,AnimatorStateInfo current){
+		currentBaseState = current;
+		previousBaseState = previous;
+		IsOnChangeState = true;
+		return;
 		//This displays the State Info of previous and currentstates.
 		//Debug.Log("State changed from" + previous + "to" + current);
 
 		//AnimatorEvents returns a much friendly way than hash names
 		//Debug.Log("State changed to" + animatorEvents.layers[layer].GetStateName(current.nameHash));
-		 
-		if(current.nameHash == PlayerHashIDs.jumpState) {
-			//reset JumpBool in animator, in order to re-jump in jump or fall state
-			anim.SetBool(PlayerHashIDs.JumpBool, false);
-			//print ("jump velocity: " + this.rigidbody.velocity + ", frame count: " + counter);
-		}
-		else if (current.nameHash == PlayerHashIDs.doubleJumpState) {
-			//reset DoubleJump, so when DoubleJump > FallState, FallState doesn't go back to DoubleJumpState
-			anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
-			print ("velocity when double jump: " + this.rigidbody.velocity);
-		}
-		else if (current.nameHash == PlayerHashIDs.fallState) {
-			//print ("fall state frame count: " + counter);
-			//IsStartCounting = false;
-			//counter = 0;
-			//JumpState/DoubleJumpState > FallState: update down-force
-			//this.rigidbody.velocity = this.rigidbody.velocity + Vector3.down * this.rigidbody.velocity.y;
-
-			//problem: in Jump state, in transition [jump] >> [fall], double jump event is triggered. jump state go to fall state and then double state
-			//solution: can't interrupt transition!
-			//this is a temporary solution, don't set down-force when ISJump or IsDoubleJump is true
-			//if (!IsJump && !anim.GetBool(PlayerHashIDs.IsDoubleJump)) 
-			{
-				this.rigidbody.AddForce(Vector3.down * Mathf.Abs(this.rigidbody.velocity.y), ForceMode.VelocityChange);
-
-				Vector3 force = Vector3.zero;
-				force += Vector3.down * jumpForce;
-				force += Vector3Forward * jumpMove;
-				//print("jumpForce" + jumpForce + "jumpMove " + jumpMove);
-				//print("force "+ force);
-
-				this.rigidbody.AddForce(force, ForceMode.VelocityChange);
-				print ("add force at fall state!");
-				//this.rigidbody.velocity = new Vector3(jumpMove, -1.0f * jumpHeight, this.rigidbody.velocity.z);
-			}
-		}
-		else if (previous.nameHash == PlayerHashIDs.landState
-		         && (current.nameHash == PlayerHashIDs.locomotionState
-//					|| current.nameHash == PlayerHashIDs.idleState
-		    )) {
-			//after FallState: reset JumpingProcess
-			this.jumpStateReset();
-		}
-		else if (previous.nameHash == PlayerHashIDs.fallState && current.nameHash == PlayerHashIDs.locomotionState) {
-			this.jumpStateReset();
-		}
 	}
 	
 	void OnTransition(int layer, AnimatorTransitionInfo transitionInfo){
 //		Debug.Log("Transition from"+ animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
 		//print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash) + "at framecount: " + counter);
-		if (currentBaseState.nameHash == PlayerHashIDs.jumpState) {
-			print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
-		}
+//		if (currentBaseState.nameHash == PlayerHashIDs.jumpState) {
+//			//print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
+//		}
 		//problem: different frame number of [the time of pressed button jump] >> [the end of jump state] leads to difference jump height.
 		//solve: combine idle state into locomotion state.
 		//because in the transition [locomotion] >> [idle], if we jump, jumpForce will be applied at that time 
 		//but it takes extra frames to make change [in-middle-of-transition locomotion >> idle] >> [jump state]
 	}
+	#endregion
 
 	public void updateMovement(float horizontal, bool IsJump) {
 		//get all inputs
@@ -346,7 +318,8 @@ public class PlayerMovement : MonoBehaviour {
 		//			print ("velocity: " + this.rigidbody.velocity + ", hInt " + horizontal);
 		//		}
 	}
-	
+
+	#region movement management
 	void MovementManagement(float orientation) {
 		Rotation (orientation);
 		if (orientation != 0.0f) {
@@ -392,21 +365,22 @@ public class PlayerMovement : MonoBehaviour {
 		Quaternion newRotation = Quaternion.Lerp(this.rigidbody.rotation, targetRotation, turnSmoothly * Time.deltaTime);
 		this.rigidbody.MoveRotation(newRotation);
 	}
-	
-	//---------------------------------------------
-	//manage jumpState
+	#endregion 
+
+	#region manage jump state variable
 	void jumpStateEnter() {
 		anim.SetBool(PlayerHashIDs.JumpBool, true);
+		IsReceivedJumpCommand = false;
 
 		//enable double jump animation
 		if (jumpCount == 1) {
-			print("double jump!");
+			//print("double jump!");
 			anim.SetBool(PlayerHashIDs.IsDoubleJump, true);
 
 			//reset old down-force
 			Vector3 forceRemover = Vector3.up * Mathf.Abs(this.rigidbody.velocity.y);// this force is used for remove current vector3.down force
 			this.rigidbody.AddForce(forceRemover, ForceMode.VelocityChange);
-			print("velocity at double jump time: " + this.rigidbody.velocity);
+			//print("velocity at double jump time: " + this.rigidbody.velocity);
 		}
 
 		jumpCount++;
@@ -422,7 +396,7 @@ public class PlayerMovement : MonoBehaviour {
 		//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, jumpHeight, this.rigidbody.velocity.z);
 		this.rigidbody.AddForce(force, ForceMode.VelocityChange);
 		if (jumpCount == 2) {//double jump
-			print("velocity at double jump after add jumpforce: " + this.rigidbody.velocity);
+			//print("velocity at double jump after add jumpforce: " + this.rigidbody.velocity);
 		}
 	}
 	
@@ -430,94 +404,156 @@ public class PlayerMovement : MonoBehaviour {
 		anim.SetBool(PlayerHashIDs.JumpBool, false);
 		anim.SetBool(PlayerHashIDs.FallToLandBool, false);
 		anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
+		IsReceivedJumpCommand = false;
 		jumpCount = 0;
 	}
-	//---------------------------------------------
-//	bool IsStartCounting = false;
-//	int counter = 0;
+	#endregion
+
+	#region manage jump process by check related state
+	
+	//three basic steps for jumping process
+	//step 1: jump with a vector-up-force and vector-forward-force, controlled by orientation, in 1 second
+	//step 2: fall down with a raycast, change to landing state (FallToLand = true) when almost ground
+	//step 3: do the animation, reset variables (jumpCount = 0, FallToLand = false)
 	void jumpManagement(float orientation, bool IsJump) {
-		//three basic steps for jumping process
-		//step 1: jump with a vector-up-force and vector-forward-force, controlled by orientation, in 1 second
-		//step 2: fall down with a raycast, change to landing state (FallToLand = true) when almost ground
-		//step 3: do the animation, reset variables (jumpCount = 0, FallToLand = false)
-//		if (IsStartCounting) {
-//			counter++;
-//		}
-//		else {
-//			//reset counting
-//			counter = 0;
-//		}
-		if (currentBaseState.nameHash == PlayerHashIDs.locomotionState
-//		    || currentBaseState.nameHash == PlayerHashIDs.idleState
-		    ) {
-			if (IsJump) {
-				this.jumpStateEnter();
-//				IsStartCounting = true;
-			}
-			if (!anim.IsInTransition(0)) { //not apply in transition, for example: [locomotion] >> [jump]
-				// Raycast down from the center of the character.. FOR FAKE GRAVITY ONLY IN LOCOMOTION STATE
-				Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
-				RaycastHit hitInfo = new RaycastHit();
-				
-				if (Physics.Raycast(ray, out hitInfo))
-				{
-					if (hitInfo.distance > midAirCheck) {//this value may change depend on character's center
-						this.rigidbody.AddForce(Vector3.down * FakeGravity, ForceMode.Force);
-					}
-				}
-			}
+		if (currentBaseState.nameHash == PlayerHashIDs.locomotionState) jumpManagementCheckLocomotionState();
+		else if (currentBaseState.nameHash == PlayerHashIDs.jumpState) jumpManagementCheckJumpState();
+		else if (currentBaseState.nameHash == PlayerHashIDs.doubleJumpState) jumpManagementCheckDoubleJumpState();
+		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) jumpManagementCheckFallState();
+		else if (currentBaseState.nameHash == PlayerHashIDs.landState) jumpManagementCheckLandState();
+
+		IsOnChangeState = false;
+	}
+
+	void jumpManagementCheckLocomotionState() {
+		if (IsOnChangeState) { //change from other state to this state
+			this.jumpStateReset();
+			return;
 		}
-		else if(currentBaseState.nameHash == PlayerHashIDs.jumpState)
-		{
-			//check double jump
-			if (IsJump && jumpCount < jumpCountMaximum && !this.anim.IsInTransition(0)) {
-				print ("press jump in jump state");
-				this.jumpStateEnter();
-
-				//these function only for restart animation, but now we already has double jump state
-				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
-				//anim.SetTarget(AvatarTarget.Root, 0.0f);
-
-			}
-			this.rigidbody.AddForce(Vector3.down * jumpForceReduce, ForceMode.VelocityChange);
+		if (IsJump) {
+			this.jumpStateEnter();
+			//				IsStartCounting = true;
 		}
-		else if(currentBaseState.nameHash == PlayerHashIDs.doubleJumpState)
-		{
-			//redure doubleJumpForce per frame, in order to make character's trajectory look like parabol.
-			this.rigidbody.AddForce(Vector3.down * doubleJumpForceReduce, ForceMode.VelocityChange);
-		}
-		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) {
-			//check double jump
-			if (IsJump && jumpCount < jumpCountMaximum) {
-				print ("press jump in falling state");
-				//reset falling force
-				//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
-				this.jumpStateEnter();
-
-			}
-
-			// Raycast down from the center of the character.. 
+		if (!anim.IsInTransition(0)) { //not apply in transition, for example: [locomotion] >> [jump]
+			// Raycast down from the center of the character.. FOR FAKE GRAVITY ONLY IN LOCOMOTION STATE
 			Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
 			RaycastHit hitInfo = new RaycastHit();
 			
 			if (Physics.Raycast(ray, out hitInfo))
 			{
-				if (hitInfo.distance < midAirCheck) {//this value may change depend on character's center
-					anim.SetBool(PlayerHashIDs.FallToLandBool, true);
+				if (hitInfo.distance > midAirCheck) {//this value may change depend on character's center
+					this.rigidbody.AddForce(Vector3.down * FakeGravity, ForceMode.Force);
 				}
-				// ..if distance to the ground is more than 1.75, use Match Target
-				//				if (hitInfo.distance > 1.75f)
-				//				{
-				//					// MatchTarget allows us to take over animation and smoothly transition our character towards a location - the hit point from the ray.
-				//					// Here we're telling the Root of the character to only be influenced on the Y axis (MatchTargetWeightMask) and only occur between 0.35 and 0.5
-				//					// of the timeline of our animation clip
-				//					anim.MatchTarget(hitInfo.point, Quaternion.identity, AvatarTarget.Root, new MatchTargetWeightMask(new Vector3(0, 1, 0), 0), 0.35f, 0.5f);
-				//				}
 			}
-			
-			//this.rigidbody.AddForce(Vector3.up * 0.0f, ForceMode.Impulse);
-			//print("velocity " + this.rigidbody.velocity);
 		}
 	}
 
+	void jumpManagementCheckJumpState() {
+		if (IsOnChangeState) { //change from other state to this state
+			//reset JumpBool in animator, in order to re-jump in jump or fall state
+			anim.SetBool(PlayerHashIDs.JumpBool, false);
+			return;
+		}
+		//check double jump
+		if (IsJump && jumpCount < jumpCountMaximum) {
+			if (this.anim.IsInTransition(0)) {//if state machine currently in transition [jump] >> [fall]
+				//save the command for later use (will be used at the beginnning of [fall state])
+				IsReceivedJumpCommand = true;
+				print("received a jump command, but wait until fall state");
+			}
+			else {
+				print ("press jump in jump state");
+				this.jumpStateEnter();
+				
+				//these function only for restart animation, but now we already has double jump state
+				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
+				//anim.SetTarget(AvatarTarget.Root, 0.0f);
+			}
+		}
+		this.rigidbody.AddForce(Vector3.down * jumpForceReduce, ForceMode.VelocityChange);
+	}
+
+	void jumpManagementCheckDoubleJumpState() {
+		if (IsOnChangeState) { //change from other state to this state
+			//reset DoubleJump, so when DoubleJump > FallState, FallState doesn't go back to DoubleJumpState
+			anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
+			return;
+		}
+		//redure doubleJumpForce per frame, in order to make character's trajectory look like parabol.
+		this.rigidbody.AddForce(Vector3.down * doubleJumpForceReduce, ForceMode.VelocityChange);
+	}
+
+	void jumpManagementCheckFallState() {
+		if (IsOnChangeState) { //change from other state to this state
+			//TODO: not sure we still have this problem or not.
+			//I found that, we have 2 transition from [jump] can happens at the same time --> strict condition is solve this problem
+			//problem: in Jump state, in transition [jump] >> [fall], double jump event is triggered. jump state go to fall state and then double state
+			//solution: wait until fall state is reached
+			if (IsReceivedJumpCommand) {
+				//let's double jump
+				this.jumpStateEnter();
+			}
+			else
+			{
+				this.rigidbody.AddForce(Vector3.down * Mathf.Abs(this.rigidbody.velocity.y), ForceMode.VelocityChange);
+				
+				Vector3 force = Vector3.zero;
+				force += Vector3.down * jumpForce;
+				force += Vector3Forward * jumpMove;
+				//print("jumpForce" + jumpForce + "jumpMove " + jumpMove);
+				//print("force "+ force);
+				
+				this.rigidbody.AddForce(force, ForceMode.VelocityChange);
+				//print ("add force at fall state!");
+				//this.rigidbody.velocity = new Vector3(jumpMove, -1.0f * jumpHeight, this.rigidbody.velocity.z);
+			}
+			return;
+		}
+		//check double jump
+		if (IsJump && jumpCount < jumpCountMaximum) {
+			//print ("press jump in falling state");
+			//reset falling force
+			//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
+			this.jumpStateEnter();
+			
+		}
+		
+		// Raycast down from the center of the character.. 
+		Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
+		RaycastHit hitInfo = new RaycastHit();
+		
+		if (Physics.Raycast(ray, out hitInfo))
+		{
+			if (hitInfo.distance < midAirCheck) {//this value may change depend on character's center
+				anim.SetBool(PlayerHashIDs.FallToLandBool, true);
+			}
+			// ..if distance to the ground is more than 1.75, use Match Target
+			//				if (hitInfo.distance > 1.75f)
+			//				{
+			//					// MatchTarget allows us to take over animation and smoothly transition our character towards a location - the hit point from the ray.
+			//					// Here we're telling the Root of the character to only be influenced on the Y axis (MatchTargetWeightMask) and only occur between 0.35 and 0.5
+			//					// of the timeline of our animation clip
+			//					anim.MatchTarget(hitInfo.point, Quaternion.identity, AvatarTarget.Root, new MatchTargetWeightMask(new Vector3(0, 1, 0), 0), 0.35f, 0.5f);
+			//				}
+		}
+		
+		//this.rigidbody.AddForce(Vector3.up * 0.0f, ForceMode.Impulse);
+		//print("velocity " + this.rigidbody.velocity);
+	}
+
+	void jumpManagementCheckLandState() {
+		if (IsOnChangeState) { //change from other state to this state
+			return;
+		}
+
+		//check double jump
+		if (IsJump && jumpCount < jumpCountMaximum) {
+			//print ("press jump in falling state");
+			//reset falling force
+			//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
+			this.jumpStateEnter();
+			
+		}
+	}
+	#endregion
 }
