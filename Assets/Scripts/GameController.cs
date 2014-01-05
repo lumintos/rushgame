@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Xml;
 
 public class GameController : MonoBehaviour {
 
@@ -14,17 +15,20 @@ public class GameController : MonoBehaviour {
 
     private float startTimeKeepStone, elapsedTimeKeepStone;
     private float maxTimeKeepStone;
+    private bool updatedResult;
     GameObject testMultiplayer = null;
 
 	// Use this for initialization
 	void Start () {
         gameEnd = 0;
         isStoneTaken = false;
+        updatedResult = false;
         startTimeKeepStone = 0;
         elapsedTimeKeepStone = 0;
         maxTimeKeepStone = 30; // in seconds
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
         guiHelper.UpdateGUIElementsSize();
+
 
         testMultiplayer = GameObject.Find("Multiplayer Manager");
         GameObject player = null;
@@ -39,7 +43,7 @@ public class GameController : MonoBehaviour {
         }
         
         if(Network.isServer)
-            SpawnStone(stonePrefab.transform.position, stonePrefab.transform.rotation);
+            SpawnStone();
         
         if(player != null)
             camController.addMainPlayer(player);
@@ -101,9 +105,17 @@ public class GameController : MonoBehaviour {
         //Display for end game
         if (gameEnd != 0)
         {
-            Rect txtTemptRect = guiHelper.GetScaledRectFromUnit(24, 8);
-            txtTemptRect.x = 12 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-            txtTemptRect.y = 4 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+            Rect txtTemptRect = guiHelper.GetScaledRectFromUnit(40, 23);
+            txtTemptRect.x = 4 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+            txtTemptRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+
+            GUI.BeginGroup(txtTemptRect, "", GUI.skin.box);
+
+            //GUI.Box(txtTemptRect, "");
+            
+            txtTemptRect = guiHelper.GetScaledRectFromUnit(20, 7);
+            txtTemptRect.x = 10 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+            txtTemptRect.y = 1 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
             Vector2 direction = new Vector2(1, 1);
             GUIContent content = new GUIContent(guiManager.GameResult.text);
             GUIStyle style = GUI.skin.label;
@@ -118,15 +130,44 @@ public class GameController : MonoBehaviour {
 
             ShadowAndOutline.DrawOutline(txtTemptRect, text, style, guiHelper.outlineColor[gameEnd - 1], guiHelper.textColor[gameEnd - 1], 4); // When game ended, gameEnd > 0
 
+            Rect txtScore = guiHelper.GetScaledRectFromUnit(40, 4);
+            txtScore.x = 0 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+            txtScore.y = 9 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+            style.fontSize /= 2;
 
             Rect btnTemptRect = guiHelper.GetScaledRectFromUnit(8, 4);
-            btnTemptRect.x = 20 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
+            btnTemptRect.x = 16 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
             btnTemptRect.y = 16 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
 
-            if (GUI.Button(btnTemptRect, "Continue"))
+            if (updatedResult)
             {
-                Application.LoadLevel("lobby");
+                string score = "";
+                if (gameEnd == 1)
+                {
+                    score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
+                        + "(+ " + GameConstants.bonusSpirit + ")"
+                        + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
+                }
+                else if (gameEnd == 2)
+                {
+                    score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
+                        + "(- " + GameConstants.bonusSpirit + ")"
+                        + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
+                }
+
+                ShadowAndOutline.DrawOutline(txtScore, score, style, guiHelper.outlineColor[gameEnd - 1], Color.white, 4);
+
+                if (GUI.Button(btnTemptRect, "Continue"))
+                {
+                    Application.LoadLevel("lobby");
+                }
             }
+            else
+            {
+                ShadowAndOutline.DrawOutline(txtScore, "Updating score...", style, Color.black, Color.gray, 4);
+            }
+
+            GUI.EndGroup();
         }
     }
 
@@ -144,8 +185,7 @@ public class GameController : MonoBehaviour {
 
             if (elapsedTimeKeepStone > maxTimeKeepStone)
             {
-                //TODO: respawn stone at a specific position
-                SpawnStone(stonePrefab.transform.position, stonePrefab.transform.rotation);
+                SpawnStone();
                 isStoneTaken = false;
                 startTimeKeepStone = 0;
                 elapsedTimeKeepStone = 0;
@@ -161,28 +201,56 @@ public class GameController : MonoBehaviour {
     }
 
     [RPC]
-    void SpawnStone(Vector3 position, Quaternion quarternion)
+    void SpawnStone()
     {
-        Network.Instantiate(stonePrefab, position, quarternion, 0); //This will spawn magical stone in both server and client
+        Network.Instantiate(stonePrefab, stonePrefab.transform.position, stonePrefab.transform.rotation, 0); //This will spawn magical stone in both server and client
     }
 
     [RPC]
     void DisplayResult()
     {
-        //Since client does not check winning condition, it does not know game ended
-        //So we update for it here because result is only displayed once the game ended
-
+            //TODO: Display Popup result
         if (Network.player == stoneKeeper)
         {
-            //TODO: Display Popup result
             gameEnd = 1;
         }
         else
         {
             gameEnd = 2;
-            //Debug.Log("DEFEAT");
-        } 
+        }
+
+        UpdateScoreToDB();
     }
 
-    
+    void UpdateScoreToDB()
+    {
+        string result = (gameEnd == 1 ? "win" : "lose");
+        WWWForm form = new WWWForm();
+        form.AddField("username", MultiplayerManager.Instance.PlayerName);
+        form.AddField("alter_spirit", GameConstants.bonusSpirit);
+        form.AddField("match_result", result);
+        form.AddField("alter_max_spirit", 0);
+        string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=update_match_score";
+        WWW w = new WWW(url, form);
+        StartCoroutine(setScoreRequest(w));
+    }
+
+    IEnumerator setScoreRequest(WWW w)
+    {
+        yield return w;
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(w.text);
+
+        XmlNode codeNode = doc.DocumentElement.SelectSingleNode("/response/code");
+        string code = codeNode.InnerText;
+
+        if (code == "OK")
+        {
+            updatedResult = true;
+        }
+        else
+        {
+            updatedResult = false;
+        }
+    }
 }

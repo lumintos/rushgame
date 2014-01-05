@@ -122,8 +122,8 @@ public class Login : MonoBehaviour {
 					WWWForm form = new WWWForm();
 					form.AddField("username", username);
 					form.AddField("password", password);
-                    WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
-                    //WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
+                    //WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
+                    WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
 					StartCoroutine(loginRequest(w));
 				}
 			}
@@ -233,8 +233,7 @@ public class Login : MonoBehaviour {
             {
                 //((User)GameObject.Find("User").GetComponent("User")).username = username; //store username for later scenes
                 MultiplayerManager.Instance.PlayerName = username;
-                PlayerPrefs.SetString("PlayerName", MultiplayerManager.Instance.PlayerName);
-                
+                PlayerPrefs.SetString("PlayerName", MultiplayerManager.Instance.PlayerName);               
 
 
 				Application.LoadLevel("lobby");

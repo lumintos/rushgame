@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Xml;
+using System.Xml.Linq;
 
 public class Lobby : MonoBehaviour {
     
@@ -92,10 +94,34 @@ public class Lobby : MonoBehaviour {
 
     void GetUserInfo()
     {
-        //TODO: Query from Database, parse returned result into user info and pass to MultiplayerManager
-        int dummyLevel = 10;
-        int dummySpirit = 1000;
-        MultiplayerManager.Instance.SetUserInfo(MultiplayerManager.Instance.PlayerName, Network.player, dummyLevel, dummySpirit);
+        string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=query_score&username=" + MultiplayerManager.Instance.PlayerName;
+        WWW w = new WWW(url);
+        StartCoroutine(queryInfoRequest(w));
+    }
+
+    IEnumerator queryInfoRequest(WWW w)
+    {
+        yield return w;
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(w.text);
+
+        XmlNode codeNode = doc.DocumentElement.SelectSingleNode("/response/code");
+        string code = codeNode.InnerText;
+
+        if (code == "OK")
+        {
+            XmlNode spiritNode = doc.DocumentElement.SelectSingleNode("/response/user_score/spirit");
+            int spirit = int.Parse(spiritNode.InnerText);
+
+            XmlNode maxSpiritNode = doc.DocumentElement.SelectSingleNode("/response/user_score/max_spirit");
+            int maxSpirit = int.Parse(maxSpiritNode.InnerText);
+
+            MultiplayerManager.Instance.SetUserInfo(MultiplayerManager.Instance.PlayerName, Network.player, maxSpirit, spirit);
+        }
+        else
+        {
+            guiHelper.message = "Cannot retrieve user's information";
+        }        
     }
 
     /// <summary>
@@ -189,12 +215,10 @@ public class Lobby : MonoBehaviour {
             msgStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit / guiHelper.screenHeightUnit;
             GUI.Label(msgRect, guiHelper.message, msgStyle);
         }
-
     }
 
     void DrawUserInfo()
     {
-
         //Bounding box
         Rect userinfoGroupRect = guiHelper.GetScaledRectFromUnit(11, 3);
         userinfoGroupRect.x = 36 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
@@ -215,8 +239,8 @@ public class Lobby : MonoBehaviour {
         //Spirit and other info
         userinfoRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
         tempLabelStyle.fontStyle = FontStyle.Italic;
-        tempLabelStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit / guiHelper.screenHeightUnit;
-        GUI.Label(userinfoRect, "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit, tempLabelStyle);
+        tempLabelStyle.fontSize = (int)(guiHelper.screenHeight * guiHelper.fontSizeUnit / (1.5f * guiHelper.screenHeightUnit));
+        GUI.Label(userinfoRect, "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit, tempLabelStyle);
 
         //Logout button
         Rect btnLogoutRect = guiHelper.GetScaledRectFromUnit(2.5f, 2.5f);
@@ -283,9 +307,17 @@ public class Lobby : MonoBehaviour {
 
                 if (GUI.Button(buttonRect, roomList[displayedRoomIndex[i]].gameName))
                 {
-                    roomName = roomList[displayedRoomIndex[i]].gameName;
-                    MultiplayerManager.Instance.JoinRoom(roomList[i]);
-                    joinRoom = true;
+                    if (MultiplayerManager.Instance.MyPlayer.spirit < GameConstants.minSpiritJoinRoom)
+                    {
+                        guiHelper.message = "You do not have enough Spirit to join room";
+                        elapsedTimeDisplayedMsg = 0;
+                    }
+                    else
+                    {
+                        roomName = roomList[displayedRoomIndex[i]].gameName;
+                        MultiplayerManager.Instance.JoinRoom(roomList[i]);
+                        joinRoom = true;
+                    }
                 }
             }
             //GUILayout.EndScrollView();
@@ -321,15 +353,23 @@ public class Lobby : MonoBehaviour {
 
         if (GUI.Button(btnTemptRect, "Create Room"))
         {
-            //call network manager to register room here
-            roomName = MultiplayerManager.Instance.PlayerName + "'s Room";
-            //MultiplayerManager.Instance.MyPlayer.team = 1;
-            //networkManager.StartServer(roomName);
-            MultiplayerManager.Instance.CreateRoom(roomName, 2);
-            guiHelper.message = "New room created ... ";
-            elapsedTimeDisplayedMsg = 0;
-            joinedPlayer = 1;
-            createRoom = true;
+            if (MultiplayerManager.Instance.MyPlayer.spirit < GameConstants.minSpiritJoinRoom)
+            {
+                guiHelper.message = "You do not have enough Spirit to create room";
+                elapsedTimeDisplayedMsg = 0;
+            }
+            else
+            {
+                //call network manager to register room here
+                roomName = MultiplayerManager.Instance.PlayerName + "'s Room";
+                //MultiplayerManager.Instance.MyPlayer.team = 1;
+                //networkManager.StartServer(roomName);
+                MultiplayerManager.Instance.CreateRoom(roomName, 2);
+                guiHelper.message = "New room created ... ";
+                elapsedTimeDisplayedMsg = 0;
+                joinedPlayer = 1;
+                createRoom = true;
+            }
         }
     }
 

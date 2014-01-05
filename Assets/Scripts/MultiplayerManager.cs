@@ -316,12 +316,12 @@ public class MultiplayerManager : MonoBehaviour
     /// <param name="playerName"></param>
     /// <param name="view"></param>
     /// <param name="level"></param>
-    public void SetUserInfo(string playerName, NetworkPlayer view, int level, int spirit)
+    public void SetUserInfo(string playerName, NetworkPlayer view, int max_spirit, int spirit)
     {
         MyPlayer = new RUSHPlayer();
         MyPlayer.username = playerName;
         MyPlayer.networkPlayer = view;
-        MyPlayer.level = level;
+        MyPlayer.maxSpirit = max_spirit;
         MyPlayer.spirit = spirit;
     }
 }
@@ -331,7 +331,7 @@ public class RUSHPlayer
 {
     public string username = "";
     public NetworkPlayer networkPlayer;
-    public int level = 1;
+    public int maxSpirit = 1;
     public int team = 1; // There are 2 teams
     public int spirit;
 }
