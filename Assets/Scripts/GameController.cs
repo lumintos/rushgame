@@ -84,6 +84,8 @@ public class GameController : MonoBehaviour {
             KeepStoneTimer(isStoneTaken.ToString(), startTimeKeepStone, elapsedTimeKeepStone);
         }
 
+        guiManager.ChangeStoneStatusTexture(isStoneTaken, stoneKeeper);
+
 	}
 
     //TODO: Move this part to GUIManager for consistence of code
@@ -117,7 +119,7 @@ public class GameController : MonoBehaviour {
             txtTemptRect.x = 10 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
             txtTemptRect.y = 1 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
             Vector2 direction = new Vector2(1, 1);
-            GUIContent content = new GUIContent(guiManager.GameResult.text);
+            GUIContent content = new GUIContent(guiManager.Text_GameResult.text);
             GUIStyle style = GUI.skin.label;
             style.fontSize = (int)(guiHelper.btnScaledHeight);
             style.alignment = TextAnchor.MiddleCenter;

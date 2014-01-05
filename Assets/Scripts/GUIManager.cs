@@ -15,8 +15,9 @@ public class GUIManager : MonoBehaviour {
 	public GUITexture Tex_HPRight;
 	public GUITexture Tex_PlayerIconL;
 	public GUITexture Tex_PlayerIconR;
+    public GUITexture Tex_StoneStatus;
 	public GUIText Text_Timer;
-    public GUIText GameResult;
+    public GUIText Text_GameResult;
 	
 	private float inputGUI_h = 0.0f;
 	private float inputGUI_v = 0.0f;
@@ -35,7 +36,26 @@ public class GUIManager : MonoBehaviour {
 	private Size PlayerIconSize = new Size(90,90);
 	
 	public int fontSizeUnit = 1;
-	
+
+    public void ChangeStoneStatusTexture(bool isStoneTaken, NetworkPlayer stoneKeeper)
+    {
+        if (isStoneTaken)
+        {
+            if (Network.player == stoneKeeper)
+            {
+                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/green");
+            }
+            else
+            {
+                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/red");
+            }
+        }
+        else
+        {
+            Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/gray");
+        }
+    }
+
 	public void UpdateGUIElementsSize(Size p_ScreenSize)
 	{
 		float scaleWidth = (float)p_ScreenSize.Width/(float)ScreenSizeUnit.Width;
@@ -56,6 +76,9 @@ public class GUIManager : MonoBehaviour {
 		                                 (float)HPSize.Width*scaleWidth, (float)HPSize.Height*scaleHeight);
 		Tex_HPRight.pixelInset = new Rect(Tex_HPRight.pixelInset.x,Tex_HPRight.pixelInset.y,
 		                                  (float)HPSize.Width*scaleWidth, (float)HPSize.Height*scaleHeight);
+        Tex_StoneStatus.pixelInset = new Rect(-48 * scaleWidth, -32 * scaleHeight,
+                                           96f* scaleWidth, 64f * scaleHeight);
+
 		// Positioning Controls 
 		widthRatio = (float)Tex_TurnLeft.pixelInset.width/p_ScreenSize.Width;
 		Tex_TurnRight.transform.position = new Vector3(Tex_TurnLeft.transform.position.x+widthRatio, Tex_TurnRight.transform.position.y,0.0f);
@@ -78,8 +101,8 @@ public class GUIManager : MonoBehaviour {
 		widthRatio = (float) Tex_HPRight.pixelInset.width/p_ScreenSize.Width;
 		Tex_HPRight.transform.position = new Vector3(Tex_PlayerIconR.transform.position.x-widthRatio-0.01f,1-heightRatio-0.01f,0.0f);
 		
-		Text_Timer.transform.position = new Vector3(0.5f-0.01f,1.0f-0.03f,0.0f);
-        GameResult.fontSize = (int) (80 * scaleHeight);
+		//Text_Timer.transform.position = new Vector3(0.5f-0.01f,1.0f-0.03f,0.0f);
+        Text_Timer.fontSize = (int) (20 * scaleHeight);
 	}
 	
 	public float GetInputGUI_h()
