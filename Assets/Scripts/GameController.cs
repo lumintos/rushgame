@@ -23,10 +23,11 @@ public class GameController : MonoBehaviour {
         GameObject player = null;
         if (testMultiplayer != null)
         {
-            player = (GameObject)MultiplayerManager.Instance.SpawnPlayer();
+            GameObject.FindGameObjectWithTag("Player").SetActive(false); //Auto remove Player Obj from scene in multiplayer mode
+            player = (GameObject)MultiplayerManager.Instance.SpawnPlayer(); //And spawn new one
         }
         else
-        {
+        {            
             player = GameObject.FindGameObjectWithTag("Player");
         }
 
