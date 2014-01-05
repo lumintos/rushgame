@@ -4,12 +4,12 @@ define("STATUS_OK", 1);
 define("DATABASE_ERROR", "DB_ERROR");
 
 function db_query_user($username, $mysqli) {
-    if($stmt = $mysqli->prepare("SELECT `id`, `username`, `password`, `email`, `cookies`, `score_table_id`, `is_online`, `status` FROM RushUser WHERE `username` =? AND `status` =1 LIMIT 1")) {
+    if($stmt = $mysqli->prepare("SELECT `id`, `username`, `password`, `email`, `cookies`, `is_online`, `status` FROM RushUser WHERE `username` =? AND `status` =1 LIMIT 1")) {
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $stmt->store_result();
 
-        $stmt->bind_result($user_id, $username, $password, $email, $cookies, $score_table_id, $is_online, $status);
+        $stmt->bind_result($user_id, $username, $password, $email, $cookies, $is_online, $status);
         $stmt->fetch();
     } else {
         die(DATABASE_ERROR);
@@ -24,7 +24,6 @@ function db_query_user($username, $mysqli) {
                        "password" => $password,
                        "email" => $email,
                        //"cookies" => $cookies,
-                       "score_id" => $score_table_id,
                        "is_online" => $is_online);
 
     return $user_stat;
@@ -41,6 +40,62 @@ function db_insert_user($user, $mysqli) {
     if($stmt = $mysqli->prepare($query)) {
         //die("before");
         $stmt->bind_param("sss", $user['username'], hash('sha512', $user['password']), $user['email']);
+        //die("OK");
+        if($stmt->execute()) {
+            return "OK";
+        } else {
+            return "Database_Error";
+        }
+    } else {
+        return "Database_Query_Error";
+    }
+}
+
+function db_query_user_score($user_id, $mysqli) {
+    if($stmt = $mysqli->prepare("SELECT `user_id`, `win`, `lose`, `spirit`, `max_spirit`, `status` FROM RushScore WHERE `user_id` =? AND `status` =1 LIMIT 1")) {
+        $stmt->bind_param("s", $user_id);
+        $stmt->execute();
+        $stmt->store_result();
+
+        $stmt->bind_result($user_id, $win, $lose, $spirit, $max_spirit, $status);
+        $stmt->fetch();
+    } else {
+        die(DATABASE_ERROR);
+    }
+
+    if ($stmt->num_rows == 0) {
+        return null;
+    }
+
+    $user_score = array("user_id" => $user_id,
+                       "win" => $win,
+                       "lose" => $lose,
+                       //"email" => $email,
+                       "spirit" => $spirit,
+                       "max_spirit" => $max_spirit,
+                       //"status" => $status
+                       );
+
+    return $user_score;
+}
+
+function db_insert_user_score($score, $mysqli) {
+//    if user exists
+    if (db_query_user_score($score['user_id'], $mysqli) != null) {
+        return "Score_Exists";
+    }
+
+    $query = "INSERT INTO RushScore(`user_id`, `win`, `lose`, `spirit`, `max_spirit`) VALUES (?,?,?,?,?)";
+
+    if($stmt = $mysqli->prepare($query)) {
+        //die("before");
+        $stmt->bind_param("iiiii", 
+                            $score['user_id'],
+                            $score['win'], 
+                            $score['lose'], 
+                            $score['spirit'], 
+                            $score['max_spirit']
+                            );
         //die("OK");
         if($stmt->execute()) {
             return "OK";
