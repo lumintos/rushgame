@@ -11,3 +11,8 @@ Services:
     + Query skill: GET method to: http://hieurl.zapto.org/~hieu/rushgame/Server/php/skil.php?action=query&id=?
     + Query all skills: GET method to: http://hieurl.zapto.org/~hieu/rushgame/Server/php/skil.php?action=query&id=0
     
+- User Score: http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php
+    + Query user score: GET method to: http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php&action=query_score&username=?
+    + Update score: POST method username=?&match_result={win|lose}&alter_spirit=?&alter_max_spirit=? to
+http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=update_match_score
+    
