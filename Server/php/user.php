@@ -105,6 +105,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
         }
     }
 
+/* SERVICE: Update user score after match*/
+} else if (isset($_GET['action']) && $_GET['action'] == 'update_match_score') {
+    if (isset($_POST['username']) 
+        && isset($_POST['match_result']) 
+        && isset($_POST['alter_spirit']) 
+        && isset($_POST['alter_max_spirit'])) {
+
+        $username = $_POST['username'];
+        $match_result = $_POST['match_result'];
+        $alter_spirit = $_POST['alter_spirit'];
+        $alter_max_spirit = $_POST['alter_max_spirit'];
+    
+        $res = user_update_match_score($username, $match_result, $alter_spirit, $alter_max_spirit, $mysqli);
+        $xml_output .= "<code>".$res."</code>";
+        
+    } else {
+        $xml_output .= "<code>Invalid_request</code>";
+    }
+
 /* SERVICE: Set user online status */
 } else if (isset($_GET['action']) && $_GET['action'] == 'set_online') {
     if (isset($_POST['username'])) {

@@ -57,7 +57,6 @@ function user_query($username, $mysqli) {
 
 /* Return: Array score['user_id', 'win', 'lose', 'spirit', 'max_spirit'] */
 function user_query_user_score($username, $mysqli) {
-
     $user = db_query_user($username, $mysqli);
     if ($user != null) {
         $user_id = $user["id"];
@@ -65,6 +64,29 @@ function user_query_user_score($username, $mysqli) {
     } else {
         return null;
     }
+}
+
+function user_update_match_score($username, $match_result, $alter_spirit, $alter_max_spirit, $mysqli) {
+    $score = user_query_user_score($username, $mysqli);
+
+    if ($score == null) {
+        return "User_not_exist";
+    } else {
+        if ($match_result == "win") {
+            $score['win'] += 1;
+            $score['spirit'] += $alter_spirit;
+            $score['max_spirit'] += $alter_max_spirit;
+        } else if ($match_result == "lose") {
+            $score['lose'] += 1;
+            $score['spirit'] -= $alter_spirit;
+            $score['max_spirit'] -= $alter_max_spirit;
+        }
+
+        $res = db_update_user_score($score, $mysqli);
+
+        return $res;
+    }
+
 }
 
 /* Return: Array User["id", "username", "email", "skills", "score" => array("win", "lose", "spirit"), "is_online"]; */

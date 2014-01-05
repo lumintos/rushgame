@@ -107,6 +107,30 @@ function db_insert_user_score($score, $mysqli) {
     }
 }
 
+function db_update_user_score($score, $mysqli) {
+    $query = "UPDATE RushScore SET `win`=?, `lose`=?, `spirit`=?, `max_spirit`=? WHERE `user_id`=?";
+
+    if($stmt = $mysqli->prepare($query)) {
+        //die("before");
+        $stmt->bind_param("iiiii", 
+                            $score['win'], 
+                            $score['lose'], 
+                            $score['spirit'], 
+                            $score['max_spirit'],
+                            $score['user_id']
+                            );
+        //die("OK");
+        if($stmt->execute()) {
+            return "OK";
+        } else {
+            return "Database_Error";
+        }
+    } else {
+        return "Database_Query_Error";
+    }
+
+}
+
 function db_query_skill_by_id($skill_id, $mysqli) {
     $query = "SELECT `id`, `skill_name`, `desc`, `damage`, `unconscious`,`status` FROM RushSkill WHERE `id` =? AND `status` =1 LIMIT 1";
     if($stmt = $mysqli->prepare($query)) {
