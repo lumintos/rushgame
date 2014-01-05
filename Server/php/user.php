@@ -68,7 +68,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
         $xml_output .= "<code>".$result."</code>";
     }
 
-/* SERVICE: Query user information */
+/* SERVICE: Query user basic information */
 } else if (isset($_GET['action']) && $_GET['action'] == 'query') {
     if (isset($_GET['username'])) {
         $username = $_GET['username'];
@@ -83,6 +83,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'login') {
             $xml_output .= "</user_info>";
         } else {
             $xml_output .= "<code>User non exist</code>";
+        }
+    }
+
+/*SERVICE: Query user score*/
+} else if (isset($_GET['action']) && $_GET['action'] == 'query_score') {
+    if (isset($_GET['username'])) {
+        $username = $_GET['username'];
+        $score = user_query_user_score($username, $mysqli);
+        if ($score != null) {
+            $xml_output .= "<code>OK</code>";
+            $xml_output .= "<user_score>";
+            $xml_output .= "<user_id>".$score['user_id']."</user_id>";
+            $xml_output .= "<win>".$score['win']."</win>";
+            $xml_output .= "<lose>".$score['lose']."</lose>";
+            $xml_output .= "<spirit>".$score['spirit']."</spirit>";
+            $xml_output .= "<max_spirit>".$score['max_spirit']."</max_spirit>";
+            $xml_output .= "</user_score>";
+        } else {
+            $xml_output .= "<code>User_not_exist</code>";
         }
     }
 

@@ -56,8 +56,15 @@ function user_query($username, $mysqli) {
 }
 
 /* Return: Array score['user_id', 'win', 'lose', 'spirit', 'max_spirit'] */
-function user_query_user_score_by_id($user_id, $mysqli) {
-    return db_query_user_score($user_id, $mysqli);
+function user_query_user_score($username, $mysqli) {
+
+    $user = db_query_user($username, $mysqli);
+    if ($user != null) {
+        $user_id = $user["id"];
+        return db_query_user_score($user_id, $mysqli);
+    } else {
+        return null;
+    }
 }
 
 /* Return: Array User["id", "username", "email", "skills", "score" => array("win", "lose", "spirit"), "is_online"]; */
