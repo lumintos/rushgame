@@ -169,68 +169,9 @@ public class PlayerMovement : MonoBehaviour {
 		//guiManager.UpdateHP(HP,-1);// negative is left HP, positive is right HP, depend on which side player is.
 		guiManager.UpdateTouchInput();
 	}
-	/*
-    void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
-    {
-        Vector3 syncPosition = Vector3.zero;
-        Vector3 syncVelocity = Vector3.zero;
-        //char animation = 'x'; // idle
-        //bool isJump = false;
-        //float direction = 0;
-        if (stream.isWriting)
-        {
-            syncPosition = rigidbody.position;
-            stream.Serialize(ref syncPosition);
-
-            syncVelocity = rigidbody.velocity;
-            stream.Serialize(ref syncVelocity);
-
-
-            //stream.Serialize(ref animation);
-
-            //isJump = IsJump;
-            //stream.Serialize(ref isJump);
-
-            //direction = moveDirection;
-            //stream.Serialize(ref direction);
-        }
-        else
-        {
-            stream.Serialize(ref syncPosition);
-            stream.Serialize(ref syncVelocity);
-            //stream.Serialize(ref animation);
-            //stream.Serialize(ref isJump);
-            //stream.Serialize(ref direction);
-
-            syncTime = 0f;
-            syncDelay = Time.time - lastSynchronizationTime;
-            lastSynchronizationTime = Time.time;
-
-            syncEndPosition = syncPosition + syncVelocity * syncDelay;
-            syncStartPosition = rigidbody.position;
-
-            //IsJump = isJump;
-            //moveDirection = direction;
-            
-            //if (animation == 'a')
-            //    syncAnimation = "run";
-        }
-    }
-
+	
     
-    private void SyncedMovement()
-    {
-        syncTime += Time.deltaTime;
-        //rigidbody.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
-        //Assume no lag, no delay in network
-        float h = (syncStartPosition - syncEndPosition).x;
-        h = Mathf.Clamp(h, -1.0f, 1.0f);
-        movement.updateMovement(h, IsJump);
-        //if(rigidbody.position != syncEndPosition)
-        //    rigidbody.position = Vector3.Lerp(rigidbody.position, syncEndPosition, syncTime / syncDelay);
-    }
-    */
-	[RPC]
+    [RPC]
 	private void MoveCommands(float horizontal, bool isJump)
 	{
 		//movement.updateMovement(horizontal, isJump);

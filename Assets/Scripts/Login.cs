@@ -1,24 +1,35 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Xml;
 
 public class Login : MonoBehaviour {
 
 	public static string username = "", email = "";
-	private string password = "", rePassword = "", message = "";
+	private string password = "", rePassword = "";
 	
 	private bool register = false;
 
 	private float screenWidth, screenHeight;
+    private float stdScreenWidth, stdScreenHeight;
+    private float stdguiTextFontSize, stdMsgFontSize;
+
 	private float txtScaledHeight, btnScaledHeight;
 	private float txtScaledWidth, btnScaledWidth;
 
 	private int screenWidthUnit = 48; // aspect ratio 16:9
 	private int screenHeightUnit = 27;
-	private int txtWidthUnit = 14;
-	private int txtHeightUnit = 2;
+    public float txtWidthUnit = 20;
+    public float txtHeightUnit = 2.5f;
 	private int btnWidthUnit = 8;
 	private int btnHeightUnit = 4;
-	private int fontSizeUnit = 1;
+	private float fontSizeUnit = 1.5f;
+
+    public GUITexture loginButton;
+    public GUITexture registerButton;
+    public GUITexture backButton;
+    public GUIText lbUsername, lbPassword, lbEmail, lbRetypePassword;
+    public GUITexture groupBox;
+    public GUIText msg;
 
 //	public GUIStyle lbGUIStyle;
 //	public GUIStyle txtGUIStyle;
@@ -30,23 +41,22 @@ public class Login : MonoBehaviour {
 
 	private bool guiUpdated = false;
 
+    void Start()
+    {
+        stdScreenHeight = 540;
+        stdScreenWidth = 960;
+        stdguiTextFontSize = 30;
+        stdMsgFontSize = 20;
+        screenWidth = screenHeight = 0;
+        UpdateGUIElementsSize();
+    }
+
 	void Update()
 	{
-		screenWidth = Screen.width;
-		screenHeight = Screen.height;
-
-		//Calculate real size of textbox and button
-		txtScaledHeight = (float) txtHeightUnit * screenHeight / screenHeightUnit;
-		txtScaledWidth = (float) txtWidthUnit * screenWidth / screenWidthUnit;
-
-		btnScaledHeight = (float) btnHeightUnit * screenHeight / screenHeightUnit;
-		btnScaledWidth = (float) btnWidthUnit * screenWidth / screenWidthUnit;
-
-//		Debug.Log(screenHeight + " - " + screenWidth);
-//		Debug.Log(txtScaledHeight + " - " + txtScaledWidth);
-//		Debug.Log(btnScaledHeight + " - " + btnScaledWidth);
-
-		backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
+        if (screenWidth != Screen.width) //screen changes size
+        {
+            UpdateGUIElementsSize();
+        }
 	}
 
 	private void OnGUI()
@@ -57,227 +67,235 @@ public class Login : MonoBehaviour {
 			guiUpdated = true;
 		}
 		
-		GUI.skin = ColoredGUISkin.Skin;
-
-		Rect btnLoginRect = GetScaledRect(btnScaledWidth, btnScaledHeight);
-		btnLoginRect.x = 15 * screenWidth / screenWidthUnit;
-		btnLoginRect.y = 19 * screenHeight / screenHeightUnit;
+		GUI.skin = ColoredGUISkin.Skin;	
 		
-		Rect btnRegisterRect = GetScaledRect(btnScaledWidth, btnScaledHeight);
-		btnRegisterRect.x = 25 * screenWidth / screenWidthUnit;
-		btnRegisterRect.y = 19 * screenHeight / screenHeightUnit;		
-		
-		GUI.skin.label.fontSize = (int) screenHeight * fontSizeUnit / screenHeightUnit;
-		GUI.skin.textField.fontSize = (int) txtScaledHeight * fontSizeUnit/ txtHeightUnit;
-		GUI.skin.button.fontSize = (int) btnScaledHeight * fontSizeUnit/ btnHeightUnit;
-	
-		if(message != "")//There is error message
-		{
-			Rect msgRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			msgRect.x = 17 * screenWidth / screenWidthUnit;
-			msgRect.y = 17 * screenHeight / screenHeightUnit;
-			GUIStyle msgStyle = new GUIStyle(GUI.skin.label);
-			msgStyle.fontStyle = FontStyle.Italic;
-			msgStyle.normal.textColor = Color.white;
-			msgStyle.alignment = TextAnchor.UpperCenter;
-			GUI.Label(msgRect, message, msgStyle);
-		}
+		GUI.skin.textField.fontSize = (int) (screenHeight * fontSizeUnit/ screenHeightUnit);
+		//GUI.skin.label.fontSize = (int) (screenHeight * fontSizeUnit / screenHeightUnit);
+		//GUI.skin.button.fontSize = (int) (btnHeightUnit * screenHeight / screenHeightUnit);
 
+        if (!register)
+        {
+            backButton.gameObject.SetActive(false);
+            loginButton.gameObject.SetActive(true);
+            groupBox.pixelInset = GetScaledPixelInset(456, 342);
+            lbUsername.transform.position = new Vector3(0.3f, 0.71f, 0f);
+            lbPassword.transform.position = new Vector3(0.3f, 0.53f, 0f);
+            lbRetypePassword.gameObject.SetActive(false);
+            lbEmail.gameObject.SetActive(false);
 
-		if(!register)
-		{
-			Rect lbUsernameRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			lbUsernameRect.y = 7 * screenHeight / screenHeightUnit; //constants from Layout.xlsx in References directory
-			lbUsernameRect.x = 17 * screenWidth / screenWidthUnit;
-			GUI.Label(lbUsernameRect, "Username");
+            Rect txtUsernameRect = GetScaledRect(txtWidthUnit, txtHeightUnit);
+            txtUsernameRect.y = 9.5f * screenHeight / screenHeightUnit;
+            txtUsernameRect.x = 14 * screenWidth / screenWidthUnit;
+            username = GUI.TextField(txtUsernameRect, username);
 
-			Rect txtUsernameRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			txtUsernameRect.y = 9 * screenHeight / screenHeightUnit; 
-			txtUsernameRect.x = 17 * screenWidth / screenWidthUnit;
-			username = GUI.TextField(txtUsernameRect, username);
+            Rect txtPasswordRect = GetScaledRect(txtWidthUnit, txtHeightUnit);
+            txtPasswordRect.y = 14.5f * screenHeight / screenHeightUnit;
+            txtPasswordRect.x = 14 * screenWidth / screenWidthUnit;
+            password = GUI.PasswordField(txtPasswordRect, password, "*"[0]);
 
+            if (loginButton.GetComponent<Button_Controller>().isPressed)
+            {
+                msg.text = "";
+                loginButton.GetComponent<Button_Controller>().isPressed = false;
 
-			Rect lbPasswordRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			lbPasswordRect.y = 12 * screenHeight / screenHeightUnit; 
-			lbPasswordRect.x = 17 * screenWidth / screenWidthUnit;
-			GUI.Label(lbPasswordRect, "Password");
-
-			Rect txtPasswordRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			txtPasswordRect.y = 14 * screenHeight / screenHeightUnit;
-			txtPasswordRect.x = 17 * screenWidth / screenWidthUnit;
-			password = GUI.PasswordField(txtPasswordRect, password, "*"[0]);
-
-
-			//GUILayout.BeginHorizontal();
-
-			if (GUI.Button(btnLoginRect, "Login"))
-			{
-				message = "";
-				
-				if (username == "" || password == "")
-					message = "Please enter all the fields \n";
-				else
-				{
-					message = "Connecting ... ";
-					WWWForm form = new WWWForm();
-					form.AddField("username", username);
-					form.AddField("password", password);
+                if (username == "" || password == "")
+                    msg.text = "Please enter all the fields \n";
+                else
+                {
+                    msg.text = "Connecting ... ";
+                    WWWForm form = new WWWForm();
+                    form.AddField("username", username);
+                    form.AddField("password", password);
                     //WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
                     WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
-					StartCoroutine(loginRequest(w));
-				}
-			}
-			
-			if (GUI.Button(btnRegisterRect, "Register"))
-			{
-				register = true;
-				//keep username but remove password
-				password = "";
-				message = "";
-			}
-			
-			//GUILayout.EndHorizontal();
-		}
-		else
-		{
-			Rect lbUsernameRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			lbUsernameRect.y = 7 * screenHeight / screenHeightUnit; //constants from Layout.xlsx in References directory
-			lbUsernameRect.x = 9 * screenWidth / screenWidthUnit;
-			GUI.Label(lbUsernameRect, "Username");
-			
-			Rect txtUsernameRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			txtUsernameRect.y = 9 * screenHeight / screenHeightUnit; 
-			txtUsernameRect.x = lbUsernameRect.x;
-			username = GUI.TextField(txtUsernameRect, username);
-			
-			Rect lbPasswordRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			lbPasswordRect.y = 12 * screenHeight / screenHeightUnit; 
-			lbPasswordRect.x = lbUsernameRect.x;
-			GUI.Label(lbPasswordRect, "Password");
-			
-			Rect txtPasswordRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			txtPasswordRect.y = 14 * screenHeight / screenHeightUnit;
-			txtPasswordRect.x = lbUsernameRect.x;
-			password = GUI.PasswordField(txtPasswordRect, password, "*"[0]);
+                    StartCoroutine(loginRequest(w));
+                }
 
-			Rect lbEmailRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			lbEmailRect.y = 7 * screenHeight / screenHeightUnit; 
-			lbEmailRect.x = 26 * screenWidth / screenWidthUnit;
-			GUI.Label(lbEmailRect, "Email");
-			
-			Rect txtEmailRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			txtEmailRect.y = 9 * screenHeight / screenHeightUnit; 
-			txtEmailRect.x = lbEmailRect.x;
-			email = GUI.TextField(txtEmailRect, email);
-			
-			Rect lbRePasswordRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			lbRePasswordRect.y = 12 * screenHeight / screenHeightUnit; 
-			lbRePasswordRect.x = lbEmailRect.x;
-			GUI.Label(lbRePasswordRect, "Re-type Password");
-			
-			Rect txtRePasswordRect = GetScaledRect(txtScaledWidth, txtScaledHeight);
-			txtRePasswordRect.y = 14 * screenHeight / screenHeightUnit;
-			txtRePasswordRect.x = lbEmailRect.x;
-			rePassword = GUI.PasswordField(txtRePasswordRect, rePassword, "*"[0]);
+            }
 
-			GUILayout.BeginHorizontal();
-			
-			if (GUI.Button(btnLoginRect, "Back"))
-			{
-				register = false;
-				//reset all fields except username
-				//username = "";
-				password = "";
-				email = "";
-				rePassword = "";
-				message = "";
-			}
-			
-			if (GUI.Button(btnRegisterRect, "Register"))
-			{
-				message = "";
-				
-				if (username == "" || email == "" || password == "")
-					message = "Please enter all the fields \n";
-				else
-				{
-					if (password == rePassword)
-					{
-						message = "Connecting ... ";
-						WWWForm form = new WWWForm();
-						form.AddField("username", username);
-						form.AddField("email", email);
-						form.AddField("password", password);
-                        WWW w = new WWW("http://84.101.189.177:25500/register.php", form);
-                        //WWW w = new WWW("http://192.168.1.86:80/register.php", form);
-						StartCoroutine(registerRequest(w));
-					}
-					else
-						message = "Your Password does not match \n";
-				}
-			}
-			
-			GUILayout.EndHorizontal();
+            if (registerButton.GetComponent<Button_Controller>().isPressed)
+            {
+                registerButton.GetComponent<Button_Controller>().isPressed = false;
+                register = true;
+                //keep username but remove password
+                password = "";
+                msg.text = "";
+            }
+        }
+        else
+        {
+            loginButton.gameObject.SetActive(false);
+            backButton.gameObject.SetActive(true);
+            groupBox.pixelInset = GetScaledPixelInset(720, 342);
+            lbUsername.transform.position = new Vector3(0.15f, 0.71f, 0f);
+            lbPassword.transform.position = new Vector3(0.15f, 0.53f, 0f);
+            lbRetypePassword.gameObject.SetActive(true);
+            lbEmail.gameObject.SetActive(true);
 
-		}
+            Rect txtUsernameRect = GetScaledRect(txtWidthUnit * 0.8f, txtHeightUnit);
+            txtUsernameRect.y = 9.5f * screenHeight / screenHeightUnit;
+            txtUsernameRect.x = 7 * screenWidth / screenWidthUnit;
+            username = GUI.TextField(txtUsernameRect, username);
 
+            Rect txtPasswordRect = GetScaledRect(txtWidthUnit * 0.8f, txtHeightUnit);
+            txtPasswordRect.y = 14.5f * screenHeight / screenHeightUnit;
+            txtPasswordRect.x = 7 * screenWidth / screenWidthUnit;
+            password = GUI.PasswordField(txtPasswordRect, password, "*"[0]);
+
+            Rect txtEmailRect = GetScaledRect(txtWidthUnit * 0.8f, txtHeightUnit);
+            txtEmailRect.y = 9.5f * screenHeight / screenHeightUnit;
+            txtEmailRect.x = 25 * screenWidth / screenWidthUnit;
+            email = GUI.TextField(txtEmailRect, email);
+
+            Rect txtRePasswordRect = GetScaledRect(txtWidthUnit * 0.8f, txtHeightUnit);
+            txtRePasswordRect.y = 14.5f * screenHeight / screenHeightUnit;
+            txtRePasswordRect.x = 25 * screenWidth / screenWidthUnit;
+            rePassword = GUI.PasswordField(txtRePasswordRect, rePassword, "*"[0]);
+
+            if (backButton.GetComponent<Button_Controller>().isPressed)
+            {
+                backButton.GetComponent<Button_Controller>().isPressed = false;
+                register = false;
+                //reset all fields except username
+                //username = "";
+                password = "";
+                email = "";
+                rePassword = "";
+                msg.text = "";
+            }
+
+            if (registerButton.GetComponent<Button_Controller>().isPressed)
+            {
+                msg.text = "";
+                registerButton.GetComponent<Button_Controller>().isPressed = false;
+
+                if (username == "" || email == "" || password == "")
+                    msg.text = "Please enter all the fields \n";
+                else
+                {
+                    if (password == rePassword)
+                    {
+                        msg.text = "Registering ... ";
+                        WWWForm form = new WWWForm();
+                        form.AddField("username", username);
+                        form.AddField("email", email);
+                        form.AddField("password", password);
+                        //WWW w = new WWW("http://84.101.189.177:25500/register.php", form);
+                        WWW w = new WWW("http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=register", form);
+                        StartCoroutine(registerRequest(w));
+                    }
+                    else
+                        msg.text = "Your Password does not match \n";
+                }
+            }           
+        }
 	
 	}
 
-	IEnumerator loginRequest(WWW w)
-	{
-		yield return w;
-		if (w.error == null)
-		{
-			if (w.text.Contains("Success"))
+    IEnumerator loginRequest(WWW w)
+    {
+        yield return w;
+        Debug.Log(w.text);
+        if (w.error == null)
+        {
+            //TODO: extract xml to display appropriate error
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(w.text);
+            XmlNode code = doc.DocumentElement.SelectSingleNode("/response/code");
+
+            if (code.InnerText == "Success")
             {
                 //((User)GameObject.Find("User").GetComponent("User")).username = username; //store username for later scenes
                 MultiplayerManager.Instance.PlayerName = username;
-                PlayerPrefs.SetString("PlayerName", MultiplayerManager.Instance.PlayerName);               
-
-
-				Application.LoadLevel("lobby");
-			}
-			else
-			{
-				message = w.text;
-			}
-		}
-		else
-		{
-			message = "ERROR: " + w.error + "\n";
-		}
-	}
+                PlayerPrefs.SetString("PlayerName", MultiplayerManager.Instance.PlayerName);
+                Application.LoadLevel("lobby");
+            }
+            else
+            {
+                msg.text = "Wrong username or password";
+            }
+        }
+        else
+        {
+            msg.text = "ERROR: " + w.error + "\n";
+        }
+    }
 	
 	IEnumerator registerRequest(WWW w)
 	{
 		yield return w;
 		if (w.error == null)
 		{
-			if(w.text == "Succesfully Created User!")
-			{
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(w.text);
+            XmlNode code = doc.DocumentElement.SelectSingleNode("/response/code");
+
+            if (code.InnerText == "OK")
+            {
                 //((User)GameObject.Find("User").GetComponent("User")).username = username; //store username for later scenes
                 MultiplayerManager.Instance.PlayerName = username;
                 PlayerPrefs.SetString("PlayerName", MultiplayerManager.Instance.PlayerName);
 				Application.LoadLevel("lobby");
 			}
-			else
+			else if(code.InnerText == "Fail")
 			{
-				message = w.text;
+				msg.text = "Cannot create user";
 			}
+            else if (code.InnerText == "User_Exists")
+            {
+                msg.text = "Username is already taken";
+            }
 		}
 		else
 		{
-			message = "ERROR: " + w.error + "\n";
+            msg.text = "Cannot connect to server";
 		}
 	}	
 	
-	private Rect GetScaledRect(float width, float height)
+    //Just scale width, height; X & Y will be set after that
+	private Rect GetScaledRect(float widthUnit, float heightUnit)
 	{
-		float scaledW = width;
-		float scaledH = height;
-		float top = 0, left = (screenWidth - width) / 2;
+		float scaledW = widthUnit * screenWidth / screenWidthUnit;
+		float scaledH = heightUnit * screenHeight / screenHeightUnit;
 
-		return new Rect(left, top, scaledW, scaledH);
+		return new Rect(0, 0, scaledW, scaledH);
 	}
+
+    private Rect GetScaledPixelInset(float width, float height)
+    {
+        float scaledW = width * screenWidth / stdScreenWidth;
+        float scaledH = height * screenHeight / stdScreenHeight;
+        float scaledX = -scaledW / 2;
+        float scaledY = -scaledH / 2;
+
+        return new Rect(scaledX, scaledY, scaledW, scaledH);
+    }
+
+    private void UpdateGUIElementsSize()
+    {
+        screenWidth = Screen.width;
+        screenHeight = Screen.height;
+
+        btnScaledHeight = (float)btnHeightUnit * screenHeight / screenHeightUnit;
+        btnScaledWidth = (float)btnWidthUnit * screenWidth / screenWidthUnit;
+
+        GUIText[] guiTexts = GameObject.FindObjectsOfType<GUIText>();
+        //Ok for mobile and device that doesn't change game's screen size
+        //If it's not the case, items' fontsize will keep increasing
+        foreach (GUIText tempText in guiTexts)
+        {
+            int tempSize = tempText.fontSize;
+            tempText.fontSize = (int)(tempSize * screenHeight / stdScreenHeight);
+        }
+
+        GUITexture[] guiTextures = GameObject.FindObjectsOfType<GUITexture>();
+        foreach (GUITexture tempTexture in guiTextures)
+        {
+            float tempW = tempTexture.pixelInset.width;
+            float tempH = tempTexture.pixelInset.height;
+            tempTexture.pixelInset = GetScaledPixelInset(tempW, tempH);
+        }
+
+        backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
+    }
 }

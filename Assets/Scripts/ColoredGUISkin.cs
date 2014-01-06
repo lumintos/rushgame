@@ -137,6 +137,8 @@ public class ColoredGUISkin : MonoBehaviour {
 	}
 	
 	private Texture2D UpdateGuiSkin(Texture2D texture, Color primaryColor) {
+        return texture;
+
 		Texture2D newTexture = new Texture2D((int)(texture.width / scalingFactor), (int) (texture.height / scalingFactor), texture.format, false);
 		for (int i = 0; i < newTexture.width; i++) {
 			for (int j = 0; j < newTexture.height; j++) {
