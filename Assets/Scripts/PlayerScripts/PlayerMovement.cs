@@ -408,7 +408,13 @@ public class PlayerMovement : MonoBehaviour {
 		jumpMove = velocity;
 		
 		Vector3 force = Vector3.zero;
-		force += Vector3.up * jumpForce;
+		if (jumpCount == 1) {//normal jump
+			force += Vector3.up * jumpForce;
+		}
+		else if (jumpCount == 2) {
+			force += Vector3.up * doubleJumpForce;
+		}
+
 		force += Vector3Forward * jumpMove;
 		
 		//jumpForce = force for destroying gravity + force depend on vlocity and mass
