@@ -200,6 +200,17 @@ public class GameController : MonoBehaviour {
             elapsedTimeKeepStone = elapsedTime;
             isStoneTaken = bool.Parse(isTaken);
         }
+
+        if (isStoneTaken)
+        {
+            int minutes = (int)(GameConstants.stoneTimer - elapsedTimeKeepStone) / 60;
+            int seconds = (int)(GameConstants.stoneTimer - elapsedTimeKeepStone) % 60;
+            guiManager.Text_Timer.text = minutes.ToString() + " : " + seconds.ToString();
+        }
+        else
+        {
+            guiManager.Text_Timer.text = "-- : --";
+        }
     }
 
     [RPC]

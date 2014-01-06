@@ -152,8 +152,7 @@ public class PlayerMovement : MonoBehaviour {
 				//movement.updateMovement(hInt, IsJump);
 				this.updateMovement(hInt, IsJump);
 				//Call object instance in other game instances to perform exact movement
-				networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);
-				
+				networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);				
 			}
 			/* else
             {
@@ -241,7 +240,7 @@ public class PlayerMovement : MonoBehaviour {
 	[RPC]
 	private void CorrectSyncedMovement(Vector3 position)
 	{
-		//Each 3 seconds, the client must correst it's world state regarding to host's world state (only if the client's state is wrong)
+		//Each x seconds, the client must correst it's world state regarding to host's world state (only if the client's state is wrong)
 		if (rigidbody.position != position)
 		{
 			syncTime += Time.deltaTime;
@@ -249,7 +248,7 @@ public class PlayerMovement : MonoBehaviour {
 		else
 			syncTime = 0;
 		
-		if (syncTime >= 3) //3 seconds
+		if (syncTime >= 0.3) //seconds
 		{
 			if (rigidbody.position != position)
 			{
