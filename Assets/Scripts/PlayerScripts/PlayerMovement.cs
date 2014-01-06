@@ -8,10 +8,10 @@ public class PlayerMovement : MonoBehaviour {
 	private AnimatorStateInfo currentBaseState;
 	private AnimatorStateInfo previousBaseState;
 	private bool IsOnChangeState = false;
-
-//	private GameObject obj;
-//	private Animator anim;
-//	private AnimatorStateInfo currentBaseState;
+	
+	//	private GameObject obj;
+	//	private Animator anim;
+	//	private AnimatorStateInfo currentBaseState;
 	
 	//rotate
 	public float turnSmoothly = 1500.0f;
@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour {
 	public float jumpForceReduce = 0.7f;// reduce force for every physic frame
 	public float doubleJumpForce = 10.0f;
 	public float doubleJumpForceReduce = 0.7f;// reduce force for every physic frame
-
+	
 	private int jumpCount = 0;
 	public int jumpCountMaximum = 2;
 	private float jumpMove = 0.0f;
@@ -41,136 +41,136 @@ public class PlayerMovement : MonoBehaviour {
 	
 	//pre-define only for this particular scene
 	public Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
-
+	
 	//fake gravity
 	//current gravity is not strong enough for this game (when compare with the speed of jumping)
 	//I am not sure what is the effect of changing the global gravity.
 	//so, I use this addition force in order to make character fall faster, only in locomotion state
 	public float FakeGravity = 30.0f;
-
+	
 	//mid-air ray-cast check
 	public float midAirCheck = 1.2f;
-
+	
 	//control events for current animator
 	AnimatorEvents animatorEvents;
-
+	
 	private GUIManager guiManager;
-    private GameController gameController;
-
-    private float lastSynchronizationTime = 0f;
-    private float syncDelay = 0f;
-    private float syncTime = 0f;
-    private Vector3 syncStartPosition = Vector3.zero;
-    private Vector3 syncEndPosition = Vector3.zero;
-    private Vector3 _destination;
-    private bool IsJump;
-    private float moveDirection = 0;
-
-    GameObject testMultiplayer = null;
-
+	private GameController gameController;
+	
+	private float lastSynchronizationTime = 0f;
+	private float syncDelay = 0f;
+	private float syncTime = 0f;
+	private Vector3 syncStartPosition = Vector3.zero;
+	private Vector3 syncEndPosition = Vector3.zero;
+	private Vector3 _destination;
+	private bool IsJump;
+	private float moveDirection = 0;
+	
+	GameObject testMultiplayer = null;
+	
 	#endregion
-
+	
 	#region gui and network
 	void Awake() {
 		anim = GetComponent<Animator>();
-
+		
 		guiManager = GameObject.FindGameObjectWithTag(Tags.gui).GetComponent<GUIManager>();
 		//guiManager.SetMaxHP(MaxHP);
 		//movement.initMovement(this.gameObject, anim);
-
+		
 		//control events for current animator
 		animatorEvents = GetComponent<AnimatorEvents>();
-        gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
-        testMultiplayer = GameObject.Find("Multiplayer Manager");
+		gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
+		testMultiplayer = GameObject.Find("Multiplayer Manager");
 	}
-    
+	
 	void FixedUpdate() {
-        if (gameController.gameEnd != 0)
-        {
-            this.updateMovement(0, false); //character is idle
-            return;
-        }
-
-        if (testMultiplayer == null) //Test movement only, single player
-        {
-            //get all inputs
-            //orientation, works with float range [-1.0f, 1.0f]
-            float h = Input.GetAxis("Horizontal");
-            float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
-            moveDirection = hInt;
-
-            //only set IsJump = true when that button is release and re-press again
-            if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
-                || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
-            {
-                jumpButtonLock = false;
-            }
-            //jump
-            IsJump = false;
-            if ((Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
-            && !jumpButtonLock)
-            {
-                IsJump = true;
-                jumpButtonLock = true;
-                IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
-            }
-
-            //movement.updateMovement(hInt, IsJump);
-            this.updateMovement(hInt, IsJump);
-        }
-        else
-        {
-            //States in server is the correct one for all network player (regardless networkView), all clients must follow
-            if (Network.isServer)
-                networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
-
-            //Input only for network player of owner
-            if (networkView.isMine)
-            {
-                //get all inputs
-                //orientation, works with float range [-1.0f, 1.0f]
-                float h = Input.GetAxis("Horizontal");
-                float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
-                moveDirection = hInt;
-
-                //only set IsJump = true when that button is release and re-press again
-                if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
-                    || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
-                {
-                    jumpButtonLock = false;
-                }
-                //jump
-                IsJump = false;
-                if ((Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
-                && !jumpButtonLock)
-                {
-                    IsJump = true;
-                    jumpButtonLock = true;
-                    IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
-                }
-
-                //movement.updateMovement(hInt, IsJump);
-                this.updateMovement(hInt, IsJump);
-                //Call object instance in other game instances to perform exact movement
-                networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);
-
-            }
-            /* else
+		if (gameController.gameEnd != 0)
+		{
+			this.updateMovement(0, false); //character is idle
+			return;
+		}
+		
+		if (testMultiplayer == null) //Test movement only, single player
+		{
+			//get all inputs
+			//orientation, works with float range [-1.0f, 1.0f]
+			float h = Input.GetAxis("Horizontal");
+			float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
+			moveDirection = hInt;
+			
+			//only set IsJump = true when that button is release and re-press again
+			if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
+			    || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
+			{
+				jumpButtonLock = false;
+			}
+			//jump
+			IsJump = false;
+			if ((Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
+			    && !jumpButtonLock)
+			{
+				IsJump = true;
+				jumpButtonLock = true;
+				IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
+			}
+			
+			//movement.updateMovement(hInt, IsJump);
+			this.updateMovement(hInt, IsJump);
+		}
+		else
+		{
+			//States in server is the correct one for all network player (regardless networkView), all clients must follow
+			if (Network.isServer)
+				networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
+			
+			//Input only for network player of owner
+			if (networkView.isMine)
+			{
+				//get all inputs
+				//orientation, works with float range [-1.0f, 1.0f]
+				float h = Input.GetAxis("Horizontal");
+				float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
+				moveDirection = hInt;
+				
+				//only set IsJump = true when that button is release and re-press again
+				if ((Input.GetButtonUp("Jump") && IsKeyboardInput) //if input from keyboard
+				    || (guiManager.GetInputGUI_v() == 0.0f && !IsKeyboardInput)) //if input from touch-button 
+				{
+					jumpButtonLock = false;
+				}
+				//jump
+				IsJump = false;
+				if ((Input.GetButtonDown("Jump") || guiManager.GetInputGUI_v() != 0.0f)
+				    && !jumpButtonLock)
+				{
+					IsJump = true;
+					jumpButtonLock = true;
+					IsKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
+				}
+				
+				//movement.updateMovement(hInt, IsJump);
+				this.updateMovement(hInt, IsJump);
+				//Call object instance in other game instances to perform exact movement
+				networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);
+				
+			}
+			/* else
             {
                 //if (Network.isClient)
                 //    SyncedMovement();
                 if(Network.isServer)
                     networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
             } */
-        }
+		}
 	}
-
+	
 	void OnGUI()
 	{
 		//guiManager.UpdateHP(HP,-1);// negative is left HP, positive is right HP, depend on which side player is.
 		guiManager.UpdateTouchInput();
 	}
-    /*
+	/*
     void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
     {
         Vector3 syncPosition = Vector3.zero;
@@ -231,36 +231,36 @@ public class PlayerMovement : MonoBehaviour {
         //    rigidbody.position = Vector3.Lerp(rigidbody.position, syncEndPosition, syncTime / syncDelay);
     }
     */
-    [RPC]
-    private void MoveCommands(float horizontal, bool isJump)
-    {
-        //movement.updateMovement(horizontal, isJump);
+	[RPC]
+	private void MoveCommands(float horizontal, bool isJump)
+	{
+		//movement.updateMovement(horizontal, isJump);
 		this.updateMovement(horizontal, isJump);
-    }
-
-    [RPC]
-    private void CorrectSyncedMovement(Vector3 position)
-    {
-        //Each 3 seconds, the client must correst it's world state regarding to host's world state (only if the client's state is wrong)
-        if (rigidbody.position != position)
-        {
-            syncTime += Time.deltaTime;
-        }
-        else
-            syncTime = 0;
-
-        if (syncTime >= 3) //3 seconds
-        {
-            if (rigidbody.position != position)
-            {
-                //rigidbody.position = Vector3.Lerp(rigidbody.position, position, Time.deltaTime);
-                rigidbody.position = position;
-            }
-            syncTime = 0;
-        }
-    }
+	}
+	
+	[RPC]
+	private void CorrectSyncedMovement(Vector3 position)
+	{
+		//Each 3 seconds, the client must correst it's world state regarding to host's world state (only if the client's state is wrong)
+		if (rigidbody.position != position)
+		{
+			syncTime += Time.deltaTime;
+		}
+		else
+			syncTime = 0;
+		
+		if (syncTime >= 3) //3 seconds
+		{
+			if (rigidbody.position != position)
+			{
+				//rigidbody.position = Vector3.Lerp(rigidbody.position, position, Time.deltaTime);
+				rigidbody.position = position;
+			}
+			syncTime = 0;
+		}
+	}
 	#endregion
-
+	
 	#region animator events
 	//------------------------------------------------------------------------------
 	//control events of current animator
@@ -289,17 +289,17 @@ public class PlayerMovement : MonoBehaviour {
 		return;
 		//This displays the State Info of previous and currentstates.
 		//Debug.Log("State changed from" + previous + "to" + current);
-
+		
 		//AnimatorEvents returns a much friendly way than hash names
 		//Debug.Log("State changed to" + animatorEvents.layers[layer].GetStateName(current.nameHash));
 	}
 	
 	void OnTransition(int layer, AnimatorTransitionInfo transitionInfo){
-//		Debug.Log("Transition from"+ animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
+		//		Debug.Log("Transition from"+ animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
 		//print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash) + "at framecount: " + counter);
-//		if (currentBaseState.nameHash == PlayerHashIDs.jumpState) {
-//			//print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
-//		}
+		//		if (currentBaseState.nameHash == PlayerHashIDs.jumpState) {
+		//			//print(animatorEvents.layers[layer].GetTransitionName(transitionInfo.nameHash));
+		//		}
 		//problem: different frame number of [the time of pressed button jump] >> [the end of jump state] leads to difference jump height.
 		//solve: combine idle state into locomotion state.
 		//because in the transition [locomotion] >> [idle], if we jump, jumpForce will be applied at that time 
@@ -308,9 +308,28 @@ public class PlayerMovement : MonoBehaviour {
 	#endregion
 
 	public void updateMovement(float horizontal, bool IsJump) {
+		int layer = 0;
+//		for ( int layer = 0; layer < layers.Length; layer++) {
+//		if (AnimatorEvents.layers[layer].isListening) {
+			// State Change Verification
+			currentBaseState = anim.GetCurrentAnimatorStateInfo(layer);
+			
+			if (previousBaseState.nameHash != currentBaseState.nameHash) {
+				OnStateChanged (layer, previousBaseState, currentBaseState);
+				previousBaseState = currentBaseState;
+			}
+			if (anim.IsInTransition(layer)) {
+				//if (OnTransition != null)
+					this.OnTransition(layer, anim.GetAnimatorTransitionInfo(layer));
+			}
+//		}
+//		}
+
 		//get all inputs
-		//get state
-		currentBaseState = anim.GetCurrentAnimatorStateInfo(0);	// set our currentState variable to the current state of the Base Layer (0) of animation
+		//get state init, after is override by OnStateChange
+		//if (currentBaseState.nameHash != anim.GetCurrentAnimatorStateInfo(0).nameHash) print("khac: ");
+		//if (currentBaseState == null)
+		//currentBaseState = anim.GetCurrentAnimatorStateInfo(0);	// set our currentState variable to the current state of the Base Layer (0) of animation
 		
 		MovementManagement(horizontal);
 		jumpManagement(horizontal, IsJump);
@@ -318,7 +337,7 @@ public class PlayerMovement : MonoBehaviour {
 		//			print ("velocity: " + this.rigidbody.velocity + ", hInt " + horizontal);
 		//		}
 	}
-
+	
 	#region movement management
 	void MovementManagement(float orientation) {
 		Rotation (orientation);
@@ -352,7 +371,7 @@ public class PlayerMovement : MonoBehaviour {
 		//addForce applies into the value of rigid.velocity. Checked
 		//print ("velocity: " + this.rigidbody.velocity);
 	}
-
+	
 	/// <summary>
 	/// Rotate character when orientation from negative to positive and vice versa
 	/// </summary>
@@ -366,26 +385,26 @@ public class PlayerMovement : MonoBehaviour {
 		this.rigidbody.MoveRotation(newRotation);
 	}
 	#endregion 
-
+	
 	#region manage jump state variable
 	void jumpStateEnter() {
 		anim.SetBool(PlayerHashIDs.JumpBool, true);
 		IsReceivedJumpCommand = false;
-
+		
 		//enable double jump animation
 		if (jumpCount == 1) {
 			//print("double jump!");
 			anim.SetBool(PlayerHashIDs.IsDoubleJump, true);
-
+			
 			//reset old down-force
 			Vector3 forceRemover = Vector3.up * Mathf.Abs(this.rigidbody.velocity.y);// this force is used for remove current vector3.down force
 			this.rigidbody.AddForce(forceRemover, ForceMode.VelocityChange);
 			//print("velocity at double jump time: " + this.rigidbody.velocity);
 		}
-
+		
 		jumpCount++;
 		jumpMove = velocity;
-
+		
 		Vector3 force = Vector3.zero;
 		force += Vector3.up * jumpForce;
 		force += Vector3Forward * jumpMove;
@@ -404,11 +423,11 @@ public class PlayerMovement : MonoBehaviour {
 		anim.SetBool(PlayerHashIDs.JumpBool, false);
 		anim.SetBool(PlayerHashIDs.FallToLandBool, false);
 		anim.SetBool(PlayerHashIDs.IsDoubleJump, false);
-		IsReceivedJumpCommand = false;
+		//IsReceivedJumpCommand = false; //if reset in here, not good in case [land] and [locomotion]
 		jumpCount = 0;
 	}
 	#endregion
-
+	
 	#region manage jump process by check related state
 	
 	//three basic steps for jumping process
@@ -421,18 +440,20 @@ public class PlayerMovement : MonoBehaviour {
 		else if (currentBaseState.nameHash == PlayerHashIDs.doubleJumpState) jumpManagementCheckDoubleJumpState();
 		else if (currentBaseState.nameHash == PlayerHashIDs.fallState) jumpManagementCheckFallState();
 		else if (currentBaseState.nameHash == PlayerHashIDs.landState) jumpManagementCheckLandState();
-
+		
 		IsOnChangeState = false;
 	}
-
+	
 	void jumpManagementCheckLocomotionState() {
 		if (IsOnChangeState) { //change from other state to this state
 			this.jumpStateReset();
+			ActiveJumpCommand();
 			return;
 		}
-		if (IsJump) {
+		
+		if (IsJump) {//transition to [jump] immediately
 			this.jumpStateEnter();
-			//				IsStartCounting = true;
+			return;
 		}
 		if (!anim.IsInTransition(0)) { //not apply in transition, for example: [locomotion] >> [jump]
 			// Raycast down from the center of the character.. FOR FAKE GRAVITY ONLY IN LOCOMOTION STATE
@@ -447,7 +468,7 @@ public class PlayerMovement : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	void jumpManagementCheckJumpState() {
 		if (IsOnChangeState) { //change from other state to this state
 			//reset JumpBool in animator, in order to re-jump in jump or fall state
@@ -455,24 +476,11 @@ public class PlayerMovement : MonoBehaviour {
 			return;
 		}
 		//check double jump
-		if (IsJump && jumpCount < jumpCountMaximum) {
-			if (this.anim.IsInTransition(0)) {//if state machine currently in transition [jump] >> [fall]
-				//save the command for later use (will be used at the beginnning of [fall state])
-				IsReceivedJumpCommand = true;
-				print("received a jump command, but wait until fall state");
-			}
-			else {
-				print ("press jump in jump state");
-				this.jumpStateEnter();
-				
-				//these function only for restart animation, but now we already has double jump state
-				//anim.ForceStateNormalizedTime(0.0f); //function deprecated 
-				//anim.SetTarget(AvatarTarget.Root, 0.0f);
-			}
-		}
+		receiveDoubleJumpCommand();
+		
 		this.rigidbody.AddForce(Vector3.down * jumpForceReduce, ForceMode.VelocityChange);
 	}
-
+	
 	void jumpManagementCheckDoubleJumpState() {
 		if (IsOnChangeState) { //change from other state to this state
 			//reset DoubleJump, so when DoubleJump > FallState, FallState doesn't go back to DoubleJumpState
@@ -482,18 +490,15 @@ public class PlayerMovement : MonoBehaviour {
 		//redure doubleJumpForce per frame, in order to make character's trajectory look like parabol.
 		this.rigidbody.AddForce(Vector3.down * doubleJumpForceReduce, ForceMode.VelocityChange);
 	}
-
+	
 	void jumpManagementCheckFallState() {
 		if (IsOnChangeState) { //change from other state to this state
-			//TODO: not sure we still have this problem or not.
-			//I found that, we have 2 transition from [jump] can happens at the same time --> strict condition is solve this problem
-			//problem: in Jump state, in transition [jump] >> [fall], double jump event is triggered. jump state go to fall state and then double state
-			//solution: wait until fall state is reached
-			if (IsReceivedJumpCommand) {
-				//let's double jump
-				this.jumpStateEnter();
-			}
-			else
+			//			//TODO: not sure we still have this problem or not.
+			//			//I found that, we have 2 transition from [jump] can happens at the same time --> strict condition is solve this problem
+			//			//problem: in Jump state, in transition [jump] >> [fall], double jump event is triggered. jump state go to fall state and then double state
+			//			//solution: wait until fall state is reached
+			
+			if (!ActiveJumpCommand())
 			{
 				this.rigidbody.AddForce(Vector3.down * Mathf.Abs(this.rigidbody.velocity.y), ForceMode.VelocityChange);
 				
@@ -510,13 +515,7 @@ public class PlayerMovement : MonoBehaviour {
 			return;
 		}
 		//check double jump
-		if (IsJump && jumpCount < jumpCountMaximum) {
-			//print ("press jump in falling state");
-			//reset falling force
-			//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
-			this.jumpStateEnter();
-			
-		}
+		receiveDoubleJumpCommand();
 		
 		// Raycast down from the center of the character.. 
 		Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
@@ -540,20 +539,39 @@ public class PlayerMovement : MonoBehaviour {
 		//this.rigidbody.AddForce(Vector3.up * 0.0f, ForceMode.Impulse);
 		//print("velocity " + this.rigidbody.velocity);
 	}
-
+	
 	void jumpManagementCheckLandState() {
 		if (IsOnChangeState) { //change from other state to this state
+			ActiveJumpCommand();
 			return;
 		}
-
+		
 		//check double jump
+		receiveDoubleJumpCommand();
+	}
+	
+	void receiveDoubleJumpCommand() {
 		if (IsJump && jumpCount < jumpCountMaximum) {
-			//print ("press jump in falling state");
-			//reset falling force
-			//this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, 0.0f, this.rigidbody.velocity.z);
-			this.jumpStateEnter();
-			
+			if (this.anim.IsInTransition(0)) {//if state machine currently in transition [land] >> [locomotion] (example)
+				//save the command for later use (will be used at the beginnning of [locomotion state]) (example)
+				IsReceivedJumpCommand = true;
+				print("received a double jump command, but wait until next state");
+			}
+			else {
+				this.jumpStateEnter();
+				print ("receive double jump at " + animatorEvents.layers[0].GetStateName(currentBaseState.nameHash));
+			}
 		}
+	}
+	
+	bool ActiveJumpCommand() {
+		if (IsReceivedJumpCommand) {
+			this.jumpStateEnter();
+			IsReceivedJumpCommand = false;
+			print ("active jump command at state " +  animatorEvents.layers[0].GetStateName(currentBaseState.nameHash));
+			return true;
+		}
+		return false;
 	}
 	#endregion
 }

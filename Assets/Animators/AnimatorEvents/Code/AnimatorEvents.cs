@@ -26,24 +26,25 @@ public class AnimatorEvents : MonoBehaviour {
 	}
 	
 	void FixedUpdate () {
-		for ( int layer = 0; layer < layers.Length; layer++) {
-			if (layers[layer].isListening) {
-				// State Change Verification
-				layers[layer].currentState = animator.GetCurrentAnimatorStateInfo(layer);
-				
-				if (layers[layer].previousState.nameHash != layers[layer].currentState.nameHash) {
-					if (OnStateChanged != null)
-						OnStateChanged (layer, layers[layer].previousState, layers[layer].currentState);
-					layers[layer].previousState = layers[layer].currentState;
-				}
-				
-				// Transition Change Verification
-				if (animator.IsInTransition(layer)) {
-					if (OnTransition != null)
-						OnTransition(layer, animator.GetAnimatorTransitionInfo(layer));
-				}
-			}
-		}
+//		print("sasaasdsdaasd");
+//		for ( int layer = 0; layer < layers.Length; layer++) {
+//			if (layers[layer].isListening) {
+//				// State Change Verification
+//				layers[layer].currentState = animator.GetCurrentAnimatorStateInfo(layer);
+//				
+//				if (layers[layer].previousState.nameHash != layers[layer].currentState.nameHash) {
+//					if (OnStateChanged != null)
+//						OnStateChanged (layer, layers[layer].previousState, layers[layer].currentState);
+//					layers[layer].previousState = layers[layer].currentState;
+//				}
+//				
+//				// Transition Change Verification
+//				if (animator.IsInTransition(layer)) {
+//					if (OnTransition != null)
+//						OnTransition(layer, animator.GetAnimatorTransitionInfo(layer));
+//				}
+//			}
+//		}
 	}
 	
 #if UNITY_EDITOR
