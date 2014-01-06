@@ -397,7 +397,9 @@ public class PlayerMovement : MonoBehaviour {
 			anim.SetBool(PlayerHashIDs.IsDoubleJump, true);
 			
 			//reset old down-force
-			Vector3 forceRemover = Vector3.up * Mathf.Abs(this.rigidbody.velocity.y);// this force is used for remove current vector3.down force
+			//Vector3 forceRemover = Vector3.up * Mathf.Abs(this.rigidbody.velocity.y);// this force is used for remove current vector3.down force
+			Vector3 forceRemover = Vector3.zero;
+			forceRemover.y = -this.rigidbody.velocity.y;
 			this.rigidbody.AddForce(forceRemover, ForceMode.VelocityChange);
 			//print("velocity at double jump time: " + this.rigidbody.velocity);
 		}
@@ -515,7 +517,7 @@ public class PlayerMovement : MonoBehaviour {
 			return;
 		}
 		//check double jump
-		receiveDoubleJumpCommand();
+		if (receiveDoubleJumpCommand()) return;
 		
 		// Raycast down from the center of the character.. 
 		Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
@@ -550,7 +552,7 @@ public class PlayerMovement : MonoBehaviour {
 		receiveDoubleJumpCommand();
 	}
 	
-	void receiveDoubleJumpCommand() {
+	bool receiveDoubleJumpCommand() {
 		if (IsJump && jumpCount < jumpCountMaximum) {
 			if (this.anim.IsInTransition(0)) {//if state machine currently in transition [land] >> [locomotion] (example)
 				//save the command for later use (will be used at the beginnning of [locomotion state]) (example)
@@ -561,7 +563,9 @@ public class PlayerMovement : MonoBehaviour {
 				this.jumpStateEnter();
 				print ("receive double jump at " + animatorEvents.layers[0].GetStateName(currentBaseState.nameHash));
 			}
+			return true;
 		}
+		return false;
 	}
 	
 	bool ActiveJumpCommand() {
