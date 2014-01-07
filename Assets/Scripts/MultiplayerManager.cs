@@ -16,7 +16,7 @@ public class MultiplayerManager : MonoBehaviour
     public int PlayerIndex = 1;
     public GameObject playerOnePrefab, playerTwoPrefab;
     public List<RUSHPlayer> PlayersList = new List<RUSHPlayer>();
-    public HostData[] RoomList;
+    public List<HostData> RoomList = null;
     public bool isGameStarted = false;
     public bool refreshing = false;
     public bool gameLoaded;
@@ -53,14 +53,15 @@ public class MultiplayerManager : MonoBehaviour
     public void JoinRoom(HostData hostData)
     {
         roomToJoin = hostData;
-        roomToJoinIP = "";
-        int i = 0;
+        int i = 1;
+        roomToJoinIP = roomToJoin.ip[0];
+
         while (i < roomToJoin.ip.Length)
         {
-            roomToJoinIP += roomToJoin.ip[i] + ".";
+            roomToJoinIP += "." + roomToJoin.ip[i];
             i++;
         }
-        Debug.Log("Room IP: " + roomToJoinIP);
+        //Debug.Log("Room IP: " + roomToJoinIP);
         JoinedRoomFlag = 0; // Set joining status
         MasterServer.RequestHostList(GameName);
         //Network.Connect(hostData);
@@ -114,28 +115,29 @@ public class MultiplayerManager : MonoBehaviour
             RoomList = null;
             foreach (HostData room in MasterServer.PollHostList())
             {
-                Debug.Log("Room has: " + room.connectedPlayers.ToString());
+                //Debug.Log("Room has: " + room.connectedPlayers.ToString());
                 if (room.connectedPlayers == 1) //Only display waiting room
                 {
-                    RoomList = new HostData[i + 1];
-                    RoomList[i] = room;
+                    if (RoomList == null)
+                        RoomList = new List<HostData>();
+                    RoomList.Add(room);
                 }
             }
             if (JoinedRoomFlag == 0)
             {
                 //is checking existence of a room to join room
-                Debug.Log("Checking room");
+                //Debug.Log("Checking room");
                 foreach (HostData room in MasterServer.PollHostList())
                 {
-                    string checkIP = "";
-                    i = 0;
+                    string checkIP = room.ip[0];
+                    i = 1;
                     while (i < room.ip.Length)
                     {
-                        checkIP += room.ip[i] + ".";
+                        checkIP += "." + room.ip[i];
                         i++;
                     }
 
-                    Debug.Log("Check IP: " + checkIP);
+                    //Debug.Log("Check IP: " + checkIP);
 
                     if (checkIP == roomToJoinIP && room.port == roomToJoin.port && room.connectedPlayers == 1)
                     {
@@ -185,7 +187,7 @@ public class MultiplayerManager : MonoBehaviour
 
     void OnConnectedToServer()
     {
-        Debug.Log("Connected");
+        //Debug.Log("Connected");
         JoinedRoomFlag = 1;
         PlayerIndex = 2; // Not Room Creator
         networkView.RPC("Server_PlayerJoinRequest", RPCMode.Server, PlayerName, Network.player, PlayerIndex);

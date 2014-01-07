@@ -21,6 +21,7 @@ public class Button_Controller : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        GUI.depth = 0;
         isPressed = false;
         bool hitTest = false;
         foreach (Touch touch in Input.touches)

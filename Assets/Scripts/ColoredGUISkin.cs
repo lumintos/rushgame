@@ -49,6 +49,7 @@ public class ColoredGUISkin : MonoBehaviour {
 		actualSkin.button.hover.textColor = secondaryColor;
 		actualSkin.button.active.textColor = secondaryColor;
 		
+        
 		// Window
 		actualSkin.window = new GUIStyle("window");
 		actualSkin.window.normal.background = UpdateGuiSkin(customSkin.window.normal.background, color);
@@ -67,6 +68,7 @@ public class ColoredGUISkin : MonoBehaviour {
 		actualSkin.textField.focused.background = UpdateGuiSkin(customSkin.textField.focused.background, color);
 		actualSkin.textField.active.background = UpdateGuiSkin(customSkin.textField.active.background, color);
 		actualSkin.textField.onNormal.background = UpdateGuiSkin(customSkin.textField.onNormal.background, color);
+        actualSkin.textField = customSkin.textField;
 		
 		// Box
 		actualSkin.box = new GUIStyle("box");
@@ -133,11 +135,12 @@ public class ColoredGUISkin : MonoBehaviour {
 		actualSkin.customStyles[4].hover.textColor = secondaryColor;
 		actualSkin.customStyles[4].active.textColor = secondaryColor;
 		actualSkin.customStyles[4].focused.textColor = secondaryColor;
+         
 		
 	}
 	
 	private Texture2D UpdateGuiSkin(Texture2D texture, Color primaryColor) {
-        return texture;
+       // return texture;
 
 		Texture2D newTexture = new Texture2D((int)(texture.width / scalingFactor), (int) (texture.height / scalingFactor), texture.format, false);
 		for (int i = 0; i < newTexture.width; i++) {

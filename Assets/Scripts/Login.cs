@@ -11,10 +11,6 @@ public class Login : MonoBehaviour {
 
 	private float screenWidth, screenHeight;
     private float stdScreenWidth, stdScreenHeight;
-    private float stdguiTextFontSize, stdMsgFontSize;
-
-	private float txtScaledHeight, btnScaledHeight;
-	private float txtScaledWidth, btnScaledWidth;
 
 	private int screenWidthUnit = 48; // aspect ratio 16:9
 	private int screenHeightUnit = 27;
@@ -45,8 +41,6 @@ public class Login : MonoBehaviour {
     {
         stdScreenHeight = 540;
         stdScreenWidth = 960;
-        stdguiTextFontSize = 30;
-        stdMsgFontSize = 20;
         screenWidth = screenHeight = 0;
         UpdateGUIElementsSize();
     }
@@ -110,7 +104,6 @@ public class Login : MonoBehaviour {
                     WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
                     StartCoroutine(loginRequest(w));
                 }
-
             }
 
             if (registerButton.GetComponent<Button_Controller>().isPressed)
@@ -275,9 +268,6 @@ public class Login : MonoBehaviour {
     {
         screenWidth = Screen.width;
         screenHeight = Screen.height;
-
-        btnScaledHeight = (float)btnHeightUnit * screenHeight / screenHeightUnit;
-        btnScaledWidth = (float)btnWidthUnit * screenWidth / screenWidthUnit;
 
         GUIText[] guiTexts = GameObject.FindObjectsOfType<GUIText>();
         //Ok for mobile and device that doesn't change game's screen size

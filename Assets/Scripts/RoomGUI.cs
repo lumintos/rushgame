@@ -8,7 +8,7 @@ public class RoomGUI : MonoBehaviour {
 
     private string username1 = "";
     private string username2 = "";
-    private string waitingMsg = "Waiting for P2...";
+    private string waitingMsg = "Waiting for P2";
 
     public Texture2D waitTex, avatarP1, avatarP2;
 
@@ -35,6 +35,9 @@ public class RoomGUI : MonoBehaviour {
             }
         }
 
+        guiHelper.SetText("PlayerOneName", username1);
+        guiHelper.SetText("PlayerTwoName", username2);
+
     }
 
     public void DisplayPlayers()
@@ -42,19 +45,8 @@ public class RoomGUI : MonoBehaviour {
         if (guiHelper == null)
         {
             guiHelper = GetComponent<GUIHelper>();
-            guiHelper.UpdateGUIElementsSize();
+           // guiHelper.UpdateGUIElementsSize();
         }
-        /*
-        if (!guiHelper.guiUpdated)
-        {
-            ColoredGUISkin.Instance.UpdateGuiColors(guiHelper.primaryColor, guiHelper.secondaryColor);
-            guiHelper.guiUpdated = true;
-        }
-
-        GUI.skin = ColoredGUISkin.Skin;
-
-        GUI.skin.button.fontSize = (int)(guiHelper.btnScaledHeight * guiHelper.fontSizeUnit / (1.5f * guiHelper.btnHeightUnit));
-        */
 
         SetUserName();
         Texture2D texP1, texP2;
@@ -70,57 +62,33 @@ public class RoomGUI : MonoBehaviour {
         texP1 = avatarP1;
 
         //Player 1
-        Rect playerAvatarRect = guiHelper.GetScaledRectFromUnit(14, 11);
-        playerAvatarRect.x = 2 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        playerAvatarRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+        if (username1 == MultiplayerManager.Instance.PlayerName)
+        {
+            guiHelper.ChangeTexture("PlayerOneFrame", "UI/frame-player-waiting-avatar");
+        }
+        else
+        {
+            guiHelper.ChangeTexture("PlayerOneFrame", "UI/frame-player-waiting-avatar2");
+        }
 
-        Rect usernameRect = guiHelper.GetScaledRectFromUnit(12, 2);
-        usernameRect.x = 3 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        usernameRect.y = 14 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        DrawPlayer(playerAvatarRect, usernameRect, username1, texP1);
-
-        //Player 2
-        playerAvatarRect.x = 18 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        playerAvatarRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        usernameRect.x = 19 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        usernameRect.y = 14 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-
-        DrawPlayer(playerAvatarRect, usernameRect, username2, texP2);
-
-        //VS text
-        Rect labelRect = guiHelper.GetScaledRectFromUnit(4, 4);
-        labelRect.x = 15 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-        labelRect.y = 13 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-        GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
-        labelStyle.fontStyle = FontStyle.Bold;
-        labelStyle.normal.textColor = new Color(248f / 255, 160f / 255, 61f / 255, 1);
-        labelStyle.alignment = TextAnchor.UpperCenter;
-        labelStyle.wordWrap = true;
-        labelStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit * 2 / guiHelper.screenHeightUnit;
-        GUI.Label(labelRect, "VS", labelStyle);        
+        //Player 2        
+        if (username2 != waitingMsg)
+        {
+            if (username2 == MultiplayerManager.Instance.PlayerName)
+            {
+                guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-player-waiting-avatar");
+            }
+            else
+            {
+                guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-player-waiting-avatar2");
+            }
+        }
+        else
+        {
+            guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-player-waiting-avatar2"); //There will be another texture for waiting
+        }
     }
 
-    void DrawPlayer(Rect playerAvatarRect, Rect usernameRect, string username, Texture2D avatar)
-    {
-
-        RectOffset padding = GUI.skin.box.padding;
-        Rect texRect = new Rect(padding.top, padding.top,
-            playerAvatarRect.width - padding.left,
-            playerAvatarRect.height - padding.top - padding.bottom);
-        GUI.Box(playerAvatarRect, "");
-
-        GUI.BeginGroup(playerAvatarRect);
-        GUI.DrawTexture(texRect, avatar, ScaleMode.ScaleAndCrop);
-        GUI.EndGroup();
-
-        GUIStyle usernameStyle = new GUIStyle(GUI.skin.label);
-        usernameStyle.fontStyle = FontStyle.Bold;
-        usernameStyle.normal.textColor = Color.white;
-        usernameStyle.alignment = TextAnchor.UpperCenter;
-        usernameStyle.wordWrap = true;
-        usernameStyle.fontSize = (int)guiHelper.screenHeight * guiHelper.fontSizeUnit / guiHelper.screenHeightUnit;
-        GUI.Label(usernameRect, username, usernameStyle);
-    }
 
 
 }
