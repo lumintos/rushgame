@@ -13,5 +13,5 @@ public class PlayerHashIDs : MonoBehaviour
 	public static int speedFloat			= Animator.StringToHash("speed");
 	public static int JumpBool				= Animator.StringToHash("Jump");
 	public static int FallToLandBool		= Animator.StringToHash("FallToLand");
-	public static int DoubleJumpBool			= Animator.StringToHash("IsDoubleJump");
+	//public static int DoubleJumpBool			= Animator.StringToHash("IsDoubleJump");
 }

@@ -29,13 +29,8 @@ public class PlayerMovement : MonoBehaviour {
 	private float _jumpMove = 0.0f;
 	private bool _jumpButtonLock = false;//only unlock when release then re-press/touch jump button
 	private bool _isKeyboardInput = true;//there are 2 types of input: by keys or by touch-button
-	//when jump button is pressed, this var is active, 
-	//but it waits until the right time to active the REAL JUMP FUNCTION
-	//For example: in transition [jump] > [fall]; press jump; if active immediately, 
-	//it will set some up-force, then goes to [fall state], then reset to down-force
-	//The good solution in this case is let the system wait until fall state is reached, and then active the REAL JUMP FUNCTION
-	private bool _isReceivedJumpCommand = false;
-	
+	public float jumpFallForcePerFrame = 1.5f;
+
 	//pre-define only for this particular scene
 	private Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
 	
@@ -55,8 +50,6 @@ public class PlayerMovement : MonoBehaviour {
 	private float _animParamSpeedFloat;
 	private bool _animParamJumpBool;
 	private bool _animParamFallToLandBool;
-	private bool _animParamDoubleJumpBool;
-
 	
 	private GUIManager guiManager;
 	private GameController gameController;
@@ -93,7 +86,7 @@ public class PlayerMovement : MonoBehaviour {
 		{
 			UpdateAnimatorParamametersFrom(_anim);
 			this.updateMovement(0, false); //character is idle
-			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool, _animParamDoubleJumpBool);
+			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
 			return;
 		}
 		
@@ -128,7 +121,7 @@ public class PlayerMovement : MonoBehaviour {
 
 			UpdateAnimatorParamametersFrom(_anim);
 			this.updateMovement(hInt, IsJump);
-			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool, _animParamDoubleJumpBool);
+			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
 		}
 		else
 		{
@@ -164,7 +157,7 @@ public class PlayerMovement : MonoBehaviour {
 				//movement.updateMovement(hInt, IsJump);
 				UpdateAnimatorParamametersFrom(_anim);
 				this.updateMovement(hInt, IsJump);
-				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool, _animParamDoubleJumpBool);
+				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
 				//Call object instance in other game instances to perform exact movement
 				networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);				
 			}
@@ -361,8 +354,6 @@ public class PlayerMovement : MonoBehaviour {
 	
 	#region manage jump state variable
 	void jumpStateEnter() {
-		_isReceivedJumpCommand = false;
-
 		Vector3 force = Vector3.zero;
 
 		if(_jumpCount == 0) {//1st jump
@@ -373,7 +364,7 @@ public class PlayerMovement : MonoBehaviour {
 		}
 		//enable double jump animation
 		else if (_jumpCount == 1) {//2nd jump
-			_animParamDoubleJumpBool = true;
+			_animParamJumpBool = true;
 			print ("active double jump!");
 			
 			//reset old down-force
@@ -398,9 +389,6 @@ public class PlayerMovement : MonoBehaviour {
 	void jumpStateReset() {
 		_animParamJumpBool = false;
 		_animParamFallToLandBool = false;
-		_animParamDoubleJumpBool = false;
-
-		//IsReceivedJumpCommand = false; //if reset in here, not good in case [land] and [locomotion]
 		_jumpCount = 0;
 	}
 	#endregion
@@ -425,7 +413,7 @@ public class PlayerMovement : MonoBehaviour {
 		if (_IsOnChangeState) { //change from other state to this state
 			//this.jumpStateReset();//was reseted in transition [fall] >> [locomotion]
 			//return;
-			if (_animParamJumpBool || _animParamDoubleJumpBool) { //pressed jump button in transition [fall] >> [locomotion]
+			if (_animParamJumpBool) { //pressed jump button in transition [fall] >> [locomotion]
 				//let's it go
 			}
 			else {
@@ -433,21 +421,16 @@ public class PlayerMovement : MonoBehaviour {
 			}
 		}
 		
-		if (IsJump) {//transition to [jump] immediately
+		if (IsJump && _jumpCount < JumpCountMaximum) {//transition to [jump] immediately
 			this.jumpStateEnter();
 			return;
 		}
 
 		if (!_anim.IsInTransition(0)) { //not apply in transition, for example: [locomotion] >> [jump]
 			// Raycast down from the center of the character.. FOR FAKE GRAVITY ONLY IN LOCOMOTION STATE
-			Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
-			RaycastHit hitInfo = new RaycastHit();
-			
-			if (Physics.Raycast(ray, out hitInfo))
-			{
-				if (hitInfo.distance > MidAirCheck) {//this value may change depend on character's center
-					this.rigidbody.AddForce(Vector3.down * FakeGravity, ForceMode.Force);
-				}
+			bool isMidAir = this.checkMidAir();
+			if (isMidAir) {
+				this.rigidbody.AddForce(Vector3.down * FakeGravity, ForceMode.Force);
 			}
 		}
 	}
@@ -455,8 +438,14 @@ public class PlayerMovement : MonoBehaviour {
 	void jumpManagementCheckJumpState() {
 		if (_IsOnChangeState) { //change from other state to this state
 			//reset JumpBool in animator, in order to re-jump in jump or fall state
-			_animParamJumpBool = false;
-			//return;
+			if (_jumpCount == 1) { //1st jump
+				//reset, in order to transition to [fall]
+				_animParamJumpBool = false;
+			}
+			else if (_jumpCount == 2) { //2nd jump
+				//let's it go, wait to transition to [double jump] in next frame
+				return;
+			}
 		}
 
 		//check double jump
@@ -471,23 +460,21 @@ public class PlayerMovement : MonoBehaviour {
 	void jumpManagementCheckDoubleJumpState() {
 		if (_IsOnChangeState) { //change from other state to this state
 			//reset DoubleJump, so when DoubleJump > FallState, FallState doesn't go back to DoubleJumpState
-			_animParamDoubleJumpBool = false;
-			//return;
+			_animParamJumpBool = false;
 		}
 
 		//redure doubleJumpForce per frame, in order to make character's trajectory look like parabol.
 		this.rigidbody.AddForce(Vector3.down * DoubleJumpForceReduce, ForceMode.VelocityChange);
 	}
 
-	public float jumpFallForcePerFrame = 1.5f;
+
 	void jumpManagementCheckFallState() {
 		if (_IsOnChangeState) { //change from other state to this state
-			if (!_animParamDoubleJumpBool)//(!ActiveJumpCommand())
-			{//if not prepare for double jump, we dont need to reset force
+			//if (!_animParamDoubleJumpBool)//(!ActiveJumpCommand())
+			if (!_animParamJumpBool) { //if not double jump, reset force from jumping!
 				this.rigidbody.AddForce(Vector3.down * Mathf.Abs(this.rigidbody.velocity.y), ForceMode.VelocityChange);
 				
 				Vector3 force = Vector3.zero;
-//				force += Vector3.down * JumpForce;
 				force += Vector3Forward * _jumpMove;
 				
 				this.rigidbody.AddForce(force, ForceMode.VelocityChange);
@@ -543,37 +530,6 @@ public class PlayerMovement : MonoBehaviour {
 //		//check double jump
 //		receiveDoubleJumpCommand();
 //	}
-//	
-//	bool receiveDoubleJumpCommand() {
-//		if (IsJump && _jumpCount < JumpCountMaximum) {
-//			//there is a case that:
-//			//transition [locomotion] >> [jump]
-//			//want to invoke double jump --> not go into if stament, because it is in trnasition
-//			if (this._anim.IsInTransition(0)) {//if state machine currently in transition [land] >> [locomotion] (example)
-//				//save the command for later use (will be used at the beginnning of [locomotion state]) (example)
-//				_isReceivedJumpCommand = true;
-//				print("received a double jump command at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash) + ", but wait until next state");
-//			}
-//			else
-//			{
-//				print("frame count: " + _frameCounter);
-//				this.jumpStateEnter();
-//				print ("receive double jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
-//			}
-//			return true;
-//		}
-//		return false;
-//	}
-//	
-//	bool ActiveJumpCommand() {
-//		if (_isReceivedJumpCommand) {
-//			this.jumpStateEnter();
-//			_isReceivedJumpCommand = false;
-//			print ("active jump command at state " +  _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
-//			return true;
-//		}
-//		return false;
-//	}
 	#endregion
 
 	#region update animator of Mecanim system
@@ -585,7 +541,7 @@ public class PlayerMovement : MonoBehaviour {
 		_animParamSpeedFloat = animParam.GetFloat(PlayerHashIDs.speedFloat);
 		_animParamJumpBool = animParam.GetBool(PlayerHashIDs.JumpBool);
 		_animParamFallToLandBool = animParam.GetBool(PlayerHashIDs.FallToLandBool);
-		_animParamDoubleJumpBool = animParam.GetBool(PlayerHashIDs.DoubleJumpBool);
+		//_animParamDoubleJumpBool = animParam.GetBool(PlayerHashIDs.DoubleJumpBool);
 	}
 
 	/// <summary>
@@ -598,11 +554,11 @@ public class PlayerMovement : MonoBehaviour {
 	/// <param name="fallToLandBool">If set to <c>true</c> fall to land bool.</param>
 	/// <param name="doubleJumpBool">If set to <c>true</c> double jump bool.</param>
 	void UpdateAnimatorParamametersTo(Animator animParam, 
-	                                float speedFloat, bool jumpBool, bool fallToLandBool, bool doubleJumpBool) {
+	                                float speedFloat, bool jumpBool, bool fallToLandBool) {
 		animParam.SetFloat(PlayerHashIDs.speedFloat, speedFloat);
 		animParam.SetBool(PlayerHashIDs.JumpBool, jumpBool);
 		animParam.SetBool(PlayerHashIDs.FallToLandBool, fallToLandBool);
-		animParam.SetBool(PlayerHashIDs.DoubleJumpBool, doubleJumpBool);
+		//animParam.SetBool(PlayerHashIDs.DoubleJumpBool, doubleJumpBool);
 	}
 	#endregion
 }
