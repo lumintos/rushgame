@@ -126,8 +126,8 @@ public class PlayerMovement : MonoBehaviour {
 		else
 		{
 			//States in server is the correct one for all network player (regardless networkView), all clients must follow
-			if (Network.isServer)
-				networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
+			//if (Network.isServer)
+				//networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
 			
 			//Input only for network player of owner
 			if (networkView.isMine)
@@ -157,17 +157,15 @@ public class PlayerMovement : MonoBehaviour {
 				//movement.updateMovement(hInt, IsJump);
 				UpdateAnimatorParamametersFrom(_anim);
 				this.updateMovement(hInt, IsJump);
-				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
-				//Call object instance in other game instances to perform exact movement
-				networkView.RPC("MoveCommands", RPCMode.OthersBuffered, hInt, IsJump);				
+				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);							
 			}
-			/* else
+			 else
             {
                 //if (Network.isClient)
-                //    SyncedMovement();
-                if(Network.isServer)
-                    networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
-            } */
+                    SyncedMovement();
+                //if(Network.isServer)
+                    //networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
+            } 
 		}
 	}
 	
@@ -176,7 +174,74 @@ public class PlayerMovement : MonoBehaviour {
 		//guiManager.UpdateHP(HP,-1);// negative is left HP, positive is right HP, depend on which side player is.
 		guiManager.UpdateTouchInput();
 	}
-	
+
+    void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
+    {
+        float syncVelocity = 0;
+        Vector3 syncRigidVelocity = Vector3.zero;
+        Vector3 syncPosition = Vector3.zero;
+        Quaternion syncRotation = Quaternion.identity;
+
+        bool syncJumpBool = false;
+        //bool syncIsDoubleJump = false;
+        bool syncFallToLandBool = false;
+        float syncSpeedFloat = 0;
+
+        if (stream.isWriting)
+        {
+            syncVelocity = this._velocity;
+            syncRigidVelocity = rigidbody.velocity;
+            syncPosition = transform.position;
+            syncRotation = transform.rotation;
+            syncJumpBool = _animParamJumpBool;
+            //syncIsDoubleJump = ;
+            syncFallToLandBool = _animParamFallToLandBool;
+            syncSpeedFloat = _animParamSpeedFloat;
+
+            stream.Serialize(ref syncVelocity);
+            stream.Serialize(ref syncRigidVelocity);
+            stream.Serialize(ref syncPosition);
+            stream.Serialize(ref syncRotation);
+            stream.Serialize(ref syncJumpBool);
+            //stream.Serialize(ref syncIsDoubleJump);
+            stream.Serialize(ref syncFallToLandBool);
+            stream.Serialize(ref syncSpeedFloat);
+        }
+        if (stream.isReading)
+        {
+            stream.Serialize(ref syncVelocity);
+            stream.Serialize(ref syncRigidVelocity);
+            stream.Serialize(ref syncPosition);
+            stream.Serialize(ref syncRotation);
+            stream.Serialize(ref syncJumpBool);
+            //stream.Serialize(ref syncIsDoubleJump);
+            stream.Serialize(ref syncFallToLandBool);
+            stream.Serialize(ref syncSpeedFloat);
+
+            syncTime = 0;
+            syncDelay = Time.time - lastSynchronizationTime;
+            lastSynchronizationTime = Time.time;
+
+            this._velocity = syncVelocity;
+            transform.rotation = syncRotation;
+            //transform.position = syncPosition;
+            _animParamJumpBool = syncJumpBool;
+            //isDoubleJump = syncIsDoubleJump;
+            _animParamFallToLandBool = syncFallToLandBool;
+            _animParamSpeedFloat = syncSpeedFloat;
+            syncEndPosition = syncPosition + syncRigidVelocity * syncDelay;
+            syncStartPosition = transform.position;
+
+            UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
+        }
+    }
+
+    void SyncedMovement()
+    {
+        syncTime += Time.deltaTime;
+        transform.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
+        //transform.rotation = Quaternion.Lerp(syncStartRotation, syncEndRotation, syncTime / syncDelay);
+    }
     
     [RPC]
 	private void MoveCommands(float horizontal, bool isJump)

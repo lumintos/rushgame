@@ -69,30 +69,40 @@ public class GUIHelper : MonoBehaviour {
         btnScaledHeight = (float)btnHeightUnit * screenHeight / screenHeightUnit;
         btnScaledWidth = (float)btnWidthUnit * screenWidth / screenWidthUnit;
 
-        backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
+        if(backgroundImage != null)
+            backgroundImage.pixelInset = new Rect(0, 0, screenWidth, screenHeight);
         //Ok for mobile and device that doesn't change game's screen size
         //If it's not the case, items' fontsize will keep increasing
         
 
         //update size for frames and buttons
-        foreach (GUITexture tempFrame in guiFrames)
+        if (guiFrames != null)
         {
-            float tempW = tempFrame.pixelInset.width;
-            float tempH = tempFrame.pixelInset.height;
-            tempFrame.pixelInset = GetScaledPixelInset(tempW, tempH);
-        }
-        
-        foreach (GUITexture tempButton in guiButtons)
-        {
-            float tempW = tempButton.pixelInset.width;
-            float tempH = tempButton.pixelInset.height;
-            tempButton.pixelInset = GetScaledPixelInset(tempW, tempH);
+            foreach (GUITexture tempFrame in guiFrames)
+            {
+                float tempW = tempFrame.pixelInset.width;
+                float tempH = tempFrame.pixelInset.height;
+                tempFrame.pixelInset = GetScaledPixelInset(tempW, tempH);
+            }
         }
 
-        foreach (GUIText tempText in guiTexts)
+        if (guiButtons != null)
         {
-            int tempSize = tempText.fontSize;
-            tempText.fontSize = (int)(tempSize * screenHeight / stdScreenHeight);
+            foreach (GUITexture tempButton in guiButtons)
+            {
+                float tempW = tempButton.pixelInset.width;
+                float tempH = tempButton.pixelInset.height;
+                tempButton.pixelInset = GetScaledPixelInset(tempW, tempH);
+            }
+        }
+
+        if (guiTexts != null)
+        {
+            foreach (GUIText tempText in guiTexts)
+            {
+                int tempSize = tempText.fontSize;
+                tempText.fontSize = (int)(tempSize * screenHeight / stdScreenHeight);
+            }
         }
 
     }

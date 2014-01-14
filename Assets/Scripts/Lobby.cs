@@ -90,9 +90,14 @@ public class Lobby : MonoBehaviour {
 
     void GetUserInfo()
     {
+        /*
         string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=query_score&username=" + MultiplayerManager.Instance.PlayerName;
         WWW w = new WWW(url);
         StartCoroutine(queryInfoRequest(w));
+        */
+        int spirit = 100;
+        int maxSpirit = 100;
+        MultiplayerManager.Instance.SetUserInfo(MultiplayerManager.Instance.PlayerName, Network.player, maxSpirit, spirit);
     }
 
     IEnumerator queryInfoRequest(WWW w)
@@ -338,7 +343,6 @@ public class Lobby : MonoBehaviour {
 
     void DrawSingleRoom()
     {
-        Debug.Log("FLAAAAG: " + MultiplayerManager.Instance.JoinedRoomFlag.ToString());
         guiHelper.ChangeTexture("FrameRoom", "UI/frame-room");
         guiHelper.SetActiveGUIElement("ButtonRefreshRoomsList", false);
         guiHelper.SetActiveGUIElement("ButtonCreateRoom", false);

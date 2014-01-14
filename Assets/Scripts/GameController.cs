@@ -26,6 +26,7 @@ public class GameController : MonoBehaviour {
         startTimeKeepStone = 0;
         elapsedTimeKeepStone = 0;
         maxTimeKeepStone = 30; // in seconds
+
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
         guiHelper.UpdateGUIElementsSize();
 
@@ -75,8 +76,8 @@ public class GameController : MonoBehaviour {
                     if (isStoneTaken && goalTrigger.hitObject.networkView.owner == stoneKeeper)
                     {
                         //TODO: call RPC Display result only once
-                        networkView.RPC("DisplayResult", RPCMode.AllBuffered);
-                        MultiplayerManager.Instance.LeaveRoom(2); //Disconnect and unregister host for both server and client 
+                        //networkView.RPC("DisplayResult", RPCMode.AllBuffered);
+                        //MultiplayerManager.Instance.LeaveRoom(2); //Disconnect and unregister host for both server and client 
                     }
                 }
             }
@@ -91,6 +92,12 @@ public class GameController : MonoBehaviour {
     //TODO: Move this part to GUIManager for consistence of code
     void OnGUI()
     {
+        if (GUI.Button(new Rect(100, 100, 200, 100), "QUIT"))
+        {
+            MultiplayerManager.Instance.LeaveRoom(2);
+            Application.LoadLevel("lobby");
+        }
+
         if (!guiHelper.guiUpdated)
         {
             ColoredGUISkin.Instance.UpdateGuiColors(guiHelper.primaryColor, guiHelper.secondaryColor);

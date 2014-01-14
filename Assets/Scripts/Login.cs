@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿//Author: Giang
+//TODO: refactor all GUI functions by using GUiHelper's ones
+using UnityEngine;
 using System.Collections;
 using System.Xml;
 
