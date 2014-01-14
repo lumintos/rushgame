@@ -30,7 +30,7 @@ public class GUIManager : MonoBehaviour {
 	private string[] HP_Textures = new string[]{"UI/HP_07","UI/HP_06","UI/HP_05","UI/HP_04","UI/HP_03","UI/HP_02","UI/HP_01","UI/HP",};
 	
 	private Size ScreenSizeUnit = new Size(750,422);
-	private Size HPSize = new Size(200,30);
+	private Size HPSize = new Size(200,37);
 	private Size BtnTurnLR = new Size(86,86);
 	private Size BtnJump = new Size(128,128);
 	private Size PlayerIconSize = new Size(90,90);
@@ -62,6 +62,7 @@ public class GUIManager : MonoBehaviour {
 		float scaleWidth = (float)p_ScreenSize.Width/(float)ScreenSizeUnit.Width;
 		float scaleHeight = (float)p_ScreenSize.Height/(float)ScreenSizeUnit.Height;
 		float widthRatio = 0,heightRatio = 0;
+		float heightRatioIconR =0, heightRatioIconL = 0;
 		// Scaling Control according to screen width&height
 		Tex_TurnLeft.pixelInset = new Rect(Tex_TurnLeft.pixelInset.x,Tex_TurnLeft.pixelInset.y,
 		                                   (float) BtnTurnLR.Width * scaleWidth, (float) BtnTurnLR.Height * scaleHeight);
@@ -87,21 +88,21 @@ public class GUIManager : MonoBehaviour {
 		widthRatio = (float)Tex_Jump.pixelInset.width/p_ScreenSize.Width;
 		Tex_Jump.transform.position = new Vector3(1-widthRatio,Tex_Jump.transform.position.y,0.0f);
 		
-		heightRatio = (float) Tex_PlayerIconL.pixelInset.height/p_ScreenSize.Height;
+		heightRatioIconL = heightRatio = (float) Tex_PlayerIconL.pixelInset.height/p_ScreenSize.Height;
 		Tex_PlayerIconL.transform.position = new Vector3(Tex_PlayerIconL.transform.position.x,1-heightRatio,0.0f);
-		
-		heightRatio = (float) Tex_PlayerIconR.pixelInset.height/p_ScreenSize.Height;
+
+		heightRatioIconR = heightRatio = (float) Tex_PlayerIconR.pixelInset.height/p_ScreenSize.Height;
 		widthRatio = (float) Tex_PlayerIconR.pixelInset.width/p_ScreenSize.Width;
 		Tex_PlayerIconR.transform.position = new Vector3(1-widthRatio,1-heightRatio,0.0f);
 		
 		heightRatio = (float) Tex_HPLeft.pixelInset.height/p_ScreenSize.Height;
 		widthRatio = (float) Tex_PlayerIconL.pixelInset.width/p_ScreenSize.Width;
-		Tex_HPLeft.transform.position = new Vector3(Tex_PlayerIconL.transform.position.x + widthRatio + 0.01f,1-heightRatio-0.01f,0.0f);
+		Tex_HPLeft.transform.position = new Vector3(Tex_PlayerIconL.transform.position.x + widthRatio,1-heightRatio-heightRatioIconL/4.386f,0.0f);
 		
 		heightRatio = (float) Tex_HPRight.pixelInset.height/p_ScreenSize.Height;
 		widthRatio = (float) Tex_HPRight.pixelInset.width/p_ScreenSize.Width;
-		Tex_HPRight.transform.position = new Vector3(Tex_PlayerIconR.transform.position.x-widthRatio-0.01f,1-heightRatio-0.01f,0.0f);
-		
+		Tex_HPRight.transform.position = new Vector3(Tex_PlayerIconR.transform.position.x-widthRatio,1-heightRatio-heightRatioIconR/4.386f,0.0f);
+
 		//Text_Timer.transform.position = new Vector3(0.5f-0.01f,1.0f-0.03f,0.0f);
         Text_Timer.fontSize = (int) (20 * scaleHeight);
 	}
