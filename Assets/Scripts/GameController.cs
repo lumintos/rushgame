@@ -12,6 +12,8 @@ public class GameController : MonoBehaviour {
     public GameObject goal;
     public int gameEnd; //0: playing, 1: Win, 2: Lose
     public GameObject stonePrefab;
+    public GameObject movingPlatformPrefab;
+    public Vector3[] movingPlatformPositionsAndHeights; //Position in Z always is 0, so the Z is used to store max height
 
     private float startTimeKeepStone, elapsedTimeKeepStone;
     private float maxTimeKeepStone;
@@ -43,8 +45,12 @@ public class GameController : MonoBehaviour {
             player = GameObject.FindGameObjectWithTag("Player");
         }
         
-        if(Network.isServer)
+        if (Network.isServer)
+        {
             SpawnStone();
+            StartMovingPlatform(Time.time);
+            //SpawnMovingPlatform();
+        }
         
         if(player != null)
             camController.addMainPlayer(player);
@@ -224,6 +230,53 @@ public class GameController : MonoBehaviour {
     void SpawnStone()
     {
         Network.Instantiate(stonePrefab, stonePrefab.transform.position, stonePrefab.transform.rotation, 0); //This will spawn magical stone in both server and client
+    }
+
+    [RPC]
+    void StartMovingPlatform(float startingTime)
+    {
+        if (Network.isServer)
+            networkView.RPC("StartMovingPlatform", RPCMode.OthersBuffered, startingTime);
+
+        GameObject[] lifts = GameObject.FindGameObjectsWithTag("MovingPlatform");
+
+        foreach (GameObject tempLift in lifts)
+        {
+            MoveToPoints tempComponent = tempLift.GetComponent<MoveToPoints>();
+            tempComponent.moveEnabled = true;
+            tempComponent.SetPositionByTime(Time.time - startingTime);
+        }
+    }
+
+
+    /// <summary>
+    /// Moving platforms need to be synchronized, so server will spawn and own the platforms. Client just update the platforms' states.
+    /// </summary>
+    [RPC]
+    void SpawnMovingPlatform()
+    {
+        foreach (Vector3 posAndHeight in movingPlatformPositionsAndHeights)
+        {
+            Vector3 pos = new Vector3(posAndHeight.x, posAndHeight.y, 0);
+            float height = posAndHeight.z;
+            GameObject movingPlatform = (GameObject)Network.Instantiate(movingPlatformPrefab, pos, Quaternion.identity, 0); //This will spawn moving platforms in both server and client
+            if (movingPlatform.GetComponent<MoveToPoints>().waypoints.Count > 0)
+            {
+                Debug.Log("Way point");
+                foreach (Transform waypoint in movingPlatform.GetComponent<MoveToPoints>().waypoints)
+                {
+                    if (waypoint.name == "waypoint2")
+                    {
+                        Vector3 tempPos = waypoint.position;
+                        tempPos.y = height;
+                        waypoint.position = tempPos;
+                        break;
+                    }
+                }
+            }
+            else
+                Debug.Log("NO waypoint");
+        }
     }
 
     [RPC]
