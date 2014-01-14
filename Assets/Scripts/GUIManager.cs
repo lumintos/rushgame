@@ -31,9 +31,10 @@ public class GUIManager : MonoBehaviour {
 	
 	private Size ScreenSizeUnit = new Size(750,422);
 	private Size HPSize = new Size(200,30);
-	private Size BtnTurnLR = new Size(60,60);
+	private Size BtnTurnLR = new Size(86,86);
 	private Size BtnJump = new Size(128,128);
 	private Size PlayerIconSize = new Size(90,90);
+    private Size StoneStatusSize = new Size(94, 94);
 	
 	public int fontSizeUnit = 1;
 
@@ -43,16 +44,16 @@ public class GUIManager : MonoBehaviour {
         {
             if (Network.player == stoneKeeper)
             {
-                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/green");
+                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/btn-timer-good");
             }
             else
             {
-                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/red");
+                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/btn-timer-bad");
             }
         }
         else
         {
-            Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/gray");
+            Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/btn-timer-normal");
         }
     }
 
@@ -76,8 +77,8 @@ public class GUIManager : MonoBehaviour {
 		                                 (float)HPSize.Width*scaleWidth, (float)HPSize.Height*scaleHeight);
 		Tex_HPRight.pixelInset = new Rect(Tex_HPRight.pixelInset.x,Tex_HPRight.pixelInset.y,
 		                                  (float)HPSize.Width*scaleWidth, (float)HPSize.Height*scaleHeight);
-        Tex_StoneStatus.pixelInset = new Rect(-48 * scaleWidth, -32 * scaleHeight,
-                                           96f* scaleWidth, 64f * scaleHeight);
+        Tex_StoneStatus.pixelInset = new Rect(Tex_StoneStatus.pixelInset.x, Tex_StoneStatus.pixelInset.y,
+                                           StoneStatusSize.Width* scaleWidth, StoneStatusSize.Height * scaleHeight);
 
 		// Positioning Controls 
 		widthRatio = (float)Tex_TurnLeft.pixelInset.width/p_ScreenSize.Width;
@@ -121,9 +122,9 @@ public class GUIManager : MonoBehaviour {
 		{
 			inputGUI_h = 0.0f;
 			inputGUI_v = 0.0f;
-			Tex_TurnLeft.texture = Resources.Load("UI/btn_left") as Texture2D;
-			Tex_TurnRight.texture = Resources.Load("UI/btn_right") as Texture2D;
-			Tex_Jump.texture = Resources.Load("UI/btn_jump") as Texture2D;
+			Tex_TurnLeft.texture = Resources.Load("UI/btn-left-normal") as Texture2D;
+			Tex_TurnRight.texture = Resources.Load("UI/btn-right-normal") as Texture2D;
+			Tex_Jump.texture = Resources.Load("UI/btn-jump-normal") as Texture2D;
 		}
 		
 		for(int i=0;i<Input.touchCount;i++)
@@ -134,32 +135,32 @@ public class GUIManager : MonoBehaviour {
 			{
                 Debug.Log("Double");
 				inputGUI_v = speed_v;
-				Tex_Jump.texture = Resources.Load("UI/btn_jump_p") as Texture2D;
+				Tex_Jump.texture = Resources.Load("UI/btn-jump-clicked") as Texture2D;
 			}
 			else
 			{
 				inputGUI_v = 0.0f;
-				Tex_Jump.texture = Resources.Load("UI/btn_jump") as Texture2D;
+				Tex_Jump.texture = Resources.Load("UI/btn-jump-normal") as Texture2D;
 			}
 			
 			if(Tex_TurnLeft.HitTest(current.position))
 			{
 				inputGUI_h = -speed_h;
-				Tex_TurnLeft.texture = Resources.Load("UI/btn_left_p") as Texture2D;
+				Tex_TurnLeft.texture = Resources.Load("UI/btn-left-clicked") as Texture2D;
 			}
 			else
 			{
-				Tex_TurnLeft.texture = Resources.Load("UI/btn_left") as Texture2D;
+				Tex_TurnLeft.texture = Resources.Load("UI/btn-left-normal") as Texture2D;
 			}
 			
 			if(Tex_TurnRight.HitTest(current.position))
 			{
 				inputGUI_h = speed_h;	
-				Tex_TurnRight.texture = Resources.Load("UI/btn_right_p") as Texture2D;
+				Tex_TurnRight.texture = Resources.Load("UI/btn-right-clicked") as Texture2D;
 			}
 			else
 			{
-				Tex_TurnRight.texture = Resources.Load("UI/btn_right") as Texture2D;
+				Tex_TurnRight.texture = Resources.Load("UI/btn-right-normal") as Texture2D;
 			}
 			
 			if(current.phase == TouchPhase.Ended && Tex_HPLeft.HitTest(current.position))

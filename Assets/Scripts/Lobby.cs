@@ -394,7 +394,7 @@ public class Lobby : MonoBehaviour {
                 {
                     guiHelper.SetText("message", "Starting ... ");
                     elapsedTimeDisplayedMsg = 0;
-                    MultiplayerManager.Instance.LaunchGame("map");
+                    MultiplayerManager.Instance.LaunchGame("map-jungle");
                 }
 
                 return;
