@@ -435,14 +435,14 @@ public class PlayerMovement : MonoBehaviour {
 			//reset old down-force
 			Vector3 forceRemover = Vector3.zero;
 			forceRemover.y = -this.rigidbody.velocity.y;
-			this.rigidbody.AddForce(forceRemover, ForceMode.VelocityChange);
+			this.rigidbody.AddRelativeForce(forceRemover, ForceMode.VelocityChange);
 
 			force += Vector3.up * DoubleJumpForce;
 		}
 
 		_jumpMove = _velocity;
 		force += Vector3Forward * _jumpMove;
-		this.rigidbody.AddForce(force, ForceMode.VelocityChange);
+		this.rigidbody.AddRelativeForce(force, ForceMode.VelocityChange);
 
 		_jumpCount++;
 		//jumpForce = force for destroying gravity + force depend on vlocity and mass
@@ -495,7 +495,7 @@ public class PlayerMovement : MonoBehaviour {
 			// Raycast down from the center of the character.. FOR FAKE GRAVITY ONLY IN LOCOMOTION STATE
 			bool isMidAir = this.checkMidAir();
 			if (isMidAir) {
-				this.rigidbody.AddForce(Vector3.down * FakeGravity, ForceMode.Force);
+				this.rigidbody.AddRelativeForce(Vector3.down * FakeGravity, ForceMode.Force);
 			}
 		}
 	}
@@ -519,7 +519,7 @@ public class PlayerMovement : MonoBehaviour {
 			print ("receive double jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
 		}
 		
-		this.rigidbody.AddForce(Vector3.down * JumpForceReduce, ForceMode.VelocityChange);
+		this.rigidbody.AddRelativeForce(Vector3.down * JumpForceReduce, ForceMode.VelocityChange);
 	}
 	
 	void jumpManagementCheckDoubleJumpState() {
@@ -529,7 +529,7 @@ public class PlayerMovement : MonoBehaviour {
 		}
 
 		//redure doubleJumpForce per frame, in order to make character's trajectory look like parabol.
-		this.rigidbody.AddForce(Vector3.down * DoubleJumpForceReduce, ForceMode.VelocityChange);
+		this.rigidbody.AddRelativeForce(Vector3.down * DoubleJumpForceReduce, ForceMode.VelocityChange);
 	}
 
 
@@ -537,17 +537,17 @@ public class PlayerMovement : MonoBehaviour {
 		if (_IsOnChangeState) { //change from other state to this state
 			//if (!_animParamDoubleJumpBool)//(!ActiveJumpCommand())
 			if (!_animParamJumpBool) { //if not double jump, reset force from jumping!
-				this.rigidbody.AddForce(Vector3.down * Mathf.Abs(this.rigidbody.velocity.y), ForceMode.VelocityChange);
+				this.rigidbody.AddRelativeForce(Vector3.down * Mathf.Abs(this.rigidbody.velocity.y), ForceMode.VelocityChange);
 				
 				Vector3 force = Vector3.zero;
 				force += Vector3Forward * _jumpMove;
 				
-				this.rigidbody.AddForce(force, ForceMode.VelocityChange);
+				this.rigidbody.AddRelativeForce(force, ForceMode.VelocityChange);
 			}
 			return;
 		}
 
-		this.rigidbody.AddForce(Vector3.down * jumpFallForcePerFrame, ForceMode.VelocityChange);
+		this.rigidbody.AddRelativeForce(Vector3.down * jumpFallForcePerFrame, ForceMode.VelocityChange);
 
 		bool isMidAir = this.checkMidAir();
 		if (!isMidAir && !_anim.IsInTransition(0)) {// first frame of transition [fall] >> [locomotion]
@@ -579,6 +579,7 @@ public class PlayerMovement : MonoBehaviour {
 		
 		if (Physics.Raycast(ray, out hitInfo))
 		{
+			print (hitInfo.distance);
 			if (hitInfo.distance < MidAirCheck) {//this value may change depend on character's center
 				return false;
 			}
