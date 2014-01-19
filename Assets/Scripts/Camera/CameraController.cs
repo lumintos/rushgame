@@ -18,6 +18,7 @@ public class CameraController : MonoBehaviour {
 	void Start() {
 		InGameAudioManager.Instance.PlayStartSfx(transform.position, 1.0f);
 		InGameAudioManager.Instance.PlayBackground(transform.position, 1.0f);
+		// to stop playing background -> Instance.StopBackground()
 		if (mainPlayer != null) {
 			offset = this.transform.position - mainPlayer.rigidbody.position;
 		}
@@ -27,5 +28,6 @@ public class CameraController : MonoBehaviour {
 		if (mainPlayer != null) {
 			this.transform.position = mainPlayer.rigidbody.position + offset;
 		}
+		count = count + 1;
 	}
 }

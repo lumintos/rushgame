@@ -1,3 +1,6 @@
+// The code here is basically reference from: http://dirigiballers.blogspot.fr/2013/03/unity-c-audiomanager-tutorial-part-1.html
+// You can go there for more information
+
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;

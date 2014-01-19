@@ -1,3 +1,6 @@
+// The code here is basically reference from: http://dirigiballers.blogspot.fr/2013/03/unity-c-audiomanager-tutorial-part-1.html
+// You can go there for more information
+
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,6 +17,8 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	//sfx for animation of the player
 	public AudioClip[] inGameAudio;
 
+	// AudioSource for background music
+	private AudioSource _backgroundAudioSource;
 
 	// This ClipInfo class is only accessed by the Audio class (nesting class)
 	class ClipInfo
@@ -24,7 +29,7 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	}
 
 	void Awake() {
-		Debug.Log("AudioManager Initializing");
+		Debug.Log("IngameAudio Manager Initializing");
 		try {
 			transform.parent = GameObject.FindGameObjectWithTag("MainCamera").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
@@ -46,10 +51,31 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 		AudioSource.PlayClipAtPoint(inGameAudio[_startGameIdx], soundOrigin, volume);
 	}
 
+	// The background should be looped throughout the game
 	public void PlayBackground(Vector3 soundOrigin, float volume)
 	{
-		AudioSource.PlayClipAtPoint(inGameAudio[_backgroundMusicIdx], soundOrigin, volume);
+		GameObject soundLoc = new GameObject("Audio: " + inGameAudio[_backgroundMusicIdx].name);
+		soundLoc.transform.position = soundOrigin;
+		//Create the source
+		AudioSource source = soundLoc.AddComponent<AudioSource>();
+		setSource(ref source, inGameAudio[_backgroundMusicIdx], volume);
+		source.loop = true;
+		source.Play();
+
+		_backgroundAudioSource = source;
+
+		// add this line to insert this sound to the m_activeAudio for stopping it when necessary
+		m_activeAudio.Add(new ClipInfo{source = source, defaultVolume = volume});
+
+		//AudioSource.PlayClipAtPoint(inGameAudio[_backgroundMusicIdx], soundOrigin, volume);
 	}
+
+	// Stop playing background music
+	public void StopBackgroundMusic()
+	{
+		stopSound(_backgroundAudioSource);
+	}
+
 
 	public void PlayWinSfx(Vector3 soundOrigin, float volume)
 	{	
@@ -89,6 +115,31 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 		source.maxDistance = 1500;
 		source.clip = clip;
 		source.volume = volume;
+	}
+
+	// Play loop sound
+	public AudioSource PlayLoop(AudioClip loop, Transform emitter, float volume) {
+		//Create an empty game object
+		GameObject movingSoundLoc = new GameObject("Audio: " + loop.name);
+		movingSoundLoc.transform.position = emitter.position;
+		movingSoundLoc.transform.parent = emitter;
+		//Create the source
+		AudioSource source = movingSoundLoc.AddComponent<AudioSource>();
+		setSource(ref source, loop, volume);
+		source.loop = true;
+		source.Play();
+		//Set the source as active
+		m_activeAudio.Add(new ClipInfo{source = source, defaultVolume = volume});
+		return source;
+	}
+
+	// Stop the looped sound
+	public void stopSound(AudioSource toStop) {
+		try {
+			Destroy(m_activeAudio.Find(s => s.source == toStop).source.gameObject);
+		} catch {
+			Debug.Log("Error trying to stop audio source "+toStop);
+		}
 	}
 }
 
