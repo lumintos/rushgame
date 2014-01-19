@@ -10,9 +10,6 @@ public class PlayerMovement : MonoBehaviour {
 	private AnimatorStateInfo _previousBaseState;
 	private bool _IsOnChangeState = false;
 
-	//music for animation of the player
-	public AudioClip[] animationAudio;
-
 	//rotate
 	public float TurnSmoothly = 1500.0f;
 	
@@ -67,7 +64,10 @@ public class PlayerMovement : MonoBehaviour {
 	private float moveDirection = 0;
 	
 	GameObject testMultiplayer = null;
-	
+
+	//sfx for animation of the player
+	public AudioClip[] animationAudio;
+
 	#endregion
 	
 	#region gui and network
@@ -82,6 +82,7 @@ public class PlayerMovement : MonoBehaviour {
 		_animatorEvents = GetComponent<AnimatorEvents>();
 		gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
 		testMultiplayer = GameObject.Find("Multiplayer Manager");
+
 	}
 	
 	void FixedUpdate() {
@@ -277,7 +278,7 @@ public class PlayerMovement : MonoBehaviour {
 		}
 	}
 	#endregion
-	
+
 	#region animator events
 	//------------------------------------------------------------------------------
 	//control events of current animator
@@ -429,20 +430,20 @@ public class PlayerMovement : MonoBehaviour {
 			print("active jump!");
 
 			force += Vector3.up * JumpForce;
-			AudioSource.PlayClipAtPoint(animationAudio[0], transform.position, 1.0f);
+			AnimationAudioManager.Instance.PlayJumpSfx(transform.position, 1.0f);
 		}
 		//enable double jump animation
 		else if (_jumpCount == 1) {//2nd jump
-			_animParamJumpBool = true;
-			print ("active double jump!");
-			
-			//reset old down-force
-			Vector3 forceRemover = Vector3.zero;
-			forceRemover.y = -this.rigidbody.velocity.y;
-			this.rigidbody.AddRelativeForce(forceRemover, ForceMode.VelocityChange);
+				_animParamJumpBool = true;
+				print ("active double jump!");
+				
+				//reset old down-force
+				Vector3 forceRemover = Vector3.zero;
+				forceRemover.y = -this.rigidbody.velocity.y;
+				this.rigidbody.AddRelativeForce(forceRemover, ForceMode.VelocityChange);
 
-			force += Vector3.up * DoubleJumpForce;
-			AudioSource.PlayClipAtPoint(animationAudio[1], transform.position, 1.0f);
+				force += Vector3.up * DoubleJumpForce;				
+				AnimationAudioManager.Instance.PlayDoubleJumpSfx(transform.position, 1.0f);
 		}
 
 		_jumpMove = _velocity;
@@ -572,7 +573,6 @@ public class PlayerMovement : MonoBehaviour {
 			if (IsJump && _jumpCount == 0) {
 				this.jumpStateEnter();
 				print ("receive jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
-				AudioSource.PlayClipAtPoint(animationAudio[2], transform.position, 1.0f);
 			}
 		}
 

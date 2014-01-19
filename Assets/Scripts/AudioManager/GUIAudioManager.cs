@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 // This AudioManager class is used to manage the audio and play the corresponding audios when needed
-public class AudioManager : Singleton<AudioManager> {
+public class GUIAudioManager : Singleton<GUIAudioManager> {
 
 	// List of clip audio to play when necessary 
 	private List<ClipInfo> m_activeAudio;
