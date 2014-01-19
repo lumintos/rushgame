@@ -10,6 +10,9 @@ public class PlayerMovement : MonoBehaviour {
 	private AnimatorStateInfo _previousBaseState;
 	private bool _IsOnChangeState = false;
 
+	//music for animation of the player
+	public AudioClip[] animationAudio;
+
 	//rotate
 	public float TurnSmoothly = 1500.0f;
 	
@@ -426,6 +429,7 @@ public class PlayerMovement : MonoBehaviour {
 			print("active jump!");
 
 			force += Vector3.up * JumpForce;
+			AudioSource.PlayClipAtPoint(animationAudio[0], transform.position, 1.0f);
 		}
 		//enable double jump animation
 		else if (_jumpCount == 1) {//2nd jump
@@ -438,6 +442,7 @@ public class PlayerMovement : MonoBehaviour {
 			this.rigidbody.AddRelativeForce(forceRemover, ForceMode.VelocityChange);
 
 			force += Vector3.up * DoubleJumpForce;
+			AudioSource.PlayClipAtPoint(animationAudio[1], transform.position, 1.0f);
 		}
 
 		_jumpMove = _velocity;
@@ -567,6 +572,7 @@ public class PlayerMovement : MonoBehaviour {
 			if (IsJump && _jumpCount == 0) {
 				this.jumpStateEnter();
 				print ("receive jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
+				AudioSource.PlayClipAtPoint(animationAudio[2], transform.position, 1.0f);
 			}
 		}
 
