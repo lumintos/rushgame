@@ -32,8 +32,8 @@ public class MultiplayerManager : MonoBehaviour
     {
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        //MasterServer.ipAddress = "hieurl.zapto.org";
-        //MasterServer.port = 50005;
+        MasterServer.ipAddress = "192.168.1.109";
+        MasterServer.port = 23466;
     }
 
     void FixedUpdate()
@@ -45,7 +45,7 @@ public class MultiplayerManager : MonoBehaviour
     {
         RoomName = roomName;
         MaxPlayers = maxPlayers;
-        int port = 25000 + Random.Range(0, 100);
+        int port = 25000;// +Random.Range(0, 100);
         Network.InitializeServer(MaxPlayers, port, false);
         MasterServer.RegisterHost(GameName, RoomName);
     }
@@ -138,7 +138,7 @@ public class MultiplayerManager : MonoBehaviour
                     }
 
                     //Debug.Log("Check IP: " + checkIP);
-
+                    //Debug.Log("Port: " + room.port);
                     if (checkIP == roomToJoinIP && room.port == roomToJoin.port && room.connectedPlayers == 1)
                     {
                         Network.Connect(roomToJoin);
@@ -183,6 +183,7 @@ public class MultiplayerManager : MonoBehaviour
     void OnFailedToConnect(NetworkConnectionError error)
     {
         JoinedRoomFlag = -1;
+        Debug.Log(error);
     }
 
     void OnConnectedToServer()
