@@ -26,7 +26,7 @@ public class AnimationAudioManager : Singleton<AnimationAudioManager> {
 	}
 
 	void Awake() {
-		Debug.Log("AudioManager Initializing");
+		Debug.Log("Animation AudioManager Initializing");
 		try {
 			transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
@@ -40,7 +40,7 @@ public class AnimationAudioManager : Singleton<AnimationAudioManager> {
 		}
 	}
 
-	// This function play the corresponding sfx depending on the context
+	// These functions play the corresponding sfx depending on the context
 	// with the given position and volume
 	public void PlayRunSfx(Vector3 soundOrigin, float volume)
 	{

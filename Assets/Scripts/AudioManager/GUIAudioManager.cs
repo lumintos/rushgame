@@ -24,7 +24,7 @@ public class GUIAudioManager : Singleton<GUIAudioManager> {
 	}
 
 	void Awake() {
-		Debug.Log("AudioManager Initializing");
+		Debug.Log("GUIAudioManager Initializing");
 		try {
 			transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);

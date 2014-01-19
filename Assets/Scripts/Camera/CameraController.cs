@@ -16,6 +16,8 @@ public class CameraController : MonoBehaviour {
 	}
 
 	void Start() {
+		InGameAudioManager.Instance.PlayStartSfx(transform.position, 1.0f);
+		InGameAudioManager.Instance.PlayBackground(transform.position, 1.0f);
 		if (mainPlayer != null) {
 			offset = this.transform.position - mainPlayer.rigidbody.position;
 		}

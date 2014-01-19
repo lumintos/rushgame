@@ -9,10 +9,10 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	private List<ClipInfo> m_activeAudio;
 
 	// set the indices of the animation audio
-	private int _runAudioIdx, _jumpAudioIdx, _doubleJumpAudioIdx, _winAudioIdx, _loseAudioIdx, _getStoneAudioIdx;
+	private int _startGameIdx, _backgroundMusicIdx, _winSoundIdx, _loseSoundIdx;
 
 	//sfx for animation of the player
-	public AudioClip[] animationAudio;
+	public AudioClip[] inGameAudio;
 
 
 	// This ClipInfo class is only accessed by the Audio class (nesting class)
@@ -29,10 +29,38 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 			transform.parent = GameObject.FindGameObjectWithTag("MainCamera").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
 			m_activeAudio = new List<ClipInfo>();
+			_startGameIdx = 0;
+			_backgroundMusicIdx = 1;
+			_winSoundIdx = 2;
+			_loseSoundIdx = 3;
 		} catch {
 			Debug.Log("Unable to find main camera to put audiomanager");
 		}
 	}
+
+	
+	// These functions play the corresponding sfx depending on the context
+	// with the given position and volume
+	public void PlayStartSfx(Vector3 soundOrigin, float volume)
+	{
+		AudioSource.PlayClipAtPoint(inGameAudio[_startGameIdx], soundOrigin, volume);
+	}
+
+	public void PlayBackground(Vector3 soundOrigin, float volume)
+	{
+		AudioSource.PlayClipAtPoint(inGameAudio[_backgroundMusicIdx], soundOrigin, volume);
+	}
+
+	public void PlayWinSfx(Vector3 soundOrigin, float volume)
+	{	
+		AudioSource.PlayClipAtPoint(inGameAudio[_winSoundIdx], soundOrigin, volume);
+	}
+
+	public void PlaySLoseSfx(Vector3 soundOrigin, float volume)
+	{
+		AudioSource.PlayClipAtPoint(inGameAudio[_loseSoundIdx], soundOrigin, volume);
+	}
+
 
 
 	// This function will play the audio clip
