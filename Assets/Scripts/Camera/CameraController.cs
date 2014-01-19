@@ -28,6 +28,5 @@ public class CameraController : MonoBehaviour {
 		if (mainPlayer != null) {
 			this.transform.position = mainPlayer.rigidbody.position + offset;
 		}
-		count = count + 1;
 	}
 }
