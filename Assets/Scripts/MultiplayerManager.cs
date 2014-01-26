@@ -32,8 +32,8 @@ public class MultiplayerManager : MonoBehaviour
     {
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        MasterServer.ipAddress = "192.168.1.109";
-        MasterServer.port = 23466;
+        //MasterServer.ipAddress = "192.168.1.109";
+        //MasterServer.port = 23466;
     }
 
     void FixedUpdate()
@@ -306,7 +306,7 @@ public class MultiplayerManager : MonoBehaviour
         else
             playerPrefab = playerTwoPrefab;
                    
-        player = Network.Instantiate(playerPrefab, new Vector3(team * 2f, 0f, 0f), playerPrefab.transform.rotation, 0);
+        player = Network.Instantiate(playerPrefab, new Vector3(team * 2f, 2f, 0f), playerPrefab.transform.rotation, 0);
         //player.name = team.ToString();
 
         return player;

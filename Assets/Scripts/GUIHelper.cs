@@ -45,11 +45,14 @@ public class GUIHelper : MonoBehaviour {
 	// Update is called once per frame
     void Update()
     {
-        elapsedTimeDisplayedMsg += Time.deltaTime;
-        if (elapsedTimeDisplayedMsg >= displayDuration)
+        if (message != null)
         {
-            message.text = "";
-            elapsedTimeDisplayedMsg = 0;
+            elapsedTimeDisplayedMsg += Time.deltaTime;
+            if (elapsedTimeDisplayedMsg >= displayDuration)
+            {
+                message.text = "";
+                elapsedTimeDisplayedMsg = 0;
+            }
         }
 
         if (screenWidth != Screen.width) //screen changes size

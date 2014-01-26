@@ -6,7 +6,7 @@ public class GameController : MonoBehaviour {
 
 	private GUIManager guiManager;
     public GUIHelper guiHelper;
-    private CameraController camController;
+    private CameraFollow camController;
     public NetworkPlayer stoneKeeper;
     public bool isStoneTaken;
     public GameObject goal;
@@ -18,7 +18,8 @@ public class GameController : MonoBehaviour {
     private float startTimeKeepStone, elapsedTimeKeepStone;
     private float maxTimeKeepStone;
     private bool updatedResult;
-    GameObject testMultiplayer = null;
+    private GameObject player = null;
+    private GameObject testMultiplayer = null;
 
 	// Use this for initialization
 	void Start () {
@@ -34,32 +35,41 @@ public class GameController : MonoBehaviour {
 
 
         testMultiplayer = GameObject.Find("Multiplayer Manager");
-        GameObject player = null;
         if (testMultiplayer != null)
         {
             GameObject.FindGameObjectWithTag("Player").SetActive(false); //Auto remove Player Obj from scene in multiplayer mode
             player = (GameObject)MultiplayerManager.Instance.SpawnPlayer(); //And spawn new one
+
+            if (Network.isServer)
+            {
+                SpawnStone();
+                StartMovingPlatform(Time.time);
+                //SpawnMovingPlatform();
+            }
         }
         else
-        {            
-            player = GameObject.FindGameObjectWithTag("Player");
-        }
-        
-        if (Network.isServer)
         {
-            SpawnStone();
+            player = GameObject.FindGameObjectWithTag("Player");
             StartMovingPlatform(Time.time);
-            //SpawnMovingPlatform();
         }
-        
-        if(player != null)
-            camController.addMainPlayer(player);
+
+        if (player != null)
+        {
+            foreach (Transform child in player.transform)
+            {
+                if (child.name == "CameraLookAt")
+                {
+                    camController.target = child;
+                    break;
+                }
+            }
+        }
 	}
 	
 	void Awake(){		
 		guiManager = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIManager>();
         guiHelper = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIHelper>();
-        camController = GameObject.Find("Main Camera").GetComponent<CameraController>();
+        camController = GameObject.Find("Main Camera").GetComponent<CameraFollow>();
         if (!goal)
             goal = GameObject.FindGameObjectWithTag("Goal");
 	}
@@ -82,8 +92,8 @@ public class GameController : MonoBehaviour {
                     if (isStoneTaken && goalTrigger.hitObject.networkView.owner == stoneKeeper)
                     {
                         //TODO: call RPC Display result only once
-                        //networkView.RPC("DisplayResult", RPCMode.AllBuffered);
-                        //MultiplayerManager.Instance.LeaveRoom(2); //Disconnect and unregister host for both server and client 
+                        networkView.RPC("DisplayResult", RPCMode.AllBuffered);
+                        MultiplayerManager.Instance.LeaveRoom(2); //Disconnect and unregister host for both server and client 
                     }
                 }
             }
@@ -95,6 +105,19 @@ public class GameController : MonoBehaviour {
 
 	}
 
+    void FixedUpdate()
+    {
+        //check if player fell out of map, then respawn player
+        if (player.transform.position.y < -40)
+        {
+            if (testMultiplayer != null)
+                player.transform.position = new Vector3(MultiplayerManager.Instance.MyPlayer.team * 2, 2, 0);
+            else
+                player.transform.position = new Vector3(0, 2, 0);
+            player.GetComponent<PlayerMovement>().ResetAllStates();
+        }
+    }
+
     //TODO: Move this part to GUIManager for consistence of code
     void OnGUI()
     {
@@ -102,6 +125,15 @@ public class GameController : MonoBehaviour {
         {
             MultiplayerManager.Instance.LeaveRoom(2);
             Application.LoadLevel("lobby");
+        }
+
+        if (GUI.Button(new Rect(100, 250, 200, 100), "RESPAWN"))
+        {
+            if (testMultiplayer != null)
+                player.transform.position = new Vector3(MultiplayerManager.Instance.MyPlayer.team * 2, 2, 0);
+            else
+                player.transform.position = new Vector3(0, 2, 0);
+            player.GetComponent<PlayerMovement>().ResetAllStates();
         }
 
         if (!guiHelper.guiUpdated)
@@ -291,8 +323,10 @@ public class GameController : MonoBehaviour {
         {
             gameEnd = 2;
         }
-
-        UpdateScoreToDB();
+        if (!MultiplayerManager.Instance.PlayerName.Contains("Tester")) //If didn't login, then do not update to DB
+            UpdateScoreToDB();
+        else
+            updatedResult = true;
     }
 
     void UpdateScoreToDB()

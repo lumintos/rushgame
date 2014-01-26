@@ -632,5 +632,14 @@ public class PlayerMovement : MonoBehaviour {
 		animParam.SetBool(PlayerHashIDs.FallToLandBool, fallToLandBool);
 		//animParam.SetBool(PlayerHashIDs.DoubleJumpBool, doubleJumpBool);
 	}
+
+    /// <summary>
+    /// Use this when respawn player
+    /// </summary>
+    public void ResetAllStates()
+    {
+        rigidbody.velocity = Vector3.zero;
+        UpdateAnimatorParamametersTo(_anim, 0, false, false);
+    }
 	#endregion
 }
