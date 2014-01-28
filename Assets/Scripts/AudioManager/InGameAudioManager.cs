@@ -31,6 +31,7 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	void Awake() {
 		Debug.Log("IngameAudio Manager Initializing");
 		try {
+			// set the indices of the neccessary sounds 
 			transform.parent = GameObject.FindGameObjectWithTag("MainCamera").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
 			m_activeAudio = new List<ClipInfo>();
@@ -73,9 +74,14 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	// Stop playing background music
 	public void StopBackgroundMusic()
 	{
-		stopSound(_backgroundAudioSource);
+		_backgroundAudioSource.Stop();
 	}
 
+	// Pause playing background music
+	public void PauseBackgroundMusic()
+	{
+		_backgroundAudioSource.Pause();
+	}
 
 	public void PlayWinSfx(Vector3 soundOrigin, float volume)
 	{	
