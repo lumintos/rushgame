@@ -8,6 +8,9 @@ public class Button_Controller : MonoBehaviour
     public GUITexture guitex;
     public Texture2D normalTex;
     public Texture2D pressedTex;
+    public Texture2D[] allNormalTex;
+    public Texture2D[] allPressedTex;
+
     [HideInInspector]
     public bool isTouchDown, isPressed;
 
@@ -16,6 +19,11 @@ public class Button_Controller : MonoBehaviour
     {
         isTouchDown = false;
         isPressed = false;
+        if (allNormalTex.Length > 0 && allPressedTex.Length > 0)
+        {
+            normalTex = allNormalTex[0];
+            pressedTex = allPressedTex[0];
+        }
     }
 
     // Update is called once per frame
@@ -58,9 +66,9 @@ public class Button_Controller : MonoBehaviour
         {
             if (Input.GetMouseButton(0))
             {
-
                 guitex.texture = pressedTex;
                 isTouchDown = true;
+                isPressed = false;
             }
 
             if (Input.GetMouseButtonUp(0))
@@ -71,5 +79,22 @@ public class Button_Controller : MonoBehaviour
                 isTouchDown = false;
             }
         }
+    }
+
+    /// <summary>
+    /// For button that have many textures regarding to different contexts.
+    /// </summary>
+    /// <param name="index">Index 0 is the default texture</param>
+    public void ChangeTexture(int index)
+    {
+        normalTex = allNormalTex[index];
+        pressedTex = allPressedTex[index];
+
+        //Most of the time, this function is call after the button is release, 
+        //the texture set at release does not correspond to the new status of the button, we need to update
+        if (isTouchDown) //just in case if there is button change status on touch down instead of press
+            guitex.texture = pressedTex;
+        else
+            guitex.texture = normalTex;
     }
 }

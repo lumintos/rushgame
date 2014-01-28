@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Xml;
 
-public class GameController : MonoBehaviour {
+public class GameController : MonoBehaviour
+{
 
-	private GUIManager guiManager;
+    private GUIManager guiManager;
     public GUIHelper guiHelper;
     private CameraFollow camController;
     public NetworkPlayer stoneKeeper;
+    private GameObject[] pauseItems;
     public bool isStoneTaken;
     public GameObject goal;
     public int gameEnd; //0: playing, 1: Win, 2: Lose
@@ -20,18 +22,22 @@ public class GameController : MonoBehaviour {
     private bool updatedResult;
     private GameObject player = null;
     private GameObject testMultiplayer = null;
+    public bool isPause = false;
+    public bool isSoundEnable = true;
+    public bool isQuitting = false;
 
-	// Use this for initialization
-	void Start () {
+
+    // Use this for initialization
+    void Start()
+    {
         gameEnd = 0;
         isStoneTaken = false;
         updatedResult = false;
         startTimeKeepStone = 0;
         elapsedTimeKeepStone = 0;
         maxTimeKeepStone = 30; // in seconds
-
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
-        guiHelper.UpdateGUIElementsSize();
+        //guiHelper.UpdateGUIElementsSize();
 
 
         testMultiplayer = GameObject.Find("Multiplayer Manager");
@@ -64,22 +70,25 @@ public class GameController : MonoBehaviour {
                 }
             }
         }
-	}
-	
-	void Awake(){		
-		guiManager = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIManager>();
+    }
+
+    void Awake()
+    {
+        guiManager = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIManager>();
         guiHelper = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIHelper>();
         camController = GameObject.Find("Main Camera").GetComponent<CameraFollow>();
+        pauseItems = GameObject.FindGameObjectsWithTag("PauseItem");
+
         if (!goal)
             goal = GameObject.FindGameObjectWithTag("Goal");
-	}
-	
-	
-	// Update is called once per frame
-	void Update () 
+    }
+
+
+    // Update is called once per frame
+    void Update()
     {
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
-        guiHelper.UpdateGUIElementsSize();
+        //guiHelper.UpdateGUIElementsSize();
         //WINNING CONDITION CHECKING
         //Only server can check
         if (Network.isServer)
@@ -103,7 +112,7 @@ public class GameController : MonoBehaviour {
 
         guiManager.ChangeStoneStatusTexture(isStoneTaken, stoneKeeper);
 
-	}
+    }
 
     void FixedUpdate()
     {
@@ -121,19 +130,66 @@ public class GameController : MonoBehaviour {
     //TODO: Move this part to GUIManager for consistence of code
     void OnGUI()
     {
-        if (GUI.Button(new Rect(100, 100, 200, 100), "QUIT"))
+        if (guiManager.GetPauseButtonPress())
         {
-            MultiplayerManager.Instance.LeaveRoom(2);
-            Application.LoadLevel("lobby");
+            isPause = true;
         }
 
-        if (GUI.Button(new Rect(100, 250, 200, 100), "RESPAWN"))
+        if (!isPause)
         {
-            if (testMultiplayer != null)
-                player.transform.position = new Vector3(MultiplayerManager.Instance.MyPlayer.team * 2, 2, 0);
-            else
-                player.transform.position = new Vector3(0, 2, 0);
-            player.GetComponent<PlayerMovement>().ResetAllStates();
+            foreach (GameObject item in pauseItems)
+            {
+                //if (item.activeInHierarchy)
+                    item.SetActive(false);
+            }
+        }
+        else
+        {
+            foreach (GameObject item in pauseItems)
+            {
+                //if(!item.activeInHierarchy)
+                    item.SetActive(true);
+            }
+
+            if (guiHelper.GetButtonPress("SoundButton"))
+            {
+                guiHelper.SetButtonPress("SoundButton", false);
+
+                isSoundEnable = !isSoundEnable;
+                if (isSoundEnable)
+                {
+                    guiHelper.ChangeButtonTexture("SoundButton", 0);
+                }
+                else
+                {
+                    guiHelper.ChangeButtonTexture("SoundButton", 1);
+                }
+
+            }
+
+            if (guiHelper.GetButtonPress("QuitButton"))
+            {
+                guiHelper.SetButtonPress("QuitButton", false);
+                MultiplayerManager.Instance.LeaveRoom(2);
+                Application.LoadLevel("lobby");
+            }
+
+            if (guiHelper.GetButtonPress("RespawnButton"))
+            {
+                guiHelper.SetButtonPress("RespawnButton", false);
+                isPause = false;
+                if (testMultiplayer != null)
+                    player.transform.position = new Vector3(MultiplayerManager.Instance.MyPlayer.team * 2, 2, 0);
+                else
+                    player.transform.position = new Vector3(0, 2, 0);
+                player.GetComponent<PlayerMovement>().ResetAllStates();
+            }
+
+            if (guiHelper.GetButtonPress("ResumeButton"))
+            {
+                guiHelper.SetButtonPress("ResumeButton", false);
+                isPause = false;
+            }
         }
 
         if (!guiHelper.guiUpdated)
@@ -314,7 +370,7 @@ public class GameController : MonoBehaviour {
     [RPC]
     void DisplayResult()
     {
-            //TODO: Display Popup result
+        //TODO: Display Popup result
         if (Network.player == stoneKeeper)
         {
             gameEnd = 1;

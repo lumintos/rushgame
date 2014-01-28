@@ -95,7 +95,10 @@ public class PlayerMovement : MonoBehaviour {
 		}
 		
 		if (testMultiplayer == null) //Test movement only, single player
-		{
+        {
+            if (gameController.isPause)
+                return;
+
 			//get all inputs
 			//orientation, works with float range [-1.0f, 1.0f]
 			float h = Input.GetAxis("Horizontal");
@@ -124,7 +127,7 @@ public class PlayerMovement : MonoBehaviour {
 			//movement.updateMovement(hInt, IsJump);
 
 			UpdateAnimatorParamametersFrom(_anim);
-			this.updateMovement(hInt, IsJump);
+            this.updateMovement(hInt, IsJump);
 			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
 		}
 		else
@@ -136,6 +139,9 @@ public class PlayerMovement : MonoBehaviour {
 			//Input only for network player of owner
 			if (networkView.isMine)
 			{
+                if (gameController.isPause)
+                    return;
+
 				//get all inputs
 				//orientation, works with float range [-1.0f, 1.0f]
 				float h = Input.GetAxis("Horizontal");
@@ -160,7 +166,7 @@ public class PlayerMovement : MonoBehaviour {
 				
 				//movement.updateMovement(hInt, IsJump);
 				UpdateAnimatorParamametersFrom(_anim);
-				this.updateMovement(hInt, IsJump);
+                this.updateMovement(hInt, IsJump);
 				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);							
 			}
 			 else

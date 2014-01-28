@@ -68,6 +68,7 @@ public class GUIHelper : MonoBehaviour {
     {
         screenWidth = Screen.width;
         screenHeight = Screen.height;
+
         
         btnScaledHeight = (float)btnHeightUnit * screenHeight / screenHeightUnit;
         btnScaledWidth = (float)btnWidthUnit * screenWidth / screenWidthUnit;
@@ -124,6 +125,7 @@ public class GUIHelper : MonoBehaviour {
         float scaledH = height * screenHeight / stdScreenHeight;
         float scaledX = -scaledW / 2;
         float scaledY = -scaledH / 2;
+
 
         return new Rect(scaledX, scaledY, scaledW, scaledH);
     }
@@ -189,6 +191,18 @@ public class GUIHelper : MonoBehaviour {
             if (tempTex.gameObject.name == guiTexName)
             {
                 tempTex.texture = (Texture2D)Resources.Load(texPath);
+                break;
+            }
+        }
+    }
+
+    public void ChangeButtonTexture(string buttonName, int index)
+    {
+        foreach (GUITexture tempButton in guiButtons)
+        {
+            if (tempButton.gameObject.name == buttonName)
+            {
+                tempButton.GetComponent<Button_Controller>().ChangeTexture(index);
                 break;
             }
         }

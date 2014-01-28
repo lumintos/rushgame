@@ -35,26 +35,31 @@ public class GUIManager : MonoBehaviour {
 	private Size BtnJump = new Size(128,128);
 	private Size PlayerIconSize = new Size(90,90);
     private Size StoneStatusSize = new Size(94, 94);
-	
+    private string stonestatus_texResource = "UI/btn-timer-normal";
+
 	public int fontSizeUnit = 1;
 
     public void ChangeStoneStatusTexture(bool isStoneTaken, NetworkPlayer stoneKeeper)
     {
+        string old_stonestatus_texResource = stonestatus_texResource;
         if (isStoneTaken)
         {
             if (Network.player == stoneKeeper)
             {
-                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/btn-timer-good");
+                stonestatus_texResource = "UI/btn-timer-good";
             }
             else
             {
-                Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/btn-timer-bad");
+                stonestatus_texResource = "UI/btn-timer-bad";
             }
         }
         else
         {
-            Tex_StoneStatus.texture = (Texture2D)Resources.Load("UI/btn-timer-normal");
+            stonestatus_texResource = "UI/btn-timer-normal";
         }
+        
+        if(stonestatus_texResource != old_stonestatus_texResource) //status of the stone has just changed
+            Tex_StoneStatus.texture = (Texture2D)Resources.Load(stonestatus_texResource);
     }
 
 	public void UpdateGUIElementsSize(Size p_ScreenSize)
@@ -116,7 +121,28 @@ public class GUIManager : MonoBehaviour {
 	{
 		return inputGUI_v;
 	}
-	
+
+    public bool GetPauseButtonPress()
+    {
+        //Giang: Test mouse click for stone status
+        bool hitTest = Tex_StoneStatus.HitTest(Input.mousePosition);
+        if (hitTest)
+        {
+            if (Input.GetMouseButton(0))
+            {
+                Tex_StoneStatus.texture = (Texture2D)Resources.Load(stonestatus_texResource + "-clicked");
+                return false; //still not activate the pause menu yet
+            }
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                Tex_StoneStatus.texture = (Texture2D)Resources.Load(stonestatus_texResource);
+                return true; // call pause menu
+            }
+        }
+        return false;
+    }
+
 	public void UpdateTouchInput()
 	{
 		if(Input.touchCount==0)
@@ -163,7 +189,7 @@ public class GUIManager : MonoBehaviour {
 			{
 				Tex_TurnRight.texture = Resources.Load("UI/btn-right-normal") as Texture2D;
 			}
-			
+
 			if(current.phase == TouchPhase.Ended && Tex_HPLeft.HitTest(current.position))
 			{
 				UpdateHP(--HPLeft,-1);
