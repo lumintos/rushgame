@@ -68,6 +68,10 @@ public class PlayerMovement : MonoBehaviour {
 	//sfx for animation of the player
 	public AudioClip[] animationAudio;
 
+	// Particles
+	public ParticleSystem jump;
+	public ParticleSystem pickupItems;
+
 	#endregion
 	
 	#region gui and network
@@ -437,6 +441,9 @@ public class PlayerMovement : MonoBehaviour {
 
 			force += Vector3.up * JumpForce;
 			AnimationAudioManager.Instance.PlayJumpSfx(transform.position, 1.0f);
+
+			//play particle jump
+			PlayJump(this.transform.transform.position,Quaternion.AngleAxis(90,new Vector3(1,0,0)));
 		}
 		//enable double jump animation
 		else if (_jumpCount == 1) {//2nd jump
@@ -450,6 +457,9 @@ public class PlayerMovement : MonoBehaviour {
 
 				force += Vector3.up * DoubleJumpForce;				
 				AnimationAudioManager.Instance.PlayDoubleJumpSfx(transform.position, 1.0f);
+
+			//play particle jump
+			PlayJump(this.transform.transform.position,Quaternion.AngleAxis(90,new Vector3(1,0,0)));
 		}
 
 		_jumpMove = _velocity;
@@ -647,5 +657,20 @@ public class PlayerMovement : MonoBehaviour {
         rigidbody.velocity = Vector3.zero;
         UpdateAnimatorParamametersTo(_anim, 0, false, false);
     }
+	#endregion
+
+	#region Particle system
+	void PlayJump(Vector3 pos, Quaternion rot)
+	{
+		instantiate(jump,pos,rot);
+	}
+	
+	private ParticleSystem instantiate(ParticleSystem prefab, Vector3 position, Quaternion rot)
+	{
+		ParticleSystem newParticleSystem = Instantiate(prefab, position, rot) as ParticleSystem;
+		// Make sure it will be destroyed
+		Destroy(newParticleSystem.gameObject, newParticleSystem.duration);
+		return newParticleSystem;
+	}
 	#endregion
 }
