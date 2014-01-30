@@ -12,10 +12,10 @@ public class GUIAudioManager : Singleton<GUIAudioManager> {
 	private List<ClipInfo> m_activeAudio;
 
 	// set the indices of the animation audio
-	private int _runAudioIdx, _jumpAudioIdx, _doubleJumpAudioIdx, _winAudioIdx, _loseAudioIdx, _getStoneAudioIdx;
+	private int _buttonClickedAudio;
 
 	//sfx for animation of the player
-	public AudioClip[] animationAudio;
+	public AudioClip[] guiAudio;
 
 
 	// This ClipInfo class is only accessed by the Audio class (nesting class)
@@ -29,12 +29,20 @@ public class GUIAudioManager : Singleton<GUIAudioManager> {
 	void Awake() {
 		Debug.Log("GUIAudioManager Initializing");
 		try {
-			transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
+			//transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
 			m_activeAudio = new List<ClipInfo>();
+			_buttonClickedAudio = 0;
 		} catch {
 			Debug.Log("Unable to find main camera to put audiomanager");
 		}
+	}
+
+	// These functions play the corresponding sfx depending on the context
+	// with the given position and volume
+	public void PlayButtonClickedSfx(Vector3 soundOrigin, float volume)
+	{
+		AudioSource.PlayClipAtPoint(guiAudio[_buttonClickedAudio], soundOrigin, volume);
 	}
 
 

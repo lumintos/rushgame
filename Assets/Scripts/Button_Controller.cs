@@ -56,7 +56,7 @@ public class Button_Controller : MonoBehaviour
                 if (hitTest)
                 {
                     guitex.texture = normalTex;
-                    if (isTouchDown)
+                    if (isTouchDown)					
                         isPressed = true;
                     isTouchDown = false;
                 }
@@ -76,7 +76,10 @@ public class Button_Controller : MonoBehaviour
             {
                 guitex.texture = normalTex;
                 if (isTouchDown)
+				{
                     isPressed = true;
+					GUIAudioManager.Instance.PlayButtonClickedSfx(this.transform.position, 1.0f);
+				}
                 isTouchDown = false;
             }
         }

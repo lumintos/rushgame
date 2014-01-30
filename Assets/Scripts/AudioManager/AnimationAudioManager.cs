@@ -31,7 +31,7 @@ public class AnimationAudioManager : Singleton<AnimationAudioManager> {
 	void Awake() {
 		Debug.Log("Animation AudioManager Initializing");
 		try {
-			transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
+			//transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
 			m_activeAudio = new List<ClipInfo>();
 			_runAudioIdx = 0;

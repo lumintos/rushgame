@@ -32,7 +32,7 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 		Debug.Log("IngameAudio Manager Initializing");
 		try {
 			// set the indices of the neccessary sounds 
-			transform.parent = GameObject.FindGameObjectWithTag("MainCamera").transform;
+			//transform.parent = GameObject.FindGameObjectWithTag("GameController").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
 			m_activeAudio = new List<ClipInfo>();
 			_startGameIdx = 0;
