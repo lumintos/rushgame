@@ -19,11 +19,12 @@ public class Button_Controller : MonoBehaviour
     {
         isTouchDown = false;
         isPressed = false;
-        if (allNormalTex.Length > 0 && allPressedTex.Length > 0)
-        {
-            normalTex = allNormalTex[0];
-            pressedTex = allPressedTex[0];
-        }
+        if (allNormalTex != null && allPressedTex != null)
+            if (allNormalTex.Length > 0 && allPressedTex.Length > 0)
+            {
+                normalTex = allNormalTex[0];
+                pressedTex = allPressedTex[0];
+            }
     }
 
     // Update is called once per frame

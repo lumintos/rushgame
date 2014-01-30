@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour {
 	public float VelocityFactor = 3.0f; // this factor let's velocity * orientation (in range [-1; 1]) increase faster to maximum speed
 	private float _velocity = 0.0f;
 	public float VelocityMaximum = 8.0f;//5.3f;
-	
+
 	//jump
 	public float JumpForce = 17.0f;
 	public float JumpForceReduce = 0.7f;// reduce force for every physic frame
@@ -33,7 +33,7 @@ public class PlayerMovement : MonoBehaviour {
 
 	//pre-define only for this particular scene
 	private Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
-	
+    	
 	//fake gravity
 	//current gravity is not strong enough for this game (when compare with the speed of jumping)
 	//I am not sure what is the effect of changing the global gravity.
@@ -42,7 +42,7 @@ public class PlayerMovement : MonoBehaviour {
 	
 	//mid-air ray-cast check
 	public float MidAirCheck = 1.2f;
-	
+    
 	//control events for current animator
 	AnimatorEvents _animatorEvents;
 
@@ -80,13 +80,11 @@ public class PlayerMovement : MonoBehaviour {
 		
 		guiManager = GameObject.FindGameObjectWithTag(Tags.gui).GetComponent<GUIManager>();
 		//guiManager.SetMaxHP(MaxHP);
-		//movement.initMovement(this.gameObject, anim);
-		
+	
 		//control events for current animator
 		_animatorEvents = GetComponent<AnimatorEvents>();
 		gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
 		testMultiplayer = GameObject.Find("Multiplayer Manager");
-
 	}
 	
 	void FixedUpdate() {
@@ -97,6 +95,10 @@ public class PlayerMovement : MonoBehaviour {
 			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
 			return;
 		}
+
+        _anim.SetFloat(PlayerHashIDs.YVelocityFloat, rigidbody.velocity.y);
+        bool midAir = checkMidAir();
+        _anim.SetBool(PlayerHashIDs.MidAirBool, midAir);
 		
 		if (testMultiplayer == null) //Test movement only, single player
         {
@@ -126,9 +128,8 @@ public class PlayerMovement : MonoBehaviour {
 			}
 
 			if (IsJump) {
-				print("IsJump " + IsJump);
+				//print("IsJump " + IsJump);
 			}
-			//movement.updateMovement(hInt, IsJump);
 
 			UpdateAnimatorParamametersFrom(_anim);
             this.updateMovement(hInt, IsJump);
@@ -137,9 +138,7 @@ public class PlayerMovement : MonoBehaviour {
 		else
 		{
 			//States in server is the correct one for all network player (regardless networkView), all clients must follow
-			//if (Network.isServer)
-				//networkView.RPC("CorrectSyncedMovement", RPCMode.OthersBuffered, rigidbody.position);
-			
+	
 			//Input only for network player of owner
 			if (networkView.isMine)
 			{
@@ -168,17 +167,13 @@ public class PlayerMovement : MonoBehaviour {
 					_isKeyboardInput = Input.GetButtonDown("Jump") ? true : false;
 				}
 				
-				//movement.updateMovement(hInt, IsJump);
 				UpdateAnimatorParamametersFrom(_anim);
                 this.updateMovement(hInt, IsJump);
 				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);							
 			}
 			 else
             {
-                //if (Network.isClient)
                     SyncedMovement();
-                //if(Network.isServer)
-                    //networkView.RPC("CorrectSyncedMovement", RPCMode.Others, rigidbody.position);
             } 
 		}
 	}
@@ -238,7 +233,6 @@ public class PlayerMovement : MonoBehaviour {
 
             this._velocity = syncVelocity;
             transform.rotation = syncRotation;
-            //transform.position = syncPosition;
             _animParamJumpBool = syncJumpBool;
             //isDoubleJump = syncIsDoubleJump;
             _animParamFallToLandBool = syncFallToLandBool;
@@ -254,39 +248,8 @@ public class PlayerMovement : MonoBehaviour {
     {
         syncTime += Time.deltaTime;
         transform.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
-        //transform.rotation = Quaternion.Lerp(syncStartRotation, syncEndRotation, syncTime / syncDelay);
     }
     
-    [RPC]
-	private void MoveCommands(float horizontal, bool isJump)
-	{
-		//movement.updateMovement(horizontal, isJump);
-		this.updateMovement(horizontal, isJump);
-		//TODO: somehow update this function ??
-//		UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool, _animParamDoubleJumpBool);
-	}
-	
-	[RPC]
-	private void CorrectSyncedMovement(Vector3 position)
-	{
-		//Each x seconds, the client must correst it's world state regarding to host's world state (only if the client's state is wrong)
-		if (rigidbody.position != position)
-		{
-			syncTime += Time.deltaTime;
-		}
-		else
-			syncTime = 0;
-		
-		if (syncTime >= 0.3) //seconds
-		{
-			if (rigidbody.position != position)
-			{
-				//rigidbody.position = Vector3.Lerp(rigidbody.position, position, Time.deltaTime);
-				rigidbody.position = position;
-			}
-			syncTime = 0;
-		}
-	}
 	#endregion
 
 	#region animator events
@@ -345,10 +308,10 @@ public class PlayerMovement : MonoBehaviour {
 		_currentBaseState = _anim.GetCurrentAnimatorStateInfo(layer);
 		
 		if (_previousBaseState.nameHash != _currentBaseState.nameHash) {
-			print("nframe: " + _frameCounter + " nframTransition: " + _frameTransitionCounter);
-			print("... >> [" 
-			      +  _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash)
-			      + "]");
+			//print("nframe: " + _frameCounter + " nframTransition: " + _frameTransitionCounter);
+			//print("... >> [" 
+			//      +  _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash)
+			//      + "]");
 			_frameCounter = 0;// reset counter
 			_frameTransitionCounter = 0; //reset transition cunter too, because this frame just after transition
 			OnStateChanged (layer, _previousBaseState, _currentBaseState);
@@ -360,7 +323,7 @@ public class PlayerMovement : MonoBehaviour {
 		if (_anim.IsInTransition(layer)) {
 			_frameTransitionCounter++;
 			if (_lastTransition.nameHash != _anim.GetAnimatorTransitionInfo(layer).nameHash) {
-				print("transition: " +_animatorEvents.layers[0].GetTransitionName(_anim.GetAnimatorTransitionInfo(0).nameHash));
+				//print("transition: " +_animatorEvents.layers[0].GetTransitionName(_anim.GetAnimatorTransitionInfo(0).nameHash));
 			}
 			this.OnTransition(layer, _anim.GetAnimatorTransitionInfo(layer));
 			_lastTransition = _anim.GetAnimatorTransitionInfo(layer);
@@ -437,10 +400,11 @@ public class PlayerMovement : MonoBehaviour {
 
 		if(_jumpCount == 0) {//1st jump
 			_animParamJumpBool = true;
-			print("active jump!");
+			//print("active jump!");
 
 			force += Vector3.up * JumpForce;
-			AnimationAudioManager.Instance.PlayJumpSfx(transform.position, 1.0f);
+            if(gameController.isSoundEnable)
+			    AnimationAudioManager.Instance.PlayJumpSfx(transform.position, 1.0f);
 
 			//play particle jump
 			PlayJump(this.transform.transform.position,Quaternion.AngleAxis(90,new Vector3(1,0,0)));
@@ -448,15 +412,16 @@ public class PlayerMovement : MonoBehaviour {
 		//enable double jump animation
 		else if (_jumpCount == 1) {//2nd jump
 				_animParamJumpBool = true;
-				print ("active double jump!");
+				//print ("active double jump!");
 				
 				//reset old down-force
 				Vector3 forceRemover = Vector3.zero;
 				forceRemover.y = -this.rigidbody.velocity.y;
 				this.rigidbody.AddRelativeForce(forceRemover, ForceMode.VelocityChange);
 
-				force += Vector3.up * DoubleJumpForce;				
-				AnimationAudioManager.Instance.PlayDoubleJumpSfx(transform.position, 1.0f);
+                force += Vector3.up * DoubleJumpForce;
+                if (gameController.isSoundEnable)			
+				    AnimationAudioManager.Instance.PlayDoubleJumpSfx(transform.position, 1.0f);
 
 			//play particle jump
 			PlayJump(this.transform.transform.position,Quaternion.AngleAxis(90,new Vector3(1,0,0)));
@@ -538,7 +503,7 @@ public class PlayerMovement : MonoBehaviour {
 		//check double jump
 		if (IsJump && _jumpCount < JumpCountMaximum) {
 			this.jumpStateEnter();
-			print ("receive double jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
+			//print ("receive double jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
 		}
 		
 		this.rigidbody.AddRelativeForce(Vector3.down * JumpForceReduce, ForceMode.VelocityChange);
@@ -572,42 +537,50 @@ public class PlayerMovement : MonoBehaviour {
 		this.rigidbody.AddRelativeForce(Vector3.down * jumpFallForcePerFrame, ForceMode.VelocityChange);
 
 		bool isMidAir = this.checkMidAir();
-		if (!isMidAir && !_anim.IsInTransition(0)) {// first frame of transition [fall] >> [locomotion]
-			this.jumpStateReset();
+        if (!isMidAir && !_anim.IsInTransition(0))
+        {// first frame of transition [fall] >> [locomotion]
+            this.jumpStateReset();
 			_animParamFallToLandBool = true; //reset everything except this one
 			//prepare for transition [fall] >> [locomotion] in next frame
 			//in this transition, if IsJump, as soon as its state is locomotion, state will change auto to jump
 		}
 
 		if (!_anim.IsInTransition(0)) {
-			if (IsJump && _jumpCount < JumpCountMaximum) {
-				this.jumpStateEnter();
-				print ("receive double jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
-			}
+            if (IsJump && _jumpCount < JumpCountMaximum)
+            {
+                this.jumpStateEnter();
+                //print ("receive double jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
+            }
 		}
 		else {// almost landing, not allow double jump
 			if (IsJump && _jumpCount == 0) {
 				this.jumpStateEnter();
-				print ("receive jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
+				//print ("receive jump at " + _animatorEvents.layers[0].GetStateName(_currentBaseState.nameHash));
 			}
 		}
-
 	}
 
-	bool checkMidAir() {
-		// Raycast down from the center of the character.. 
-		Ray ray = new Ray(this.transform.position + Vector3.up, -Vector3.up);
-		RaycastHit hitInfo = new RaycastHit();
-		
-		if (Physics.Raycast(ray, out hitInfo))
-		{
-			print (hitInfo.distance);
-			if (hitInfo.distance < MidAirCheck) {//this value may change depend on character's center
-				return false;
-			}
-		}
-		return true;
-	}
+    bool checkMidAir()
+    {
+        // Raycast down from the center of the character.. 
+        Ray ray = new Ray(this.transform.position + Vector3.up, Vector3.down);
+        RaycastHit hitInfo = new RaycastHit() ;
+
+        if (Physics.Raycast(ray, out hitInfo))
+        {
+            Debug.Log(hitInfo.distance);
+            //print(hitInfo.distance);
+            if (hitInfo.distance < MidAirCheck)
+            {//this value may change depend on character's center
+                Debug.Log("NO");
+                return false;
+            }
+        }
+        Debug.Log("YESSS");
+        return true;
+    }
+
+    
 	
 //	void jumpManagementCheckLandState() {
 //		if (_IsOnChangeState) { //change from other state to this state
