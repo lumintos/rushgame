@@ -55,6 +55,8 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	// The background should be looped throughout the game
 	public void PlayBackground(Vector3 soundOrigin, float volume)
 	{
+		// create and play the background music
+
 		GameObject soundLoc = new GameObject("Audio: " + inGameAudio[_backgroundMusicIdx].name);
 		soundLoc.transform.position = soundOrigin;
 		//Create the source
@@ -67,7 +69,6 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 
 		// add this line to insert this sound to the m_activeAudio for stopping it when necessary
 		m_activeAudio.Add(new ClipInfo{source = source, defaultVolume = volume});
-
 		//AudioSource.PlayClipAtPoint(inGameAudio[_backgroundMusicIdx], soundOrigin, volume);
 	}
 
@@ -81,6 +82,21 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	public void PauseBackgroundMusic()
 	{
 		_backgroundAudioSource.Pause();
+	}
+
+	// Continue play backgroudn music
+	public void ContinuePlayBackgroudMusic()
+	{
+		_backgroundAudioSource.Play();
+	}
+
+	// Check if background is created or not
+	public bool BackgroundCheck()
+	{
+		if (_backgroundAudioSource == null)
+			return false;
+		else
+			return true;
 	}
 
 	public void PlayWinSfx(Vector3 soundOrigin, float volume)

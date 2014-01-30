@@ -69,6 +69,18 @@ public class GameController : MonoBehaviour
                     break;
                 }
             }
+
+			if (this.isSoundEnable == true)
+			{
+				InGameAudioManager.Instance.PlayStartSfx(transform.position, 0.5f);
+				
+				if (InGameAudioManager.Instance.BackgroundCheck() == false) // no background created
+					InGameAudioManager.Instance.PlayBackground(transform.position, 0.5f);
+				else
+					InGameAudioManager.Instance.ContinuePlayBackgroudMusic();
+			}
+			// to stop playing background -> Instance.StopBackgroundMusic()
+			// to pause playing background -> Instance.PauseBackgroundMusic()
         }
     }
 
@@ -159,11 +171,19 @@ public class GameController : MonoBehaviour
                 if (isSoundEnable)
                 {
                     guiHelper.ChangeButtonTexture("SoundButton", 0);
+					// reopen or play background music			
+					if (InGameAudioManager.Instance.BackgroundCheck() == false) // no background created
+						InGameAudioManager.Instance.PlayBackground(transform.position, 0.5f);
+					else
+						InGameAudioManager.Instance.ContinuePlayBackgroudMusic();
                 }
                 else
                 {
                     guiHelper.ChangeButtonTexture("SoundButton", 1);
-                }
+					// pause background
+					if (InGameAudioManager.Instance.BackgroundCheck() == true)
+						InGameAudioManager.Instance.PauseBackgroundMusic();
+				}
 
             }
 

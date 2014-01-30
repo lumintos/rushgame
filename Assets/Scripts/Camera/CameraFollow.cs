@@ -13,7 +13,8 @@ public class CameraFollow : MonoBehaviour
 	private Transform followTarget;
 	private Vector3 defTargetOffset;
 	private bool camColliding;
-	
+
+
 	//setup objects
 	void Awake()
 	{
@@ -25,7 +26,7 @@ public class CameraFollow : MonoBehaviour
 		if(!target)
 			Debug.LogError("'CameraFollow script' has no target assigned to it", transform);
 	}
-	
+
 	//run our camera functions each frame
 	void Update()
 	{
