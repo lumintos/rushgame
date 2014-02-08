@@ -30,6 +30,7 @@ public class PlayerMovement : MonoBehaviour {
 	private bool _jumpButtonLock = false;//only unlock when release then re-press/touch jump button
 	private bool _isKeyboardInput = true;//there are 2 types of input: by keys or by touch-button
 	public float jumpFallForcePerFrame = 1.5f;
+	public float FallVelocityMaximum = 10.0f;
 
 	//pre-define only for this particular scene
 	private Vector3 Vector3Forward { get { return new Vector3(1.0f, 0, 0); } }
@@ -534,7 +535,15 @@ public class PlayerMovement : MonoBehaviour {
 			return;
 		}
 
-		this.rigidbody.AddRelativeForce(Vector3.down * jumpFallForcePerFrame, ForceMode.VelocityChange);
+		Debug.Log("fall veclocity: " + this.rigidbody.velocity);
+		if (-this.rigidbody.velocity.y < FallVelocityMaximum) {
+			this.rigidbody.AddRelativeForce(Vector3.down * jumpFallForcePerFrame, ForceMode.VelocityChange);
+		}
+		else {
+			//in case fall velocity already get its limit, try to remove the effect of gravity to keep
+			//the fall velocity around fixed value FallVelocityMaximum
+			this.rigidbody.AddRelativeForce(-Physics.gravity / 50.0f, ForceMode.VelocityChange);
+		}
 
 		bool isMidAir = this.checkMidAir();
         if (!isMidAir && !_anim.IsInTransition(0))
@@ -568,15 +577,15 @@ public class PlayerMovement : MonoBehaviour {
 
         if (Physics.Raycast(ray, out hitInfo))
         {
-            Debug.Log(hitInfo.distance);
+            //Debug.Log(hitInfo.distance);
             //print(hitInfo.distance);
             if (hitInfo.distance < MidAirCheck)
             {//this value may change depend on character's center
-                Debug.Log("NO");
+                //Debug.Log("NO");
                 return false;
             }
         }
-        Debug.Log("YESSS");
+        //Debug.Log("YESSS");
         return true;
     }
 
