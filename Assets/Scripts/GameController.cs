@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour
     private CameraFollow camController;
     public NetworkPlayer stoneKeeper;
     private GameObject[] pauseItems;
+    private GameObject[] endgameItems;
     public bool isStoneTaken;
     public GameObject goal;
     public int gameEnd; //0: playing, 1: Win, 2: Lose
@@ -90,6 +91,7 @@ public class GameController : MonoBehaviour
         guiHelper = GameObject.FindGameObjectWithTag("GUI").GetComponent<GUIHelper>();
         camController = GameObject.Find("Main Camera").GetComponent<CameraFollow>();
         pauseItems = GameObject.FindGameObjectsWithTag("PauseItem");
+        endgameItems = GameObject.FindGameObjectsWithTag("ResultItem");
 
         if (!goal)
             goal = GameObject.FindGameObjectWithTag("Goal");
@@ -218,49 +220,25 @@ public class GameController : MonoBehaviour
             guiHelper.guiUpdated = true;
         }
 
-        GUI.skin = ColoredGUISkin.Skin;
-
-        GUI.skin.button.fontSize = (int)(guiHelper.btnScaledHeight * guiHelper.fontSizeUnit / guiHelper.btnHeightUnit);
-        
-        //TODO: Display stone's status here
-
-
-        //Display for end game
-        if (gameEnd != 0)
+        if (gameEnd == 0)
         {
-            Rect txtTemptRect = guiHelper.GetScaledRectFromUnit(40, 23);
-            txtTemptRect.x = 4 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-            txtTemptRect.y = 2 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+            foreach (GameObject item in endgameItems)
+            {
+                item.SetActive(false);
+            }
+        }
+        //Display for end game
+        else if (gameEnd != 0)
+        {
+            foreach (GameObject item in endgameItems)
+            {
+                item.SetActive(true);
+            }
 
-            GUI.BeginGroup(txtTemptRect, "", GUI.skin.box);
-
-            //GUI.Box(txtTemptRect, "");
-            
-            txtTemptRect = guiHelper.GetScaledRectFromUnit(20, 7);
-            txtTemptRect.x = 10 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-            txtTemptRect.y = 1 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-            Vector2 direction = new Vector2(1, 1);
-            GUIContent content = new GUIContent(guiManager.Text_GameResult.text);
-            GUIStyle style = GUI.skin.label;
-            style.fontSize = (int)(guiHelper.btnScaledHeight);
-            style.alignment = TextAnchor.MiddleCenter;
-
-            string text = "";
             if (gameEnd == 1)
-                text = "VICTORY";
+                guiHelper.ChangeTexture("ResultFrame", "UI/frame-result-victory");
             else if (gameEnd == 2)
-                text = "DEFEAT";
-
-            ShadowAndOutline.DrawOutline(txtTemptRect, text, style, guiHelper.outlineColor[gameEnd - 1], guiHelper.textColor[gameEnd - 1], 4); // When game ended, gameEnd > 0
-
-            Rect txtScore = guiHelper.GetScaledRectFromUnit(40, 4);
-            txtScore.x = 0 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-            txtScore.y = 9 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
-            style.fontSize /= 2;
-
-            Rect btnTemptRect = guiHelper.GetScaledRectFromUnit(8, 4);
-            btnTemptRect.x = 16 * guiHelper.screenWidth / guiHelper.screenWidthUnit;
-            btnTemptRect.y = 16 * guiHelper.screenHeight / guiHelper.screenHeightUnit;
+                guiHelper.ChangeTexture("ResultFrame", "UI/frame-result-defeat");
 
             if (updatedResult)
             {
@@ -277,20 +255,28 @@ public class GameController : MonoBehaviour
                         + "(- " + GameConstants.bonusSpirit + ")"
                         + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
                 }
+                guiManager.Text_GameResult.text = score;
+                guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
+                guiManager.Text_GameResult.color = guiHelper.textColor[gameEnd - 1];
 
-                ShadowAndOutline.DrawOutline(txtScore, score, style, guiHelper.outlineColor[gameEnd - 1], Color.white, 4);
+                //ShadowAndOutline.DrawOutline(txtScore, score, style, guiHelper.outlineColor[gameEnd - 1], Color.white, 4);
 
-                if (GUI.Button(btnTemptRect, "Continue"))
+                GameObject.Find("ContinueButton").SetActive(true);
+
+                if (guiHelper.GetButtonPress("continue"))
                 {
+                    guiHelper.SetButtonPress("continue", false);
                     Application.LoadLevel("lobby");
                 }
             }
             else
             {
-                ShadowAndOutline.DrawOutline(txtScore, "Updating score...", style, Color.black, Color.gray, 4);
+                GameObject.Find("ContinueButton").SetActive(false);
+                guiManager.Text_GameResult.text = "Updating Score ... ";
+                guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
+                guiManager.Text_GameResult.color = Color.gray;
+                //ShadowAndOutline.DrawOutline(txtScore, "Updating score...", style, Color.black, Color.gray, 4);
             }
-
-            GUI.EndGroup();
         }
     }
 
