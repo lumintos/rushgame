@@ -164,7 +164,7 @@ public class MultiplayerManager : MonoBehaviour
 
     void OnPlayerConnected(NetworkPlayer id)
     {
-        Debug.Log(Network.connections.Length.ToString());
+        //Debug.Log(Network.connections.Length.ToString());
         if (Network.connections.Length < 2)
         {
             foreach (RUSHPlayer tempplayer in PlayersList)
@@ -183,7 +183,7 @@ public class MultiplayerManager : MonoBehaviour
     void OnFailedToConnect(NetworkConnectionError error)
     {
         JoinedRoomFlag = -1;
-        Debug.Log(error);
+        //Debug.Log(error);
     }
 
     void OnConnectedToServer()

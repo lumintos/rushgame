@@ -29,7 +29,7 @@ public class AnimationAudioManager : Singleton<AnimationAudioManager> {
 	}
 
 	void Awake() {
-		Debug.Log("Animation AudioManager Initializing");
+		//Debug.Log("Animation AudioManager Initializing");
 		try {
 			//transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
@@ -39,7 +39,7 @@ public class AnimationAudioManager : Singleton<AnimationAudioManager> {
 			_doubleJumpAudioIdx = 2;
 			_getStoneAudioIdx = 3;
 		} catch {
-			Debug.Log("Unable to find main camera to put audiomanager");
+			Debug.LogError("Unable to find main camera to put audiomanager");
 		}
 	}
 

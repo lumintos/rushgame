@@ -18,8 +18,6 @@ public class Login : MonoBehaviour {
 	private int screenHeightUnit = 27;
     public float txtWidthUnit = 20;
     public float txtHeightUnit = 2.5f;
-	private int btnWidthUnit = 8;
-	private int btnHeightUnit = 4;
 	private float fontSizeUnit = 1.5f;
 
     public GUITexture loginButton;
@@ -190,10 +188,9 @@ public class Login : MonoBehaviour {
     IEnumerator loginRequest(WWW w)
     {
         yield return w;
-        Debug.Log(w.text);
+        //Debug.Log(w.text);
         if (w.error == null)
-        {
-            //TODO: extract xml to display appropriate error
+        {            
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(w.text);
             XmlNode code = doc.DocumentElement.SelectSingleNode("/response/code");
@@ -212,7 +209,7 @@ public class Login : MonoBehaviour {
         }
         else
         {
-            msg.text = "ERROR: " + w.error + "\n";
+            msg.text = "Cannot connect to server";
         }
     }
 	

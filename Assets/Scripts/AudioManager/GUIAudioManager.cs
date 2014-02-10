@@ -27,14 +27,14 @@ public class GUIAudioManager : Singleton<GUIAudioManager> {
 	}
 
 	void Awake() {
-		Debug.Log("GUIAudioManager Initializing");
+		//Debug.Log("GUIAudioManager Initializing");
 		try {
 			//transform.parent = GameObject.FindGameObjectWithTag("Player").transform;
 			//transform.localPosition = new Vector3(0, 0, 0);
 			m_activeAudio = new List<ClipInfo>();
 			_buttonClickedAudio = 0;
 		} catch {
-			Debug.Log("Unable to find main camera to put audiomanager");
+			Debug.LogError("Unable to find main camera to put audiomanager");
 		}
 	}
 

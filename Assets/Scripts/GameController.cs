@@ -6,6 +6,7 @@ public class GameController : MonoBehaviour
 {
 
     private GUIManager guiManager;
+    private bool gameEndSoundPlayed = false;
     public GUIHelper guiHelper;
     private CameraFollow camController;
     public NetworkPlayer stoneKeeper;
@@ -15,8 +16,8 @@ public class GameController : MonoBehaviour
     public GameObject goal;
     public int gameEnd; //0: playing, 1: Win, 2: Lose
     public GameObject stonePrefab;
-    public GameObject movingPlatformPrefab;
-    public Vector3[] movingPlatformPositionsAndHeights; //Position in Z always is 0, so the Z is used to store max height
+    //public GameObject movingPlatformPrefab;
+    //public Vector3[] movingPlatformPositionsAndHeights; //Position in Z always is 0, so the Z is used to store max height
 
     private float startTimeKeepStone, elapsedTimeKeepStone;
     private float maxTimeKeepStone;
@@ -26,6 +27,8 @@ public class GameController : MonoBehaviour
     public bool isPause = false;
     public bool isSoundEnable = true;
     public bool isQuitting = false;
+    public bool isMovingPlatformStarted = false;
+    public int numberOfReadyClients = 0;
 
 
     // Use this for initialization
@@ -37,7 +40,11 @@ public class GameController : MonoBehaviour
         startTimeKeepStone = 0;
         elapsedTimeKeepStone = 0;
         maxTimeKeepStone = 30; // in seconds
+        isMovingPlatformStarted = false;
+        numberOfReadyClients = 0;
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
+
+        gameEndSoundPlayed = false;
         //guiHelper.UpdateGUIElementsSize();
 
 
@@ -50,7 +57,7 @@ public class GameController : MonoBehaviour
             if (Network.isServer)
             {
                 SpawnStone();
-                StartMovingPlatform(Time.time);
+                //StartMovingPlatform(Time.time);
                 //SpawnMovingPlatform();
             }
         }
@@ -83,6 +90,11 @@ public class GameController : MonoBehaviour
 			// to stop playing background -> Instance.StopBackgroundMusic()
 			// to pause playing background -> Instance.PauseBackgroundMusic()
         }
+
+        if (testMultiplayer != null && Network.isClient) // Inform server that it finished loading
+        {
+            networkView.RPC("AddReadyClient", RPCMode.Server, null);
+        }
     }
 
     void Awake()
@@ -107,6 +119,16 @@ public class GameController : MonoBehaviour
         //Only server can check
         if (Network.isServer)
         {
+            // Start moving platforms
+            
+            if (!isMovingPlatformStarted)
+            {
+                Debug.Log("Check to start lift");
+                // Only start when all clients are ready
+                if(numberOfReadyClients >= Network.connections.Length - 1)
+                    StartMovingPlatform(Time.time);
+            }
+
             if (gameEnd == 0)
             {
                 TriggerParent goalTrigger = goal.GetComponent<TriggerParent>();
@@ -114,14 +136,19 @@ public class GameController : MonoBehaviour
                 {
                     if (isStoneTaken && goalTrigger.hitObject.networkView.owner == stoneKeeper)
                     {
-                        //TODO: call RPC Display result only once
-                        networkView.RPC("DisplayResult", RPCMode.AllBuffered);
+                        // Call RPC Display result only once
+                        networkView.RPC("UpdateResult", RPCMode.AllBuffered);
                         MultiplayerManager.Instance.LeaveRoom(2); //Disconnect and unregister host for both server and client 
                     }
                 }
             }
 
             KeepStoneTimer(isStoneTaken.ToString(), startTimeKeepStone, elapsedTimeKeepStone);
+        }
+
+        if (guiManager.GetPauseButtonPress())
+        {
+            isPause = true;
         }
 
         guiManager.ChangeStoneStatusTexture(isStoneTaken, stoneKeeper);
@@ -144,17 +171,13 @@ public class GameController : MonoBehaviour
     //TODO: Move this part to GUIManager for consistence of code
     void OnGUI()
     {
-        if (guiManager.GetPauseButtonPress())
-        {
-            isPause = true;
-        }
 
         if (!isPause)
         {
             foreach (GameObject item in pauseItems)
             {
                 //if (item.activeInHierarchy)
-                    item.SetActive(false);
+                item.SetActive(false);
             }
         }
         else
@@ -162,7 +185,7 @@ public class GameController : MonoBehaviour
             foreach (GameObject item in pauseItems)
             {
                 //if(!item.activeInHierarchy)
-                    item.SetActive(true);
+                item.SetActive(true);
             }
 
             if (guiHelper.GetButtonPress("SoundButton"))
@@ -173,19 +196,19 @@ public class GameController : MonoBehaviour
                 if (isSoundEnable)
                 {
                     guiHelper.ChangeButtonTexture("SoundButton", 0);
-					// reopen or play background music			
-					if (InGameAudioManager.Instance.BackgroundCheck() == false) // no background created
-						InGameAudioManager.Instance.PlayBackground(transform.position, 0.5f);
-					else
-						InGameAudioManager.Instance.ContinuePlayBackgroudMusic();
+                    // reopen or play background music			
+                    if (InGameAudioManager.Instance.BackgroundCheck() == false) // no background created
+                        InGameAudioManager.Instance.PlayBackground(transform.position, 0.5f);
+                    else
+                        InGameAudioManager.Instance.ContinuePlayBackgroudMusic();
                 }
                 else
                 {
                     guiHelper.ChangeButtonTexture("SoundButton", 1);
-					// pause background
-					if (InGameAudioManager.Instance.BackgroundCheck() == true)
-						InGameAudioManager.Instance.PauseBackgroundMusic();
-				}
+                    // pause background
+                    if (InGameAudioManager.Instance.BackgroundCheck() == true)
+                        InGameAudioManager.Instance.PauseBackgroundMusic();
+                }
 
             }
 
@@ -213,13 +236,13 @@ public class GameController : MonoBehaviour
                 isPause = false;
             }
         }
-
+        /*
         if (!guiHelper.guiUpdated)
         {
             ColoredGUISkin.Instance.UpdateGuiColors(guiHelper.primaryColor, guiHelper.secondaryColor);
             guiHelper.guiUpdated = true;
         }
-
+        */
         if (gameEnd == 0)
         {
             foreach (GameObject item in endgameItems)
@@ -230,54 +253,19 @@ public class GameController : MonoBehaviour
         //Display for end game
         else if (gameEnd != 0)
         {
-            foreach (GameObject item in endgameItems)
-            {
-                item.SetActive(true);
-            }
-
-            if (gameEnd == 1)
-                guiHelper.ChangeTexture("ResultFrame", "UI/frame-result-victory");
-            else if (gameEnd == 2)
-                guiHelper.ChangeTexture("ResultFrame", "UI/frame-result-defeat");
-
-            if (updatedResult)
-            {
-                string score = "";
-                if (gameEnd == 1)
-                {
-                    score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
-                        + "(+ " + GameConstants.bonusSpirit + ")"
-                        + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
-                }
-                else if (gameEnd == 2)
-                {
-                    score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
-                        + "(- " + GameConstants.bonusSpirit + ")"
-                        + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
-                }
-                guiManager.Text_GameResult.text = score;
-                guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
-                guiManager.Text_GameResult.color = guiHelper.textColor[gameEnd - 1];
-
-                //ShadowAndOutline.DrawOutline(txtScore, score, style, guiHelper.outlineColor[gameEnd - 1], Color.white, 4);
-
-                GameObject.Find("ContinueButton").SetActive(true);
-
-                if (guiHelper.GetButtonPress("continue"))
-                {
-                    guiHelper.SetButtonPress("continue", false);
-                    Application.LoadLevel("lobby");
-                }
-            }
-            else
-            {
-                GameObject.Find("ContinueButton").SetActive(false);
-                guiManager.Text_GameResult.text = "Updating Score ... ";
-                guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
-                guiManager.Text_GameResult.color = Color.gray;
-                //ShadowAndOutline.DrawOutline(txtScore, "Updating score...", style, Color.black, Color.gray, 4);
-            }
+            // Close pause menu if it's opening,
+            // set its active value maybe better than set bool value
+            isPause = false;
+            //Display result popup
+            DisplayResult();
         }
+    }
+
+    [RPC]
+    void AddReadyClient()
+    {
+        if(Network.isServer)
+            numberOfReadyClients++;
     }
 
     [RPC]
@@ -337,9 +325,11 @@ public class GameController : MonoBehaviour
         foreach (GameObject tempLift in lifts)
         {
             MoveToPoints tempComponent = tempLift.GetComponent<MoveToPoints>();
+            //tempComponent.SetPositionByTime(startingTime);
             tempComponent.moveEnabled = true;
-            tempComponent.SetPositionByTime(Time.time - startingTime);
         }
+
+        isMovingPlatformStarted = true;
     }
 
 
@@ -349,6 +339,7 @@ public class GameController : MonoBehaviour
     [RPC]
     void SpawnMovingPlatform()
     {
+        /*
         foreach (Vector3 posAndHeight in movingPlatformPositionsAndHeights)
         {
             Vector3 pos = new Vector3(posAndHeight.x, posAndHeight.y, 0);
@@ -356,7 +347,7 @@ public class GameController : MonoBehaviour
             GameObject movingPlatform = (GameObject)Network.Instantiate(movingPlatformPrefab, pos, Quaternion.identity, 0); //This will spawn moving platforms in both server and client
             if (movingPlatform.GetComponent<MoveToPoints>().waypoints.Count > 0)
             {
-                Debug.Log("Way point");
+                //Debug.Log("Way point");
                 foreach (Transform waypoint in movingPlatform.GetComponent<MoveToPoints>().waypoints)
                 {
                     if (waypoint.name == "waypoint2")
@@ -369,14 +360,14 @@ public class GameController : MonoBehaviour
                 }
             }
             else
-                Debug.Log("NO waypoint");
+                Debug.LogError("NO waypoint");
         }
+         * */
     }
 
     [RPC]
-    void DisplayResult()
+    void UpdateResult()
     {
-        //TODO: Display Popup result
         if (Network.player == stoneKeeper)
         {
             gameEnd = 1;
@@ -420,6 +411,75 @@ public class GameController : MonoBehaviour
         else
         {
             updatedResult = false;
+        }
+    }
+
+    void DisplayResult()
+    {
+        foreach (GameObject item in endgameItems)
+        {
+            item.SetActive(true);
+        }
+
+        if (gameEnd == 1)
+        {
+            guiHelper.ChangeTexture("ResultFrame", "UI/frame-result-victory");
+            if (gameEndSoundPlayed == false)
+            {
+                InGameAudioManager.Instance.StopBackgroundMusic();
+                if (isSoundEnable)
+                    InGameAudioManager.Instance.PlayWinSfx(transform.position, 0.5f);
+                gameEndSoundPlayed = true;
+            }
+        }
+        else if (gameEnd == 2)
+        {
+            guiHelper.ChangeTexture("ResultFrame", "UI/frame-result-defeat");
+            if (gameEndSoundPlayed == false)
+            {
+                InGameAudioManager.Instance.StopBackgroundMusic();
+                if (isSoundEnable)
+                    InGameAudioManager.Instance.PlayLoseSfx(transform.position, 0.5f);
+                gameEndSoundPlayed = true;
+            }
+        }
+
+        //After Updating score to DB
+        if (updatedResult)
+        {
+            string score = "";
+            if (gameEnd == 1)
+            {
+                score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
+                    + "(+ " + GameConstants.bonusSpirit + ")"
+                    + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
+            }
+            else if (gameEnd == 2)
+            {
+                score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
+                    + "(- " + GameConstants.bonusSpirit + ")"
+                    + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
+            }
+            guiManager.Text_GameResult.text = score;
+            guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
+            guiManager.Text_GameResult.color = guiHelper.textColor[gameEnd - 1];
+
+            //ShadowAndOutline.DrawOutline(txtScore, score, style, guiHelper.outlineColor[gameEnd - 1], Color.white, 4);
+
+            GameObject.Find("ContinueButton").SetActive(true);
+
+            if (guiHelper.GetButtonPress("ContinueButton"))
+            {
+                guiHelper.SetButtonPress("ContinueButton", false);
+                Application.LoadLevel("lobby");
+            }
+        }
+        else //Is updating score, wait for it
+        {
+            guiManager.Text_GameResult.text = "Updating Score ... ";
+            guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
+            guiManager.Text_GameResult.color = Color.gray;
+            //ShadowAndOutline.DrawOutline(txtScore, "Updating score...", style, Color.black, Color.gray, 4);
         }
     }
 }

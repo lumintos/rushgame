@@ -160,7 +160,7 @@ public class GUIManager : MonoBehaviour {
 			
 			if(Tex_Jump.HitTest(current.position))
 			{
-                Debug.Log("Double");
+                //Debug.Log("Double");
 				inputGUI_v = speed_v;
 				Tex_Jump.texture = Resources.Load("UI/btn-jump-clicked") as Texture2D;
 			}

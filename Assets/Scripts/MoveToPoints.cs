@@ -21,6 +21,9 @@ public class MoveToPoints : MonoBehaviour
 	//setup
 	void Awake()
 	{
+        // by default, it's not allowed to move
+        moveEnabled = false;
+
 		//add kinematic rigidbody
 		if(!rigidbody)
 			gameObject.AddComponent("Rigidbody");
@@ -109,10 +112,10 @@ public class MoveToPoints : MonoBehaviour
 		}
 	}
 
-    public void SetPositionByTime(float time)
+    public void SetPositionByTime(float startingTime)
     {
         Vector3 direction = waypoints[currentWp].position - transform.position;
-        rigidbody.MovePosition(transform.position + (direction.normalized * speed * time));
+        rigidbody.position = (transform.position + (direction.normalized * speed * (Time.time - startingTime)));
     }
 }
 

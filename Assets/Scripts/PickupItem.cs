@@ -101,9 +101,9 @@ public class PickupItem : MonoBehaviour
     [RPC]
     virtual public void PickItem(NetworkPlayer collectNetworkPlayer)
     {
-        NetworkPlayer tempNetWorkPlayer;
+        //NetworkPlayer tempNetWorkPlayer;
         //collectPlayer = other.transform.root.gameObject; //this may be different from collectPlayer in Update() since 1 player can jump in other's way
-        tempNetWorkPlayer = collectNetworkPlayer;
+        //tempNetWorkPlayer = collectNetworkPlayer;
         //TODO: RPC to update status of player, do something with this networkPlayer,
         //and destroy object
         Destroy(gameObject);

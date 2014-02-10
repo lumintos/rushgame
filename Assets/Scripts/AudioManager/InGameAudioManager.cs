@@ -29,7 +29,7 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 	}
 
 	void Awake() {
-		Debug.Log("IngameAudio Manager Initializing");
+		//Debug.Log("IngameAudio Manager Initializing");
 		try {
 			// set the indices of the neccessary sounds 
 			//transform.parent = GameObject.FindGameObjectWithTag("GameController").transform;
@@ -40,7 +40,7 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 			_winSoundIdx = 2;
 			_loseSoundIdx = 3;
 		} catch {
-			Debug.Log("Unable to find main camera to put audiomanager");
+			Debug.LogError("Unable to find main camera to put audiomanager");
 		}
 	}
 
@@ -104,7 +104,7 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 		AudioSource.PlayClipAtPoint(inGameAudio[_winSoundIdx], soundOrigin, volume);
 	}
 
-	public void PlaySLoseSfx(Vector3 soundOrigin, float volume)
+	public void PlayLoseSfx(Vector3 soundOrigin, float volume)
 	{
 		AudioSource.PlayClipAtPoint(inGameAudio[_loseSoundIdx], soundOrigin, volume);
 	}
@@ -160,7 +160,7 @@ public class InGameAudioManager : Singleton<InGameAudioManager> {
 		try {
 			Destroy(m_activeAudio.Find(s => s.source == toStop).source.gameObject);
 		} catch {
-			Debug.Log("Error trying to stop audio source "+toStop);
+			Debug.LogError("Error trying to stop audio source "+toStop);
 		}
 	}
 }

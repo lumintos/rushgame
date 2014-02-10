@@ -62,7 +62,7 @@ public class PlayerMovement : MonoBehaviour {
 	private Vector3 syncEndPosition = Vector3.zero;
 	private Vector3 _destination;
 	private bool IsJump;
-	private float moveDirection = 0;
+	//private float moveDirection = 0;
 	
 	GameObject testMultiplayer = null;
 
@@ -110,7 +110,7 @@ public class PlayerMovement : MonoBehaviour {
 			//orientation, works with float range [-1.0f, 1.0f]
 			float h = Input.GetAxis("Horizontal");
 			float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
-			moveDirection = hInt;
+			//moveDirection = hInt;
 			
 			//only set IsJump = true when that button is release and re-press again
 			if ((Input.GetButtonUp("Jump") && _isKeyboardInput) //if input from keyboard
@@ -150,7 +150,7 @@ public class PlayerMovement : MonoBehaviour {
 				//orientation, works with float range [-1.0f, 1.0f]
 				float h = Input.GetAxis("Horizontal");
 				float hInt = Mathf.Clamp(h + guiManager.GetInputGUI_h(), -1.0f, 1.0f);
-				moveDirection = hInt;
+				//moveDirection = hInt;
 				
 				//only set IsJump = true when that button is release and re-press again
 				if ((Input.GetButtonUp("Jump") && _isKeyboardInput) //if input from keyboard
@@ -535,7 +535,7 @@ public class PlayerMovement : MonoBehaviour {
 			return;
 		}
 
-		Debug.Log("fall veclocity: " + this.rigidbody.velocity);
+		//Debug.Log("fall veclocity: " + this.rigidbody.velocity);
 		if (-this.rigidbody.velocity.y < FallVelocityMaximum) {
 			this.rigidbody.AddRelativeForce(Vector3.down * jumpFallForcePerFrame, ForceMode.VelocityChange);
 		}

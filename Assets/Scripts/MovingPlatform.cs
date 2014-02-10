@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿/*
+ * Not in used
+ * 
+using UnityEngine;
 using System.Collections;
 
 public class MovingPlatform : MonoBehaviour {
@@ -42,13 +45,11 @@ public class MovingPlatform : MonoBehaviour {
 
             transform.position = Vector3.MoveTowards(transform.position, destination, speed * Time.deltaTime);
        // }
-            /*
         else if (networkView != null && Network.isClient)
         {
             SyncedMovement();
-        }*/
+        }
 	}
-    /*
     void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
     {
         Vector3 syncRigidVelocity = Vector3.zero;
@@ -81,5 +82,6 @@ public class MovingPlatform : MonoBehaviour {
         syncTime += Time.deltaTime;
         transform.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
     }
-     * */
 }
+ * 
+ */

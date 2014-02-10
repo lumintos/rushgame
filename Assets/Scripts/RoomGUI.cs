@@ -10,8 +10,6 @@ public class RoomGUI : MonoBehaviour {
     private string username2 = "";
     private string waitingMsg = "Waiting for P2";
 
-    public Texture2D waitTex, avatarP1, avatarP2;
-
     public void SetUserName()
     {
         if (MultiplayerManager.Instance.PlayersList.Count == 1)
@@ -49,26 +47,15 @@ public class RoomGUI : MonoBehaviour {
         }
 
         SetUserName();
-        Texture2D texP1, texP2;
-        if (MultiplayerManager.Instance.PlayersList.Count < 2)
-        {
-            texP2 = waitTex;
-        }
-        else
-        {
-            texP2 = avatarP2;
-        }
-
-        texP1 = avatarP1;
 
         //Player 1
         if (username1 == MultiplayerManager.Instance.PlayerName)
         {
-            guiHelper.ChangeTexture("PlayerOneFrame", "UI/frame-player-waiting-avatar");
+            guiHelper.ChangeTexture("PlayerOneFrame", "UI/frame-ninja-player-host-avatar");
         }
         else
         {
-            guiHelper.ChangeTexture("PlayerOneFrame", "UI/frame-player-waiting-avatar2");
+            guiHelper.ChangeTexture("PlayerOneFrame", "UI/frame-ninja-player-guest-avatar");
         }
 
         //Player 2        
@@ -76,19 +63,16 @@ public class RoomGUI : MonoBehaviour {
         {
             if (username2 == MultiplayerManager.Instance.PlayerName)
             {
-                guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-player-waiting-avatar");
+                guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-astro-player-host-avatar");
             }
             else
             {
-                guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-player-waiting-avatar2");
+                guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-astro-player-guest-avatar");
             }
         }
         else
         {
-            guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-player-waiting-avatar2"); //There will be another texture for waiting
+            guiHelper.ChangeTexture("PlayerTwoFrame", "UI/frame-player-waiting-avatar2"); //Wait for other player to join
         }
     }
-
-
-
 }
