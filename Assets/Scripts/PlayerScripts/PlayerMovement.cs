@@ -51,6 +51,8 @@ public class PlayerMovement : MonoBehaviour {
 	private float _animParamSpeedFloat;
 	private bool _animParamJumpBool;
 	private bool _animParamFallToLandBool;
+	private float _animParamYVelocityFloat;
+	private bool _animParamMidAirBool;
 	
 	private GUIManager guiManager;
 	private GameController gameController;
@@ -93,14 +95,14 @@ public class PlayerMovement : MonoBehaviour {
 		{
 			UpdateAnimatorParamametersFrom(_anim);
 			this.updateMovement(0, false); //character is idle
-			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
+			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool,
+			                             _animParamYVelocityFloat, _animParamMidAirBool);
 			return;
 		}
 
-        _anim.SetFloat(PlayerHashIDs.YVelocityFloat, rigidbody.velocity.y);
-        bool midAir = checkMidAir();
-        _anim.SetBool(PlayerHashIDs.MidAirBool, midAir);
-		
+		_animParamYVelocityFloat = rigidbody.velocity.y;
+		_animParamMidAirBool = checkMidAir();
+
 		if (testMultiplayer == null) //Test movement only, single player
         {
             if (gameController.isPause)
@@ -134,7 +136,8 @@ public class PlayerMovement : MonoBehaviour {
 
 			UpdateAnimatorParamametersFrom(_anim);
             this.updateMovement(hInt, IsJump);
-			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
+			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool,
+			                             _animParamYVelocityFloat, _animParamMidAirBool);
 		}
 		else
 		{
@@ -170,7 +173,8 @@ public class PlayerMovement : MonoBehaviour {
 				
 				UpdateAnimatorParamametersFrom(_anim);
                 this.updateMovement(hInt, IsJump);
-				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);							
+				UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool,
+				                             _animParamYVelocityFloat, _animParamMidAirBool);							
 			}
 			 else
             {
@@ -197,6 +201,9 @@ public class PlayerMovement : MonoBehaviour {
         bool syncFallToLandBool = false;
         float syncSpeedFloat = 0;
 
+		float syncYVelocityFloat = 0.0f;
+		bool syncIsMidAirBool = false;
+
         if (stream.isWriting)
         {
             syncVelocity = this._velocity;
@@ -207,6 +214,8 @@ public class PlayerMovement : MonoBehaviour {
             //syncIsDoubleJump = ;
             syncFallToLandBool = _animParamFallToLandBool;
             syncSpeedFloat = _animParamSpeedFloat;
+			syncYVelocityFloat = _animParamYVelocityFloat;
+			syncIsMidAirBool = _animParamMidAirBool;
 
             stream.Serialize(ref syncVelocity);
             stream.Serialize(ref syncRigidVelocity);
@@ -216,8 +225,11 @@ public class PlayerMovement : MonoBehaviour {
             //stream.Serialize(ref syncIsDoubleJump);
             stream.Serialize(ref syncFallToLandBool);
             stream.Serialize(ref syncSpeedFloat);
-        }
-        if (stream.isReading)
+
+			stream.Serialize(ref syncYVelocityFloat);
+			stream.Serialize(ref syncIsMidAirBool);
+		}
+		if (stream.isReading)
         {
             stream.Serialize(ref syncVelocity);
             stream.Serialize(ref syncRigidVelocity);
@@ -227,6 +239,9 @@ public class PlayerMovement : MonoBehaviour {
             //stream.Serialize(ref syncIsDoubleJump);
             stream.Serialize(ref syncFallToLandBool);
             stream.Serialize(ref syncSpeedFloat);
+
+			stream.Serialize(ref syncYVelocityFloat);
+			stream.Serialize(ref syncIsMidAirBool);
 
             syncTime = 0;
             syncDelay = Time.time - lastSynchronizationTime;
@@ -238,10 +253,14 @@ public class PlayerMovement : MonoBehaviour {
             //isDoubleJump = syncIsDoubleJump;
             _animParamFallToLandBool = syncFallToLandBool;
             _animParamSpeedFloat = syncSpeedFloat;
+			_animParamYVelocityFloat = syncYVelocityFloat;
+			_animParamMidAirBool = syncIsMidAirBool;
+
             syncEndPosition = syncPosition + syncRigidVelocity * syncDelay;
             syncStartPosition = transform.position;
 
-            UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool);
+			UpdateAnimatorParamametersTo(_anim, _animParamSpeedFloat, _animParamJumpBool, _animParamFallToLandBool,
+			                             _animParamYVelocityFloat, _animParamMidAirBool);
         }
     }
 
@@ -611,7 +630,8 @@ public class PlayerMovement : MonoBehaviour {
 		_animParamSpeedFloat = animParam.GetFloat(PlayerHashIDs.speedFloat);
 		_animParamJumpBool = animParam.GetBool(PlayerHashIDs.JumpBool);
 		_animParamFallToLandBool = animParam.GetBool(PlayerHashIDs.FallToLandBool);
-		//_animParamDoubleJumpBool = animParam.GetBool(PlayerHashIDs.DoubleJumpBool);
+		//_animParamYVelocityFloat = animParam.GetFloat(PlayerHashIDs.YVelocityFloat);
+		//_animParamMidAirBool = animParam.GetBool(PlayerHashIDs.MidAirBool);
 	}
 
 	/// <summary>
@@ -624,11 +644,15 @@ public class PlayerMovement : MonoBehaviour {
 	/// <param name="fallToLandBool">If set to <c>true</c> fall to land bool.</param>
 	/// <param name="doubleJumpBool">If set to <c>true</c> double jump bool.</param>
 	void UpdateAnimatorParamametersTo(Animator animParam, 
-	                                float speedFloat, bool jumpBool, bool fallToLandBool) {
+	                                float speedFloat, bool jumpBool, bool fallToLandBool,
+	                                  float YVelocityFloat, bool isMidAirBool) {
 		animParam.SetFloat(PlayerHashIDs.speedFloat, speedFloat);
 		animParam.SetBool(PlayerHashIDs.JumpBool, jumpBool);
 		animParam.SetBool(PlayerHashIDs.FallToLandBool, fallToLandBool);
 		//animParam.SetBool(PlayerHashIDs.DoubleJumpBool, doubleJumpBool);
+
+		animParam.SetFloat(PlayerHashIDs.YVelocityFloat, YVelocityFloat);
+		animParam.SetBool(PlayerHashIDs.MidAirBool, isMidAirBool);
 	}
 
     /// <summary>
@@ -637,7 +661,7 @@ public class PlayerMovement : MonoBehaviour {
     public void ResetAllStates()
     {
         rigidbody.velocity = Vector3.zero;
-        UpdateAnimatorParamametersTo(_anim, 0, false, false);
+        UpdateAnimatorParamametersTo(_anim, 0, false, false, 0.0f, false);
     }
 	#endregion
 
