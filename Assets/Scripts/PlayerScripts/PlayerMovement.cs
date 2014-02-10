@@ -100,13 +100,13 @@ public class PlayerMovement : MonoBehaviour {
 			return;
 		}
 
-		_animParamYVelocityFloat = rigidbody.velocity.y;
-		_animParamMidAirBool = checkMidAir();
-
 		if (testMultiplayer == null) //Test movement only, single player
         {
             if (gameController.isPause)
                 return;
+
+			_animParamYVelocityFloat = rigidbody.velocity.y;
+			_animParamMidAirBool = checkMidAir();
 
 			//get all inputs
 			//orientation, works with float range [-1.0f, 1.0f]
@@ -148,6 +148,9 @@ public class PlayerMovement : MonoBehaviour {
 			{
                 if (gameController.isPause)
                     return;
+
+				_animParamYVelocityFloat = rigidbody.velocity.y;
+				_animParamMidAirBool = checkMidAir();
 
 				//get all inputs
 				//orientation, works with float range [-1.0f, 1.0f]
@@ -217,31 +220,36 @@ public class PlayerMovement : MonoBehaviour {
 			syncYVelocityFloat = _animParamYVelocityFloat;
 			syncIsMidAirBool = _animParamMidAirBool;
 
+			stream.Serialize(ref syncFallToLandBool);
+
             stream.Serialize(ref syncVelocity);
             stream.Serialize(ref syncRigidVelocity);
             stream.Serialize(ref syncPosition);
             stream.Serialize(ref syncRotation);
             stream.Serialize(ref syncJumpBool);
             //stream.Serialize(ref syncIsDoubleJump);
-            stream.Serialize(ref syncFallToLandBool);
+            
             stream.Serialize(ref syncSpeedFloat);
 
-			stream.Serialize(ref syncYVelocityFloat);
 			stream.Serialize(ref syncIsMidAirBool);
+			stream.Serialize(ref syncYVelocityFloat);
+
 		}
 		if (stream.isReading)
         {
-            stream.Serialize(ref syncVelocity);
+			stream.Serialize(ref syncFallToLandBool);
+
+			stream.Serialize(ref syncVelocity);
             stream.Serialize(ref syncRigidVelocity);
             stream.Serialize(ref syncPosition);
             stream.Serialize(ref syncRotation);
             stream.Serialize(ref syncJumpBool);
             //stream.Serialize(ref syncIsDoubleJump);
-            stream.Serialize(ref syncFallToLandBool);
             stream.Serialize(ref syncSpeedFloat);
 
-			stream.Serialize(ref syncYVelocityFloat);
 			stream.Serialize(ref syncIsMidAirBool);
+			stream.Serialize(ref syncYVelocityFloat);
+
 
             syncTime = 0;
             syncDelay = Time.time - lastSynchronizationTime;
