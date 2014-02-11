@@ -18,6 +18,7 @@ public class GUIManager : MonoBehaviour {
     public GUITexture Tex_StoneStatus;
 	public GUIText Text_Timer;
     public GUIText Text_GameResult;
+    public GUIText Text_GameResultTitle;
 	
 	private float inputGUI_h = 0.0f;
 	private float inputGUI_v = 0.0f;

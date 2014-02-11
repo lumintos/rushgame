@@ -115,6 +115,17 @@ public class GameController : MonoBehaviour
     {
         guiManager.UpdateGUIElementsSize(new Size(Screen.width, Screen.height));
         //guiHelper.UpdateGUIElementsSize();
+
+        // Check if any player disconnected
+        if (testMultiplayer)
+        {
+            if (MultiplayerManager.Instance.PlayersList.Count < 2 && gameEnd == 0)
+            {
+                gameEnd = 3;
+                MultiplayerManager.Instance.LeaveRoom(2);
+            }
+        }
+
         //WINNING CONDITION CHECKING
         //Only server can check
         if (Network.isServer)
@@ -123,7 +134,6 @@ public class GameController : MonoBehaviour
             
             if (!isMovingPlatformStarted)
             {
-                Debug.Log("Check to start lift");
                 // Only start when all clients are ready
                 if(numberOfReadyClients >= Network.connections.Length - 1)
                     StartMovingPlatform(Time.time);
@@ -418,7 +428,10 @@ public class GameController : MonoBehaviour
     {
         foreach (GameObject item in endgameItems)
         {
-            item.SetActive(true);
+            if (item.name == "ResultTitle" && gameEnd != 3)
+                item.SetActive(false);
+            else
+                item.SetActive(true);
         }
 
         if (gameEnd == 1)
@@ -443,9 +456,21 @@ public class GameController : MonoBehaviour
                 gameEndSoundPlayed = true;
             }
         }
+        else if (gameEnd == 3) // Player disconnected
+        {
+            guiHelper.ChangeTexture("ResultFrame", "UI/frame-login-body");
+            if (gameEndSoundPlayed == false)
+            {
+                InGameAudioManager.Instance.StopBackgroundMusic();
+                if (isSoundEnable)
+                    InGameAudioManager.Instance.PlayLoseSfx(transform.position, 0.5f);
+                gameEndSoundPlayed = true;
+            }
+        }
 
-        //After Updating score to DB
-        if (updatedResult)
+
+        //After Updating score to DB or when 1 player quit
+        if (updatedResult || gameEnd == 3)
         {
             string score = "";
             if (gameEnd == 1)
@@ -460,9 +485,14 @@ public class GameController : MonoBehaviour
                     + "(- " + GameConstants.bonusSpirit + ")"
                     + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
             }
+            else if (gameEnd == 3)
+            {
+                score = "A player has disconnected\nGame will quit";
+            }
             guiManager.Text_GameResult.text = score;
             guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
-            guiManager.Text_GameResult.color = guiHelper.textColor[gameEnd - 1];
+            guiManager.Text_GameResult.color = guiHelper.textColor[0];
+            guiManager.Text_GameResultTitle.fontSize = (int)guiHelper.btnScaledHeight;
 
             //ShadowAndOutline.DrawOutline(txtScore, score, style, guiHelper.outlineColor[gameEnd - 1], Color.white, 4);
 
