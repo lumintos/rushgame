@@ -80,7 +80,7 @@ public class GameController : MonoBehaviour
 
 			if (this.isSoundEnable == true)
 			{
-				InGameAudioManager.Instance.PlayStartSfx(transform.position, 0.5f);
+				//InGameAudioManager.Instance.PlayStartSfx(transform.position, 0.5f);
 				
 				if (InGameAudioManager.Instance.BackgroundCheck() == false) // no background created
 					InGameAudioManager.Instance.PlayBackground(transform.position, 0.5f);
