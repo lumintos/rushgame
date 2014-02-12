@@ -27,7 +27,7 @@ public class PickupItem : MonoBehaviour
             GameObject bounds = new GameObject();
             bounds.name = "Bounds";
             bounds.AddComponent("SphereCollider");
-            bounds.GetComponent<SphereCollider>().radius = 2f;
+            bounds.GetComponent<SphereCollider>().radius = 0.5f;
             bounds.GetComponent<SphereCollider>().isTrigger = true;
             bounds.transform.parent = transform;
             bounds.transform.position = transform.position;

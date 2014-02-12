@@ -5,7 +5,7 @@ public class PreLoad : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        LoadScene(1);
+        LoadScene(0);
 	}
 
     /// <summary>

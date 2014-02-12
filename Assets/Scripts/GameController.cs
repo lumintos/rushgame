@@ -16,7 +16,7 @@ public class GameController : MonoBehaviour
     public GameObject goal;
     public int gameEnd; //0: playing, 1: Win, 2: Lose
     public GameObject stonePrefab;
-    //public GameObject movingPlatformPrefab;
+    public GameObject movingPlatformPrefab;
     //public Vector3[] movingPlatformPositionsAndHeights; //Position in Z always is 0, so the Z is used to store max height
 
     private float startTimeKeepStone, elapsedTimeKeepStone;
@@ -29,7 +29,6 @@ public class GameController : MonoBehaviour
     public bool isQuitting = false;
     public bool isMovingPlatformStarted = false;
     public int numberOfReadyClients = 0;
-
 
     // Use this for initialization
     void Start()
@@ -57,7 +56,6 @@ public class GameController : MonoBehaviour
             if (Network.isServer)
             {
                 SpawnStone();
-                //StartMovingPlatform(Time.time);
                 //SpawnMovingPlatform();
             }
         }
@@ -107,6 +105,16 @@ public class GameController : MonoBehaviour
 
         if (!goal)
             goal = GameObject.FindGameObjectWithTag("Goal");
+
+        foreach (GameObject item in pauseItems)
+        {
+            item.SetActive(false);
+        }
+
+        foreach (GameObject item in endgameItems)
+        {
+            item.SetActive(false);
+        }
     }
 
 
@@ -135,8 +143,10 @@ public class GameController : MonoBehaviour
             if (!isMovingPlatformStarted)
             {
                 // Only start when all clients are ready
-                if(numberOfReadyClients >= Network.connections.Length - 1)
+                if (numberOfReadyClients >= Network.connections.Length)
+                {
                     StartMovingPlatform(Time.time);
+                }
             }
 
             if (gameEnd == 0)
@@ -349,6 +359,8 @@ public class GameController : MonoBehaviour
     [RPC]
     void SpawnMovingPlatform()
     {
+        Debug.Log("Spawn Lift");
+        Network.Instantiate(movingPlatformPrefab, movingPlatformPrefab.transform.position, movingPlatformPrefab.transform.rotation, 0);
         /*
         foreach (Vector3 posAndHeight in movingPlatformPositionsAndHeights)
         {
@@ -386,7 +398,7 @@ public class GameController : MonoBehaviour
         {
             gameEnd = 2;
         }
-        if (!MultiplayerManager.Instance.PlayerName.Contains("Tester")) //If didn't login, then do not update to DB
+        if (!MultiplayerManager.Instance.PlayerName.Contains("Tester")) //If did login, then update to DB
             UpdateScoreToDB();
         else
             updatedResult = true;
@@ -476,13 +488,13 @@ public class GameController : MonoBehaviour
             if (gameEnd == 1)
             {
                 score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
-                    + "(+ " + GameConstants.bonusSpirit + ")"
+                    + " (+ " + GameConstants.bonusSpirit + ")"
                     + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
             }
             else if (gameEnd == 2)
             {
                 score = "Spirit: " + MultiplayerManager.Instance.MyPlayer.spirit
-                    + "(- " + GameConstants.bonusSpirit + ")"
+                    + " (- " + GameConstants.bonusSpirit + ")"
                     + " / " + MultiplayerManager.Instance.MyPlayer.maxSpirit;
             }
             else if (gameEnd == 3)
@@ -491,7 +503,8 @@ public class GameController : MonoBehaviour
             }
             guiManager.Text_GameResult.text = score;
             guiManager.Text_GameResult.fontSize = (int)(guiHelper.btnScaledHeight) / 2;
-            guiManager.Text_GameResult.color = guiHelper.textColor[0];
+            int tempIndex = (gameEnd > 2 ? 0 : gameEnd - 1);
+            guiManager.Text_GameResult.color = guiHelper.textColor[tempIndex];
             guiManager.Text_GameResultTitle.fontSize = (int)guiHelper.btnScaledHeight;
 
             //ShadowAndOutline.DrawOutline(txtScore, score, style, guiHelper.outlineColor[gameEnd - 1], Color.white, 4);

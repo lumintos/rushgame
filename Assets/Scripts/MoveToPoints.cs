@@ -17,7 +17,16 @@ public class MoveToPoints : MonoBehaviour
 	private float arrivalTime;
 	private bool forward = true, arrived = false;
 	public List<Transform> waypoints = new List<Transform>();
-	
+
+
+    // Properties for synchronization
+    private float lastSynchronizationTime = 0f;
+    private float syncDelay = 0f;
+    private float syncTime = 0f;
+    private Vector3 syncStartPosition = Vector3.zero;
+    private Vector3 syncEndPosition = Vector3.zero;
+
+
 	//setup
 	void Awake()
 	{
@@ -43,25 +52,32 @@ public class MoveToPoints : MonoBehaviour
 	//if we've arrived at waypoint, get the next one
 	void Update()
 	{
-		if(waypoints.Count > 0)
-		{
-			if(!arrived)
-			{
-				if (Vector3.Distance(transform.position, waypoints[currentWp].position) < 0.3f)
-				{
-					arrivalTime = Time.time;
-					arrived = true;
-				}
-			}
-			else
-			{
-				if(Time.time > arrivalTime + delay)
-				{
-					GetNextWP();
-					arrived = false;
-				}
-			}
-		}
+        if (networkView == null || networkView.isMine)
+        {
+            if (waypoints.Count > 0)
+            {
+                if (!arrived)
+                {
+                    if (Vector3.Distance(transform.position, waypoints[currentWp].position) < 0.3f)
+                    {
+                        arrivalTime = Time.time;
+                        arrived = true;
+                    }
+                }
+                else
+                {
+                    if (Time.time > arrivalTime + delay)
+                    {
+                        GetNextWP();
+                        arrived = false;
+                    }
+                }
+            }
+        }
+        else
+        {
+            SyncedMovement();
+        }
 	}
 	
 	//move object toward waypoint
@@ -70,13 +86,48 @@ public class MoveToPoints : MonoBehaviour
         //do not move if it's not allowed
         if (!moveEnabled)
             return;
-
-		if(!arrived && waypoints.Count > 0)
-		{
-			Vector3 direction = waypoints[currentWp].position - transform.position;
-			rigidbody.MovePosition(transform.position + (direction.normalized * speed * Time.fixedDeltaTime));
-		}
+        if (networkView == null || networkView.isMine)
+        {
+            if (!arrived && waypoints.Count > 0)
+            {
+                Vector3 direction = waypoints[currentWp].position - transform.position;
+                rigidbody.MovePosition(transform.position + (direction.normalized * speed * Time.fixedDeltaTime));
+            }
+        }
 	}
+    /*
+    void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
+    {
+        Vector3 syncPosition = Vector3.zero;
+        Vector3 syncRigidVelocity = Vector3.zero;
+
+        if (stream.isWriting)
+        {
+            syncPosition = transform.position;
+            syncRigidVelocity = rigidbody.velocity;
+
+            stream.Serialize(ref syncPosition);
+            stream.Serialize(ref syncRigidVelocity);
+        }
+        if (stream.isReading)
+        {
+            stream.Serialize(ref syncPosition);
+            stream.Serialize(ref syncRigidVelocity);
+            
+            syncTime = 0;
+            syncDelay = Time.time - lastSynchronizationTime;
+            lastSynchronizationTime = Time.time;
+
+            syncEndPosition = syncPosition + syncRigidVelocity * syncDelay;
+            syncStartPosition = transform.position;
+        }
+    }
+    */
+    private void SyncedMovement()
+    {
+        syncTime += Time.deltaTime;
+        transform.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
+    }
 	
 	//get the next waypoint
 	private void GetNextWP()

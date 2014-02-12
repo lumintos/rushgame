@@ -25,7 +25,6 @@ public class Lobby : MonoBehaviour {
 	void Start () {
         displayedRoomIndex = new int[maxRoomsDisplayed];
 
-        guiHelper = GetComponent<GUIHelper>();
         guiHelper.SetText("message", "Welcome");
         //guiHelper.UpdateGUIElementsSize();
         roomGUI = GetComponent<RoomGUI>();
@@ -37,7 +36,21 @@ public class Lobby : MonoBehaviour {
         GetUserInfo();
         MultiplayerManager.Instance.RefreshRoomList();
 	}
-	
+
+
+    void Awake()
+    {
+        guiHelper = GetComponent<GUIHelper>();
+
+        guiHelper.SetActiveGUIElement("ButtonStartGame", false);
+        guiHelper.SetActiveGUIElement("ButtonBack", false);
+        guiHelper.SetActiveGUIElement("PlayerOneFrame", false);
+        guiHelper.SetActiveGUIElement("PlayerOneName", false);
+        guiHelper.SetActiveGUIElement("PlayerTwoFrame", false);
+        guiHelper.SetActiveGUIElement("PlayerTwoName", false);
+        guiHelper.SetActiveGUIElement("VSTexture", false);
+    }
+
 	// Update is called once per frame
 	void Update () {
         //Update size of all elements in case game screen size changing
@@ -90,14 +103,14 @@ public class Lobby : MonoBehaviour {
 
     void GetUserInfo()
     {
-        /*
+        
         string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=query_score&username=" + MultiplayerManager.Instance.PlayerName;
         WWW w = new WWW(url);
         StartCoroutine(queryInfoRequest(w));
-        */
-        int spirit = 100;
-        int maxSpirit = 100;
-        MultiplayerManager.Instance.SetUserInfo(MultiplayerManager.Instance.PlayerName, Network.player, maxSpirit, spirit);
+        
+        //int spirit = 100;
+        //int maxSpirit = 100;
+        //MultiplayerManager.Instance.SetUserInfo(MultiplayerManager.Instance.PlayerName, Network.player, maxSpirit, spirit);
     }
 
     IEnumerator queryInfoRequest(WWW w)
