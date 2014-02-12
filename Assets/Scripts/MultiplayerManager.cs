@@ -32,8 +32,8 @@ public class MultiplayerManager : MonoBehaviour
     {
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        //MasterServer.ipAddress = "192.168.1.109";
-        //MasterServer.port = 23466;
+        MasterServer.ipAddress = "192.168.1.91";
+        MasterServer.port = 23466;
     }
 
     void FixedUpdate()

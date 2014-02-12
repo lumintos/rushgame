@@ -412,8 +412,9 @@ public class GameController : MonoBehaviour
         form.AddField("alter_spirit", GameConstants.bonusSpirit);
         form.AddField("match_result", result);
         form.AddField("alter_max_spirit", 0);
-        string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=update_match_score";
-        WWW w = new WWW(url, form);
+        //string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=update_match_score";
+		string url = "http://192.168.1.91/~hieu/rushgame/Server/php/user.php?action=update_match_score";
+		WWW w = new WWW(url, form);
         StartCoroutine(setScoreRequest(w));
     }
 

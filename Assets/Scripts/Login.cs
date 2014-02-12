@@ -101,8 +101,9 @@ public class Login : MonoBehaviour {
                     form.AddField("username", username);
                     form.AddField("password", password);
                     //WWW w = new WWW("http://84.101.189.177:25500/login.php", form);
-                    WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
-                    StartCoroutine(loginRequest(w));
+                    //WWW w = new WWW(@"http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=login", form);
+					WWW w = new WWW(@"http://192.168.1.91/~hieu/rushgame/Server/php/user.php?action=login", form);
+					StartCoroutine(loginRequest(w));
                 }
             }
 
@@ -174,8 +175,9 @@ public class Login : MonoBehaviour {
                         form.AddField("email", email);
                         form.AddField("password", password);
                         //WWW w = new WWW("http://84.101.189.177:25500/register.php", form);
-                        WWW w = new WWW("http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=register", form);
-                        StartCoroutine(registerRequest(w));
+                        //WWW w = new WWW("http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=register", form);
+						WWW w = new WWW("http://192.168.1.91/~hieu/rushgame/Server/php/user.php?action=register", form);
+						StartCoroutine(registerRequest(w));
                     }
                     else
                         msg.text = "Your Password does not match \n";

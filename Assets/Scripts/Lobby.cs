@@ -104,8 +104,9 @@ public class Lobby : MonoBehaviour {
     void GetUserInfo()
     {
         
-        string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=query_score&username=" + MultiplayerManager.Instance.PlayerName;
-        WWW w = new WWW(url);
+        //string url = "http://hieurl.zapto.org/~hieu/rushgame/Server/php/user.php?action=query_score&username=" + MultiplayerManager.Instance.PlayerName;
+		string url = "http://192.168.1.91/~hieu/rushgame/Server/php/user.php?action=query_score&username=" + MultiplayerManager.Instance.PlayerName;
+		WWW w = new WWW(url);
         StartCoroutine(queryInfoRequest(w));
         
         //int spirit = 100;
