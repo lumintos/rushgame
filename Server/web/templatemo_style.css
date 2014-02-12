@@ -202,7 +202,7 @@ ol.number_list li a:hover { color: #b9becd }
 }
 .event1 { background-image: url(images/astro.jpg) }
 .event2 { background-image: url(images/ninja.jpg) }
-.event3 { background-image: url(images/stone.jpg) }
+.event3 { background-image: url(images/stone.png) }
 
 a.event_btn {
 	display: block;
