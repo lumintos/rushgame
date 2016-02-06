@@ -1,5 +1,5 @@
 #RUSH Game
-## Description:
+## Description
 
 This project is about a 2.5D platformer game. In this game, two characters (2 kids) will participate in a race to obtain an object from their master.
 There will be 2 players control those 2 characters and compete with each other through network connection. 
